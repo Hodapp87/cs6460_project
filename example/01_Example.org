@@ -1,0 +1,25 @@
+#+Title: A mkleanbook example
+#+Author: Joe Doe
+
+* Heading
+
+You can put lean code in a =BEGIN_SRC= / =END_SRC= block:
+
+#+BEGIN_SRC lean
+check nat.rec
+#+END_SRC
+
+** Sub-heading
+
+If you only want to show part of the code in the text, then you can enclose the
+part of the code that you want to show with =BEGIN= / =END= comments:
+
+#+BEGIN_SRC lean
+namespace hide
+
+-- BEGIN
+constant and : Prop -> Prop -> Prop
+-- END
+
+end hide
+#+END_SRC

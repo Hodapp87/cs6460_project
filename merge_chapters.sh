@@ -7,33 +7,36 @@
 #
 # Collect 01_xxx.org, 02_xxx.org, ... files and merge them into tutorial.org file
 #
-TUTORIAL_ORG_FILE=tutorial.org
-
-rm -f ${TUTORIAL_ORG_FILE}
-
 # Collect Main Chapters
-for CHAPTER in [0-9][0-9]*.org
-do
-    if [ ! -f ${TUTORIAL_ORG_FILE} ] ; then
-        echo "$CHAPTER -> ${TUTORIAL_ORG_FILE}"
-        cp -- ${CHAPTER} ${TUTORIAL_ORG_FILE}
+
+(
+
+first=1
+for CHAPTER in $@; do
+    [[ "${CHAPTER}" = [0-9]* ]] || continue
+    if [[ $first -eq 1 ]]; then
+        first=0
+        echo "$CHAPTER" >&2
+        cat ${CHAPTER}
     else
         START_LINE=`grep -n '^\* ' ${CHAPTER} | cut -d ':' -f 1`
-        echo "$CHAPTER : +${START_LINE} -> ${TUTORIAL_ORG_FILE}"
-        tail -n +${START_LINE} -- ${CHAPTER} >> ${TUTORIAL_ORG_FILE}
+        echo "$CHAPTER : +${START_LINE}" >&2
+        tail -n +${START_LINE} -- ${CHAPTER}
     fi
+    echo
 done
 
 # Collect Appendices
-echo "#+BEGIN_LATEX" >> ${TUTORIAL_ORG_FILE}
-echo "\appendix"     >> ${TUTORIAL_ORG_FILE}
-echo "#+END_LATEX"   >> ${TUTORIAL_ORG_FILE}
+echo "#+BEGIN_LATEX"
+echo "\appendix"
+echo "#+END_LATEX"
 
-for APPENDIX in A[0-9]*.org
-do
+for APPENDIX in $@; do
+    [[ "${APPENDIX}" = A* ]] || continue
     START_LINE=`grep -n '^\* ' ${APPENDIX} | cut -d ':' -f 1`
-    echo "$APPENDIX : +${START_LINE} -> ${TUTORIAL_ORG_FILE}"
-    tail -n +${START_LINE} -- ${APPENDIX} >> ${TUTORIAL_ORG_FILE}
+    echo "$APPENDIX : +${START_LINE}" >&2
+    tail -n +${START_LINE} -- ${APPENDIX}
+    echo
 done
 
 
@@ -46,5 +49,4 @@ done
 # =>
 #
 #     In Section [[Notation_Overloads_and_Coercions][Notations, Overloads, and Coercions]], we discussed coercions
-sed -e "s/file:[0-9][0-9]_[^:]*.org:://g" ${TUTORIAL_ORG_FILE} > ${TUTORIAL_ORG_FILE}.tmp
-mv -v ${TUTORIAL_ORG_FILE}.tmp  ${TUTORIAL_ORG_FILE}
+) | sed -e "s/file:[0-9][0-9]_[^:]*.org:://g"
