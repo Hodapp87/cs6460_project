@@ -11,11 +11,13 @@ CASK_EMACS := cd $(MKLEANBOOK_PATH) && $(CASK_BIN) exec $(EMACS_BIN)
 
 BIBFILES ?= lean.bib
 
-all: htmls book.pdf
+COMBINED ?= book
+
+all: htmls $(COMBINED).pdf
 
 htmls: $(HTMLS) copy-html-assets $(NAV_DATA)
 
-book.org: $(ORGS)
+$(COMBINED).org: $(ORGS)
 	$(MKLEANBOOK_PATH)/merge_chapters.sh >$@ $+
 
 %.tmphtml.org: %.org $(MKLEANBOOK_PATH)/header/html.org $(MKLEANBOOK_PATH)/footer/bib.html.org
@@ -53,13 +55,16 @@ clean:
 	rm -rf $(HTMLS) \
 	       ${PDFS} \
 	       ${TEXS} \
-	       *.acn *.aux *.glo *.idx *.ist *.log *.out *.toc *.fdb_latexmk *.fls *.ilg *.ind \
-	       *.out.pyg *.pyg tutorial.* \
+	       *.tmptex.org *.tmphtml.org \
+	       $(COMBINED).* \
+	       *.acn *.aux *.glo *.idx *.ist *.log *.out *.toc *.fdb_latexmk *.fls *.ilg *.ind *.bbl *.blg \
+	       css fonts images js index.html juicy-ace-editor.html \
+	       *.out.pyg *.pyg \
+	       gitHeadInfo.gin \
 	       [0-9][0-9]*.lean \
 	       _minted-*
 
-dist-clean:
-	make clean
+dist-clean: clean
 	rm -rf .cask watchman pygments-main
 
 install-cask:
