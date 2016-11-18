@@ -12,6 +12,9 @@ CASK_EMACS := cd $(MKLEANBOOK_PATH) && $(CASK_BIN) exec $(EMACS_BIN)
 BIBFILES ?= lean.bib
 
 COMBINED ?= book
+TITLE ?= mkleanbook
+AUTHORS ?=
+COPYRIGHT_NOTICE ?=
 
 all: htmls $(COMBINED).pdf
 
@@ -90,6 +93,7 @@ $(NAV_DATA): copy-html-assets
 	echo "];" >> $(NAV_DATA)
 
 copy-html-assets:
+	sed 's|COPYRIGHT_NOTICE|$(COPYRIGHT_NOTICE)|;s|AUTHORS|$(AUTHORS)|;s|TITLE|$(TITLE)|' $(MKLEANBOOK_PATH)/index.html >index.html
 	cp -ra $(MKLEANBOOK_PATH)/{css,fonts,images,js,index.html,juicy-ace-editor.html} ./
 
 .PHONY: all copy-html-assets clean install-cask pygments-main
