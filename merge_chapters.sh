@@ -27,9 +27,9 @@ for CHAPTER in $@; do
 done
 
 # Collect Appendices
-echo "#+BEGIN_LATEX"
+echo "#+BEGIN_EXPORT LATEX"
 echo "\appendix"
-echo "#+END_LATEX"
+echo "#+END_EXPORT"
 
 for APPENDIX in $@; do
     [[ "${APPENDIX}" = A* ]] || continue
