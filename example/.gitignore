@@ -21,7 +21,7 @@
 *~
 /watchman
 /pygments-main
-/book.*
+/example.*
 /_minted-*
 .DS_Store
 gitHeadInfo.gin
