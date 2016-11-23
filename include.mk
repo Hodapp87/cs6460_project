@@ -49,7 +49,7 @@ $(COMBINED).org: $(ORGS)
 	mv $*.tmptex.tex $@
 
 %.pdf: %.tex pygments-main gitHeadInfo.gin
-	TEXINPUTS="$(MKLEANBOOK_PATH)/:$(TEXINPUTS)" latexmk --xelatex --shell-escape $<
+	PATH="$(PWD)/pygments-main:$(PATH)" TEXINPUTS="$(MKLEANBOOK_PATH)/:$(TEXINPUTS)" latexmk -interaction=errorstopmode --xelatex --shell-escape $<
 
 $(MKLEANBOOK_PATH)/.cask:
 	$(MAKE) -C $(MKLEANBOOK_PATH) .cask
