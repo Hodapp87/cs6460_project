@@ -65,6 +65,7 @@ clean:
 	       *.out.pyg *.pyg \
 	       gitHeadInfo.gin \
 	       [0-9][0-9]*.lean \
+	       pygments-main \
 	       _minted-*
 
 dist-clean: clean
