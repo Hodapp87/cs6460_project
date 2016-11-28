@@ -90,7 +90,7 @@ test_js:
 
 $(NAV_DATA): copy-html-assets
 	echo "var lean_nav_data = [" > $(NAV_DATA)
-	for i in $(HTMLS); do echo $$i; done | sed 's/\(.*\)/"\1",/' >> $(NAV_DATA)
+	for i in $(HTMLS); do echo $$i; done | sed 's/\(.*\)/"\1",/' | sort >> $(NAV_DATA)
 	echo "];" >> $(NAV_DATA)
 
 copy-html-assets:
