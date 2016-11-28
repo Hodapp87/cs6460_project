@@ -94,7 +94,7 @@ $(NAV_DATA): copy-html-assets
 	echo "];" >> $(NAV_DATA)
 
 copy-html-assets:
-	sed 's|COPYRIGHT_NOTICE|$(COPYRIGHT_NOTICE)|;s|AUTHORS|$(AUTHORS)|;s|TITLE|$(TITLE)|' $(MKLEANBOOK_PATH)/index.html >index.html
+	sed 's|COPYRIGHT_NOTICE|$(COPYRIGHT_NOTICE)|;s|AUTHORS|$(AUTHORS)|;s|TITLE|$(TITLE)|;s|COMBINED|$(COMBINED)|g' $(MKLEANBOOK_PATH)/index.html >index.html
 	cp -ra $(MKLEANBOOK_PATH)/juicy-ace-editor.html ./
 	cp -ra $(MKLEANBOOK_PATH)/css ./
 	cp -ra $(MKLEANBOOK_PATH)/fonts ./
