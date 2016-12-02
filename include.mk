@@ -1,7 +1,7 @@
 CASK_BIN ?= cask
 EMACS_BIN ?= emacs
 LEAN_BIN ?= lean
-ORGS  := $(wildcard [0-9A][0-9]_*.org)
+ORGS  := $(sort $(wildcard [0-9A][0-9]_*.org))
 HTMLS := $(ORGS:.org=.html)
 TEXS  := $(ORGS:.org=.tex)
 PDFS  := $(ORGS:.org=.pdf)
@@ -90,7 +90,7 @@ test_js:
 
 $(NAV_DATA): copy-html-assets
 	echo "var lean_nav_data = [" > $(NAV_DATA)
-	for i in $(HTMLS); do echo $$i; done | sed 's/\(.*\)/"\1",/' | sort >> $(NAV_DATA)
+	for i in $(HTMLS); do echo $$i; done | sed 's/\(.*\)/"\1",/' >> $(NAV_DATA)
 	echo "];" >> $(NAV_DATA)
 
 copy-html-assets:
