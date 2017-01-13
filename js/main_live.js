@@ -437,7 +437,8 @@ var myModule = (function() {
                 if (anchor) {
                     myModule.scrollTutorialTo(anchor);
                 }
-                // save the file in cookie
+                // save the file in hash & cookie
+                location.hash = "#" + encodeURIComponent(filename);
                 $.cookie("leanjs_tutorial_chapter_filename", filename);
             });
             // Set the right value for tutorialNav
@@ -462,8 +463,8 @@ var myModule = (function() {
                         myModule.loadTutorial(fileName, null);
                     });
                     $('#tutorialNav').show();
-                    // Load chapter (cookie or default?)
-                    var saved_file = $.cookie("leanjs_tutorial_chapter_filename");
+                    // Load chapter (hash, cookie or default)
+                    var saved_file = decodeURIComponent(location.hash.substr(1)) || $.cookie("leanjs_tutorial_chapter_filename");
                     if (saved_file && saved_file != "" && $.inArray(saved_file, lean_nav_data)) {
                         myModule.loadTutorial(saved_file, null);
                     } else {
