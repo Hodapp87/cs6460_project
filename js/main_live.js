@@ -62,6 +62,7 @@ var myModule = (function() {
     return {
         useHoTT: location.search.match("(\\?|&)hott") ? true : false,
         print_output_to_console: ($.cookie("leanjs_print_output_to_console") || "true") === "true",
+        auto_compile: ($.cookie("leanjs_auto_compile") || "true") === "true",
         editor_main: editor_main,
         editor_console: editor_console,
         push_output_buffer: function(text) {
@@ -81,8 +82,8 @@ var myModule = (function() {
             this.syncDelay = lang.delayedCall(this.sync.bind(this), 200);
             editor_main.on('change',
                            function() {
-                               if (myModule.initialized) {
-                                   myModule.save_file(default_filename, editor_main.getValue());
+                               myModule.save_file(default_filename, editor_main.getValue());
+                               if (myModule.initialized && myModule.auto_compile) {
                                    myModule.syncDelay.delay();
                                }
                            });
@@ -479,11 +480,17 @@ var myModule = (function() {
             $("#close_setting_window").click(function(e) { $("#setting_window").hide(); });
             $("#setting_window").css({background: "white", opacity: 0.98});
             $("#setting_contents").css({ padding: 40});
-            $('#print_output_to_console').val(myModule.print_output_to_console.toString());
+            $('#print_output_to_console').prop("checked", myModule.print_output_to_console);
             $('#print_output_to_console').on('change', function (e) {
-                myModule.print_output_to_console = (this.value == "true");
+                myModule.print_output_to_console = this.checked;
                 $.cookie("leanjs_print_output_to_console", myModule.print_output_to_console);
             });
+            $('#auto_compile').on('change', function (e) {
+                myModule.auto_compile = this.checked;
+                $("#run-button").css("display", this.checked ? "none" : "block");
+                $.cookie("leanjs_auto_compile", myModule.auto_compile);
+            });
+            $('#auto_compile').prop("checked", myModule.auto_compile).trigger("change");
             $(function () {
                 var settingButton = document.querySelector("#setting-button");
                 settingButton.addEventListener("click", function() {
