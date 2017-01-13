@@ -89,6 +89,7 @@ var myModule = (function() {
                                });
                                myModule.editor_main.session.setAnnotations(newAnnotations);
                            });
+            new TokenTooltip(editor_main);
         },
         init_editor_console: function() {
             editor_console.session.setNewLineMode("unix");
