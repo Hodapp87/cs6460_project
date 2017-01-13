@@ -406,7 +406,6 @@ var myModule = (function() {
         },
         save_file: function(filename, text) {
             $.cookie("leanjs", myModule.editor_main.getValue());
-            myModule.append_console_nl("-- Saved at cookie.");
         },
         init_ace: function() {
             myModule.init_editor_main();
