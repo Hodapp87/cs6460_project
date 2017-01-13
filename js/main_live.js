@@ -78,16 +78,13 @@ var myModule = (function() {
                                     enableSnippets: true
                                    });
             editor_main.resize();
-            // When there is a change in the main editor, clear the
-            // annotations which are in the current line or come after
-            // the current line.
+            this.syncDelay = lang.delayedCall(this.sync.bind(this), 200);
             editor_main.on('change',
                            function() {
-                               var currentAnnotations = editor_main.session.getAnnotations();
-                               var newAnnotations = currentAnnotations.filter(function(elem) {
-                                   return (elem.row < editor_main.selection.getCursor().row);
-                               });
-                               myModule.editor_main.session.setAnnotations(newAnnotations);
+                               if (myModule.initialized) {
+                                   myModule.save_file(default_filename, editor_main.getValue());
+                                   myModule.syncDelay.delay();
+                               }
                            });
             new TokenTooltip(editor_main);
         },
@@ -407,47 +404,6 @@ var myModule = (function() {
                 myModule.editor_main.setValue(data, 1);
             });
         },
-        parse_lean_output_buffer: function(buffer) {
-            var i = 0;
-            var mode = "outside";
-            var errors = [];
-            var column, endColumn, row, endRow, text, type;
-            while (i < buffer.length) {
-                line = buffer[i++];
-                if (line.startsWith("FLYCHECK_BEGIN")) {
-                    mode = "flycheck";
-                    type = line.split(" ")[1].toLowerCase();
-                    if (type == "information") {
-                        type = "info";
-                    }
-                    line = buffer[i++];
-                    items = line.split(":")
-                    filename = items[0];
-                    row = parseInt(items[1]) - 1;
-                    endRow = row + 1;
-                    endColumn = column = parseInt(items[2]);
-                    text = items.slice(3).join(":").trim();
-                } else if (line.startsWith("FLYCHECK_END")) {
-                    errors.push({row: row,
-                                 endRow: endRow,
-                                 column: column,
-                                 endColumn: endColumn,
-                                 text: text,
-                                 type: type});
-                    if (myModule.print_output_to_console) {
-                        this.append_console_nl("line " + (row + 1) + ", column " + column + ": " + text);
-                    }
-                    mode = "outside";
-                } else if (mode === "outside") {
-                    this.append_console_nl(line);
-                } else if (mode === "flycheck") {
-                    text += "\n" + line
-                } else {
-                    console.log("Something's wrong", line);
-                }
-            }
-            return errors;
-        },
         save_file: function(filename, text) {
             $.cookie("leanjs", myModule.editor_main.getValue());
             myModule.append_console_nl("-- Saved at cookie.");
@@ -538,7 +494,7 @@ var myModule = (function() {
         init: function() {
             myModule.init_nav();
             myModule.init_settings();
-            this.append_console_nl("Lean.JS: running Lean Theorem Prover on your browser");
+            this.append_console_nl("Lean.JS: running the Lean Theorem Prover in your browser");
             this.append_console("-- Initializing Ace Editor...     ");
             var start_time = new Date().getTime();
             myModule.init_ace();
@@ -576,6 +532,28 @@ var myModule = (function() {
             }, 5);
         },
         process_main_buffer: function() {
+            this.clear_console();
+            myModule.append_console_nl("-- Processing...");
+            var start_time = new Date().getTime();
+            setTimeout(function() {
+                myModule.sync();
+                myModule.append_console("-- Done");
+                myModule.append_console_nl("(" + elapsed_time_string(start_time) + ")");
+            }, 1);
+        },
+        send: function(msg) {
+            if (!Module.lean_process_request)
+                return;
+            msg.seq_num = seq_num++;
+            msg.file_name = default_filename;
+            msg = JSON.stringify(msg);
+            var len = Module.lengthBytesUTF8(msg) + 1;
+            var msgPtr = Module._malloc(len);
+            Module.stringToUTF8(msg, msgPtr, len);
+            Module.lean_process_request(msgPtr);
+            Module._free(msgPtr);
+        },
+        sync: function() {
             var need_to_resize = false
             if (myModule.get_main_console_ratio() == 1.0) {
                 myModule.set_main_console_ratio(0.8);
@@ -590,38 +568,16 @@ var myModule = (function() {
                 $("#layout-button>img")[0].src = "./images/" + next_image;
                 myModule.resize_editors();
             }
-            this.clear_console();
-            myModule.append_console_nl("-- Processing...");
             var start_time = new Date().getTime();
-            setTimeout(function() {
-                myModule.save_file(default_filename, editor_main.getValue());
-                myModule.sync();
-                myModule.append_console("-- Done");
-                myModule.append_console_nl("(" + elapsed_time_string(start_time) + ")");
-            }, 1);
-        },
-        process_file: function(filename) {
-            lean_output_buffer = [];
-            editor_main.session.clearAnnotations();
-            Module.lean_process_file(filename);
-            var errors = this.parse_lean_output_buffer(lean_output_buffer);
-            editor_main.session.setAnnotations(errors);
-        },
-        send: function(msg) {
-            msg.seq_num = seq_num++;
-            msg.file_name = default_filename;
-            msg = JSON.stringify(msg);
-            var len = Module.lengthBytesUTF8(msg) + 1;
-            var msgPtr = Module._malloc(len);
-            Module.stringToUTF8(msg, msgPtr, len);
-            Module.lean_process_request(msgPtr);
-            Module._free(msgPtr);
-        },
-        sync: function() {
             this.send({
                 command: "sync",
                 content: editor_main.getValue()
             });
+            if (this.initialized) {
+                this.presentErrorMessages();
+                myModule.append_console("Done");
+                myModule.append_console_nl("(" + elapsed_time_string(start_time) + ")");
+            }
         },
         processErrorMessage: function(msg) {
             var type = msg.severity;
@@ -638,6 +594,7 @@ var myModule = (function() {
             });
         },
         presentErrorMessages: function() {
+            this.clear_console();
             if (this.print_output_to_console) {
                 for (var i = 0; i < messages.length; i++) {
                     var msg = messages[i];
@@ -650,7 +607,7 @@ var myModule = (function() {
             console.log(msg);
             switch (msg.response) {
             case "ok":
-                if (msg.prefix) {
+                if ("prefix" in msg) {
                     this.completions = msg.completions.map(function(compl) {
                         return {
                             value: compl.text,
@@ -667,7 +624,7 @@ var myModule = (function() {
                     if (response.record.doc) {
                         marked.push(response.record.doc);
                     }
-                    if (response.record.state && !marked) {
+                    if (response.record.state && !marked.length) {
                         marked.push(response.record.state);
                     }
                     this.info = marked.join("\n");
@@ -675,13 +632,11 @@ var myModule = (function() {
                 break;
             case "additional_message":
                 this.processErrorMessage(msg.msg);
-                this.presentErrorMessages();
                 break;
             case "all_messages":
                 messages = [];
                 for (var i = 0; i < msg.msgs.length; i++)
                     this.processErrorMessage(msg.msgs[i]);
-                this.presentErrorMessages();
                 break;
             default:
                 console.log("Unknown response type: ", msg.response);
@@ -780,8 +735,9 @@ Module['postRun'] = function() {
     myModule.init_lean();
     var start_time = new Date().getTime();
     setTimeout(function() {
-        myModule.append_console("-- Initial Standard Library Import... ");
+        myModule.append_console("-- Initial parsing & import...    ");
         myModule.sync();
+        myModule.initialized = true;
         myModule.append_console("Done");
         myModule.append_console_nl("(" + elapsed_time_string(start_time) + ")");
         myModule.append_console("-- Ready.\n");
@@ -794,5 +750,5 @@ Module.preRun.push(function() {
     myModule.append_console_nl("(" + elapsed_time_string(lean_loading_start_time) + ")");
 })
 $.ajaxPrefilter(undefined);
-myModule.append_console("-- Loading lean3.js...             ");
 loadJSFile("//leanprover.github.io/lean.js/lean3.js");
+myModule.append_console("-- Loading lean3.js...            ");
