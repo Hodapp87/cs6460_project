@@ -53,7 +53,13 @@
         <h1>Settings</h1>
         <fieldset>
         <label><input type="checkbox" id="print_output_to_console"> Print output to the console</label><br>
-        <label><input type="checkbox" id="auto_compile"> Automatically check code on changes</label>
+        <label><input type="checkbox" id="auto_compile"> Automatically check code on changes</label><br>
+        <label for="keyboard_mode">Keyboard bindings: </label>
+        <select name="keyboard_mode" id="keyboard_mode">
+            <option>ace</option>
+            <option>emacs</option>
+            <option>vim</option>
+        </select>
         </fieldset>
         <button id="close_setting_window">Close</button>
       </div>

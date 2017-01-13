@@ -61,8 +61,11 @@ var myModule = (function() {
     var messages = [];
     return {
         useHoTT: location.search.match("(\\?|&)hott") ? true : false,
-        print_output_to_console: ($.cookie("leanjs_print_output_to_console") || "true") === "true",
-        auto_compile: ($.cookie("leanjs_auto_compile") || "true") === "true",
+        options: JSON.parse($.cookie("leanjs_options") || JSON.stringify({
+            print_output_to_console: true,
+            auto_compile: true,
+            keyboard_mode: "ace"
+        })),
         editor_main: editor_main,
         editor_console: editor_console,
         push_output_buffer: function(text) {
@@ -480,17 +483,23 @@ var myModule = (function() {
             $("#close_setting_window").click(function(e) { $("#setting_window").hide(); });
             $("#setting_window").css({background: "white", opacity: 0.98});
             $("#setting_contents").css({ padding: 40});
-            $('#print_output_to_console').prop("checked", myModule.print_output_to_console);
+            $('#print_output_to_console').prop("checked", myModule.options.print_output_to_console);
             $('#print_output_to_console').on('change', function (e) {
-                myModule.print_output_to_console = this.checked;
-                $.cookie("leanjs_print_output_to_console", myModule.print_output_to_console);
+                myModule.options.print_output_to_console = this.checked;
+                $.cookie("leanjs_options", JSON.stringify(myModule.options));
             });
             $('#auto_compile').on('change', function (e) {
-                myModule.auto_compile = this.checked;
+                myModule.options.auto_compile = this.checked;
                 $("#run-button").css("display", this.checked ? "none" : "block");
-                $.cookie("leanjs_auto_compile", myModule.auto_compile);
+                $.cookie("leanjs_options", JSON.stringify(myModule.options));
             });
-            $('#auto_compile').prop("checked", myModule.auto_compile).trigger("change");
+            $('#auto_compile').prop("checked", myModule.options.auto_compile).trigger("change");
+            $('#keyboard_mode').on('change', function (e) {
+                myModule.options.keyboard_mode = this.value;
+                editor_main.setKeyboardHandler("ace/keyboard/" + this.value);
+                $.cookie("leanjs_options", JSON.stringify(myModule.options));
+            });
+            $('#keyboard_mode').val(myModule.options.keyboard_mode).trigger("change");
             $(function () {
                 var settingButton = document.querySelector("#setting-button");
                 settingButton.addEventListener("click", function() {
