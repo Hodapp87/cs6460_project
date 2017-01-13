@@ -39,6 +39,7 @@ function elapsed_time_string(startTime) {
 }
 
 var myModule = (function() {
+    var lang = ace.require("ace/lib/lang");
     var util = ace.require("ace/autocomplete/util")
     var langTools = ace.require("ace/ext/language_tools");
     var editor_main = ace.edit("editor_main");
@@ -56,6 +57,8 @@ var myModule = (function() {
     var default_filename = "input.lean";
     var codeText = gup("code");
     var url = gup("url");
+    var seq_num = 0;
+    var messages = [];
     return {
         useHoTT: location.search.match("(\\?|&)hott") ? true : false,
         print_output_to_console: ($.cookie("leanjs_print_output_to_console") || "true") === "true",
@@ -328,23 +331,25 @@ var myModule = (function() {
         init_autocomplete: function() {
             var leanCompleter = {
                 getCompletions: function(editor, session, pos, prefix, callback) {
-                    var line = session.getLine(pos.row)
-                    var leanIDRegex = /[A-Za-z_'\u03b1-\u03ba\u03bc-\u03fb\u1f00-\u1ffe\u2070-\u2079\u207f-\u2089\u2090-\u209c\u2100-\u214f\.]/
-                    prefix = util.retrievePrecedingIdentifier(line, pos.column, leanIDRegex);
-                    mycompletions = []
-                    if (prefix.length > 2) {
-                        var mycompletions = completions.filter(function(elem) {
-                            return elem.name.indexOf(prefix) > -1;
-                        });
-                        var popup = editor_main.completer.popup;
-                        // TODO(soonhok): adjust the width automatically
-                        if (popup)
-                            popup.container.style.width=window.innerWidth * 0.8;
-                    }
-                    callback(null, mycompletions);
+                    var popup = editor_main.completer.popup;
+                    // TODO(soonhok): adjust the width automatically
+                    if (popup)
+                        popup.container.style.width=window.innerWidth * 0.8;
+                    myModule.sync();
+                    myModule.send({
+                        command: "complete",
+                        file_name: default_filename,
+                        line: pos.row + 1,
+                        column: pos.column
+                    });
+                    callback(null, myModule.completions);
+                },
+                getDocTooltip: function(selected) {
+                    if (!selected.docHTML)
+                        selected.docHTML = "<tt>" + lang.escapeHTML(selected.meta) + "</tt>";
                 }
-            }
-            langTools.addCompleter(leanCompleter);
+            };
+            langTools.setCompleters([leanCompleter]);
         },
         init_input_method: function() {
             editor_main.commands.on("afterExec", function (e) {
@@ -570,20 +575,6 @@ var myModule = (function() {
                 myModule.append_console_nl("(" + elapsed_time_string(start_time) + ")");
             }, 5);
         },
-        import_module: function(mname) {
-            var start_time = new Date().getTime();
-            myModule.append_console("-- Importing Module '" + mname + "'... ");
-            setTimeout(function() {
-                Module.lean_import_module(mname);
-                myModule.append_console("Done");
-                myModule.append_console_nl("(" + elapsed_time_string(start_time) + ")");
-                myModule.append_console("-- Ready.\n");
-                myModule.append_console("-- Press [shift+enter] or click ▶ button to execute code.\n");
-            }, 5);
-        },
-        save_to_filesystem: function(filename, text) {
-            FS.writeFile(filename, text, {encoding: 'utf8'});
-        },
         process_main_buffer: function() {
             var need_to_resize = false
             if (myModule.get_main_console_ratio() == 1.0) {
@@ -603,9 +594,8 @@ var myModule = (function() {
             myModule.append_console_nl("-- Processing...");
             var start_time = new Date().getTime();
             setTimeout(function() {
-                myModule.save_to_filesystem(default_filename, editor_main.getValue());
                 myModule.save_file(default_filename, editor_main.getValue());
-                myModule.process_file(default_filename);
+                myModule.sync();
                 myModule.append_console("-- Done");
                 myModule.append_console_nl("(" + elapsed_time_string(start_time) + ")");
             }, 1);
@@ -616,6 +606,72 @@ var myModule = (function() {
             Module.lean_process_file(filename);
             var errors = this.parse_lean_output_buffer(lean_output_buffer);
             editor_main.session.setAnnotations(errors);
+        },
+        send: function(msg) {
+            msg.seq_num = seq_num++;
+            msg = JSON.stringify(msg);
+            var len = Module.lengthBytesUTF8(msg) + 1;
+            var msgPtr = Module._malloc(len);
+            Module.stringToUTF8(msg, msgPtr, len);
+            Module.lean_process_request(msgPtr);
+            Module._free(msgPtr);
+        },
+        sync: function() {
+            this.send({
+                command: "sync",
+                file_name: default_filename,
+                content: editor_main.getValue()
+            });
+        },
+        processErrorMessage: function(msg) {
+            var type = msg.severity;
+            if (type == "information") {
+                type = "info";
+            }
+            messages.push({
+                row: msg.pos_line - 1,
+                endRow: msg.pos_line,
+                column: msg.pos_col,
+                endColumn: msg.pos_col,
+                text: msg.text,
+                type: type
+            });
+        },
+        presentErrorMessages: function() {
+            if (this.print_output_to_console) {
+                for (var i = 0; i < messages.length; i++) {
+                    var msg = messages[i];
+                    this.append_console_nl((msg.row + 1) + ":" + msg.column + ":" + msg.type + ": " + msg.text);
+                }
+            }
+            editor_main.session.setAnnotations(messages);
+        },
+        processResponse: function(msg) {
+            console.log(msg);
+            switch (msg.response) {
+            case "ok":
+                if (msg.prefix) {
+                    this.completions = msg.completions.map(function(compl) {
+                        return {
+                            value: compl.text,
+                            meta:  compl.type
+                        };
+                    });
+                }
+                break;
+            case "additional_message":
+                this.processErrorMessage(msg.msg);
+                this.presentErrorMessages();
+                break;
+            case "all_messages":
+                messages = [];
+                for (var i = 0; i < msg.msgs.length; i++)
+                    this.processErrorMessage(msg.msgs[i]);
+                this.presentErrorMessages();
+                break;
+            default:
+                console.log("Unknown response type: ", msg.response);
+            }
         }
     };})();
 
@@ -699,19 +755,23 @@ if (gup("mem") != "") {
 
 // timestamp before loading lean3.js
 Module['print'] = function(text) {
-    myModule.push_output_buffer(text);
-    editor_main.focus();
+    try {
+        myModule.processResponse(JSON.parse(text));
+    } catch (e) {
+        console.log(e);
+    }
 };
 Module['noExitRuntime'] = true;
 Module['postRun'] = function() {
     myModule.init_lean();
+    var start_time = new Date().getTime();
     setTimeout(function() {
-        if (myModule.useHoTT) {
-            myModule.import_module("core");
-        } else {
-            myModule.import_module("standard");
-        }
-    }, 10);
+        myModule.append_console("-- Initial Standard Library Import... ");
+        myModule.sync();
+        myModule.append_console("Done");
+        myModule.append_console_nl("(" + elapsed_time_string(start_time) + ")");
+        myModule.append_console("-- Ready.\n");
+    }, 5);
 };
 Module['preRun'] = [];
 var lean_loading_start_time = new Date().getTime();
