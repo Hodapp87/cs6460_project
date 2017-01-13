@@ -339,7 +339,6 @@ var myModule = (function() {
                     myModule.sync();
                     myModule.send({
                         command: "complete",
-                        file_name: default_filename,
                         line: pos.row + 1,
                         column: pos.column
                     });
@@ -610,6 +609,7 @@ var myModule = (function() {
         },
         send: function(msg) {
             msg.seq_num = seq_num++;
+            msg.file_name = default_filename;
             msg = JSON.stringify(msg);
             var len = Module.lengthBytesUTF8(msg) + 1;
             var msgPtr = Module._malloc(len);
@@ -620,7 +620,6 @@ var myModule = (function() {
         sync: function() {
             this.send({
                 command: "sync",
-                file_name: default_filename,
                 content: editor_main.getValue()
             });
         },
@@ -658,6 +657,20 @@ var myModule = (function() {
                             meta:  compl.type
                         };
                     });
+                } else if (msg.record) {
+                    var marked = [];
+                    var response = msg;
+                    if (response.record['full-id']) {
+                        var msg = response.record['full-id'] + ' : ' + response.record['type'];
+                        marked.push(msg);
+                    }
+                    if (response.record.doc) {
+                        marked.push(response.record.doc);
+                    }
+                    if (response.record.state && !marked) {
+                        marked.push(response.record.state);
+                    }
+                    this.info = marked.join("\n");
                 }
                 break;
             case "additional_message":

@@ -35,9 +35,9 @@ define(function(require, exports, module) {
 "use strict";
 
 var dom = require("ace/lib/dom");
+var lang = require("ace/lib/lang");
 var oop = require("ace/lib/oop");
 var event = require("ace/lib/event");
-var Range = require("ace/range").Range;
 var Tooltip = require("ace/tooltip").Tooltip;
 
 function TokenTooltip (editor) {
@@ -48,6 +48,7 @@ function TokenTooltip (editor) {
     this.editor = editor;
 
     this.update = this.update.bind(this);
+    this.$timer = lang.delayedCall(this.update, 100);
     this.onMouseMove = this.onMouseMove.bind(this);
     this.onMouseOut = this.onMouseOut.bind(this);
     event.addListener(editor.renderer.scroller, "mousemove", this.onMouseMove);
@@ -57,19 +58,8 @@ function TokenTooltip (editor) {
 oop.inherits(TokenTooltip, Tooltip);
 
 (function(){
-    this.token = {};
-    this.range = new Range();
-    
     this.update = function() {
-        this.$timer = null;
-        
         var r = this.editor.renderer;
-        if (this.lastT - (r.timeStamp || 0) > 1000) {
-            r.rect = null;
-            r.timeStamp = this.lastT;
-            this.maxHeight = window.innerHeight;
-            this.maxWidth = window.innerWidth;
-        }
 
         var canvasPos = r.rect || (r.rect = r.scroller.getBoundingClientRect());
         var offset = (this.x + r.scrollLeft - canvasPos.left - r.$padding) / r.characterWidth;
@@ -79,28 +69,17 @@ oop.inherits(TokenTooltip, Tooltip);
         var screenPos = {row: row, column: col, side: offset - col > 0 ? 1 : -1};
         var session = this.editor.session;
         var docPos = session.screenToDocumentPosition(screenPos.row, screenPos.column);
-        var token = session.getTokenAt(docPos.row, docPos.column);
-
-        if (!token && !session.getLine(docPos.row)) {
-            token = {
-                type: "",
-                value: "",
-                state: session.bgTokenizer.getState(0)
-            };
-        }
-        if (!token) {
-            session.removeMarker(this.marker);
+        myModule.info = null;
+        myModule.send({
+            command: "info",
+            line: docPos.row + 1,
+            column: docPos.column - 1 // whatever
+        });
+        if (!myModule.info) {
             this.hide();
             return;
         }
-
-        var tokenText = token.type;
-        if (token.state)
-            tokenText += "|" + token.state;
-        if (token.merge)
-            tokenText += "\n  merge";
-        if (token.stateTransitions)
-            tokenText += "\n  " + token.stateTransitions.join("\n  ");
+        var tokenText = myModule.info;
 
         if (this.tokenText != tokenText) {
             this.setText(tokenText);
@@ -110,30 +89,22 @@ oop.inherits(TokenTooltip, Tooltip);
         }
 
         this.show(null, this.x, this.y);
-
-        this.token = token;
-        session.removeMarker(this.marker);
-        this.range = new Range(docPos.row, token.start, docPos.row, token.start + token.value.length);
-        this.marker = session.addMarker(this.range, "ace_bracket", "text");
     };
     
     this.onMouseMove = function(e) {
         this.x = e.clientX;
         this.y = e.clientY;
         if (this.isOpen) {
-            this.lastT = e.timeStamp;
             this.setPosition(this.x, this.y);
         }
-        if (!this.$timer)
-            this.$timer = setTimeout(this.update, 100);
+        this.$timer.delay();
     };
 
     this.onMouseOut = function(e) {
         if (e && e.currentTarget.contains(e.relatedTarget))
             return;
         this.hide();
-        this.editor.session.removeMarker(this.marker);
-        this.$timer = clearTimeout(this.$timer);
+        this.$timer.cancel();
     };
 
     this.setPosition = function(x, y) {
@@ -151,7 +122,6 @@ oop.inherits(TokenTooltip, Tooltip);
         event.removeListener(this.editor.renderer.content, "mouseout", this.onMouseOut);
         delete this.editor.tokenTooltip;
     };
-
 }).call(TokenTooltip.prototype);
 
 exports.TokenTooltip = TokenTooltip;
