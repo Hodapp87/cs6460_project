@@ -86,7 +86,7 @@ var myModule = (function() {
             editor_main.on('change',
                            function() {
                                myModule.save_file(default_filename, editor_main.getValue());
-                               if (myModule.initialized && myModule.auto_compile) {
+                               if (myModule.initialized && myModule.options.auto_compile) {
                                    myModule.syncDelay.delay();
                                }
                            });
