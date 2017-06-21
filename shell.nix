@@ -1,8 +1,9 @@
 { pkgs ? import <nixpkgs> {} }:
 
+# Taken from the Cask file in the distribution
 let
  emacsWithPackages = (pkgs.emacsPackagesNgGen pkgs.emacs25-nox).emacsWithPackages;
- myEmacs = emacsWithPackages (epkgs: (with epkgs.melpaPackages; [
+ emacs-custom = emacsWithPackages (epkgs: (with epkgs.melpaPackages; [
     dash
     dash-functional
     f
@@ -14,6 +15,8 @@ let
   ])
   ); in pkgs.stdenv.mkDerivation {
     name = "emacsLeanbook";
-    buildInputs = [myEmacs pkgs.mercurial];
+    buildInputs = [emacs-custom python3 pkgs.mercurial];
     # Also needs: TeX
   }
+
+# python3 -m http.server
