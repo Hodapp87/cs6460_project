@@ -45,8 +45,8 @@ var myModule2 = (function() {
     // var editor_main = ace.edit("editor_main");
     // editor_main.$blockScrolling = Infinity;
     var Range = ace.require("ace/range").Range;
-    var editor_console = ace.edit("editor_console");
-    editor_console.$blockScrolling = Infinity;
+    // var editor_console = ace.edit("editor_console");
+    // editor_console.$blockScrolling = Infinity;
     var livemode = location.search.match("(\\?|&)live") ? true : false;
     var tutorial_main_ratio = livemode ? 0.0 : 0.5;
     var main_console_ratio = (window.innerWidth > window.innerHeight) ? (livemode ? 0.5 : 0.8) : 0.5
@@ -59,6 +59,7 @@ var myModule2 = (function() {
     var url = gup("url");
     var seq_num = 0;
     var messages = [];
+    var pocketgl = null;
     return {
         useHoTT: location.search.match("(\\?|&)hott") ? true : false,
         options: JSON.parse($.cookie("leanjs_options") || JSON.stringify({
@@ -67,7 +68,7 @@ var myModule2 = (function() {
             keyboard_mode: "ace"
         })),
         // editor_main: editor_main,
-        editor_console: editor_console,
+        // editor_console: editor_console,
         // Never used?
         push_output_buffer: function(text) {
             lean_output_buffer.push(text);
@@ -95,7 +96,6 @@ var myModule2 = (function() {
                            });
             new TokenTooltip(editor_main);
         },
-        */
         // Called in init_ace
         init_editor_console: function() {
             editor_console.session.setNewLineMode("unix");
@@ -106,6 +106,10 @@ var myModule2 = (function() {
             editor_console.getSession().setUseWrapMode(false);
             editor_console.renderer.setShowGutter(false);
             editor_console.resize();
+        },
+        */
+        set_pocketgl: function(x) {
+            pocketgl = x;
         },
         // Called in sync
         get_tutorial_main_ratio: function() {
@@ -257,25 +261,34 @@ var myModule2 = (function() {
             sub_handle_width   -= 2;
             sub_handle_height  -= 2;
 
-            $("#editor_console").css({position: "absolute", top: console_top, left: console_left,  width: console_width, height: console_height});
+            //$("#editor_console").css({position: "absolute", top: console_top, left: console_left,  width: console_width, height: console_height});
             $("#editor_main").css({position: "absolute", top: main_top, left:main_left, width: main_width, height: main_height});
+            
             $("#resizable_handle_main").css({position: "absolute", top: main_handle_top, left:main_handle_left, width: main_handle_width, height: main_handle_height,
                                              "background-image": main_handle_background_image,
                                              "background-repeat": "no-repeat", cursor: main_handle_cursor,
                                              "background-position": "center",
                                              "border": "solid 1px #cccccc"
                                             });
+            /*
             $("#resizable_handle_sub").css({position: "absolute", top: sub_handle_top, left:sub_handle_left, width: sub_handle_width, height: sub_handle_height,
                                              "background-image": sub_handle_background_image,
                                              "background-repeat": "no-repeat", cursor: sub_handle_cursor,
                                              "background-position": "center",
                                              "border": "solid 1px #cccccc"
                                            });
-            //editor_main.resize();
-            editor_console.resize();
+                                           */
+            if (pocketgl !== null) {
+                pocketgl.onWindowResize();
+                // How the heck do I make this resize too?
+                //pocketgl.params["width"] = main_width;
+                //pocketgl.params["height"] = main_height;
+            }
+            //editor_console.resize();
             $("#tutorial_contents").css({position: "absolute", top: tutorial_top, left:tutorial_left, width: tutorial_width, height: tutorial_height});
             $("#setting_window").css({position: "absolute", top:tutorial_top, left:tutorial_left, width: tutorial_width, height: tutorial_height});
         },
+        /*
         // Called in init_ace
         init_editor_keybindings: function() {
             var process_main_buffer_command = {
@@ -290,12 +303,13 @@ var myModule2 = (function() {
                 }
             };
             // editor_main.commands.addCommand(process_main_buffer_command);
-            editor_console.commands.addCommand(process_main_buffer_command);
+            // editor_console.commands.addCommand(process_main_buffer_command);
             // editor_main.commands.bindKey("cmd-l", null);
             // editor_main.commands.bindKey("ctrl-l", null);
-            editor_console.commands.bindKey("cmd-l", null);
-            editor_console.commands.bindKey("ctrl-l", null);
+            // editor_console.commands.bindKey("cmd-l", null);
+            // editor_console.commands.bindKey("ctrl-l", null);
         },
+        */
         // Called in init_ace
         init_resizable: function() {
             $('#resizable_handle_main').mousedown(function(e){
@@ -315,6 +329,7 @@ var myModule2 = (function() {
                     myModule2.resize_editors();
                 });
             });
+            /*
             $('#resizable_handle_sub').mousedown(function(e){
                 e.preventDefault();
                 $(document).mousemove(function(event){
@@ -340,6 +355,7 @@ var myModule2 = (function() {
                     myModule2.resize_editors();
                 });
             });
+            */
             $(document).mouseup(function(e){
                 $(document).unbind('mousemove');
             });
@@ -435,8 +451,8 @@ var myModule2 = (function() {
         // Called in init
         init_ace: function() {
             //myModule2.init_editor_main();
-            myModule2.init_editor_console();
-            myModule2.init_editor_keybindings();
+            //myModule2.init_editor_console();
+            // myModule2.init_editor_keybindings();
             myModule2.init_resizable();
             //myModule2.init_input_method();
             //myModule2.init_autocomplete();
@@ -558,11 +574,11 @@ var myModule2 = (function() {
         },
         // Called in process_main_buffer, presentErrorMessages
         clear_console: function() {
-            editor_console.setValue("", 1);
+            //editor_console.setValue("", 1);
         },
         // Called throughout
         append_console: function(text) {
-            editor_console.setValue(editor_console.getValue() + text, 1);
+            //editor_console.setValue(editor_console.getValue() + text, 1);
         },
         // Called throughout
         append_console_nl: function(text) {
@@ -775,6 +791,12 @@ myModule2.init();
 loadJSFile("https://cdn.rawgit.com/gportelli/pocket.gl/v1.2.3/dist/pocket.gl.min.js");
 myModule2.append_console("-- Loading pocket.gl...            ");
 
+params = {
+    copyright: "CS6460 Draft",
+    editorTheme: "dark",
+    fluidWidth: true
+}
+
 window.addEventListener("load", function () { 
-  new PocketGL("editor_main");
+    myModule2.set_pocketgl(new PocketGL("editor_main", params));
 });
