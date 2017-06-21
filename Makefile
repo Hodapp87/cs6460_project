@@ -5,10 +5,11 @@ all:
 
 .cask: Cask
 	EMACS=$(EMACS_BIN) $(CASK_BIN) install
-	touch .cask
+#	touch .cask
 
 install-cask:
-	curl -fsSkL https://raw.github.com/cask/cask/master/go | python
+	echo "(ignored)"
+#	curl -fsSkL https://raw.github.com/cask/cask/master/go | python
 
 pygments-main: install-pygments
 

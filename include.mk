@@ -7,7 +7,7 @@ TEXS  := $(ORGS:.org=.tex)
 PDFS  := $(ORGS:.org=.pdf)
 NAV_DATA := js/nav_data.js
 
-CASK_EMACS := cd $(MKLEANBOOK_PATH) && $(CASK_BIN) exec $(EMACS_BIN)
+CASK_EMACS := cd $(MKLEANBOOK_PATH) && $(EMACS_BIN)
 
 BIBFILES ?= lean.bib
 
@@ -29,7 +29,7 @@ $(COMBINED).org: $(ORGS)
 
 .PRECIOUS: %.html
 %.html: %.tmphtml.org $(MKLEANBOOK_PATH)/.cask $(MKLEANBOOK_PATH)/elisp/org-html-export.el $(BIBFILES)
-	(cd $(MKLEANBOOK_PATH) && $(CASK_BIN) exec $(EMACS_BIN) \
+	(cd $(MKLEANBOOK_PATH) && $(EMACS_BIN) \
 	  --no-site-file --no-site-lisp -q --batch \
 	  -l elisp/org-html-export.el \
 	  --visit $(PWD)/$< \
@@ -41,7 +41,7 @@ $(COMBINED).org: $(ORGS)
 
 .PRECIOUS: %.tex
 %.tex: %.tmptex.org $(MKLEANBOOK_PATH)/.cask $(MKLEANBOOK_PATH)/elisp/org-pdf-export.el
-	(cd $(MKLEANBOOK_PATH) && $(CASK_BIN) exec $(EMACS_BIN) \
+	(cd $(MKLEANBOOK_PATH) && $(EMACS_BIN) \
 	  --no-site-file --no-site-lisp -q --batch \
 	  -l elisp/org-pdf-export.el \
 	  --visit $(PWD)/$< \
@@ -52,7 +52,8 @@ $(COMBINED).org: $(ORGS)
 	PATH="$(PWD)/pygments-main:$(PATH)" TEXINPUTS="$(MKLEANBOOK_PATH)/:$(TEXINPUTS)" latexmk -interaction=errorstopmode --xelatex --shell-escape $<
 
 $(MKLEANBOOK_PATH)/.cask:
-	$(MAKE) -C $(MKLEANBOOK_PATH) .cask
+	echo "(ignored)"
+#	$(MAKE) -C $(MKLEANBOOK_PATH) .cask
 
 clean:
 	rm -rf $(HTMLS) \
@@ -72,7 +73,8 @@ dist-clean: clean
 	rm -rf .cask watchman pygments-main
 
 install-cask:
-	curl -fsSkL https://raw.github.com/cask/cask/master/go | python
+	echo "(ignored)"
+#	curl -fsSkL https://raw.github.com/cask/cask/master/go | python
 
 pygments-main: install-pygments
 
