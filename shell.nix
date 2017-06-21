@@ -15,7 +15,7 @@ let
   ])
   ); in pkgs.stdenv.mkDerivation {
     name = "emacsLeanbook";
-    buildInputs = [emacs-custom python3 pkgs.mercurial];
+    buildInputs = [emacs-custom pkgs.python3 pkgs.mercurial];
     # Also needs: TeX
   }
 
