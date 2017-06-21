@@ -170,12 +170,16 @@ value."
      (add-to-list 'org-export-filter-link-functions 'lean-filter-html-link)
      (add-to-list 'org-export-filter-headline-functions 'lean-filter-headline)
      (setq org-html-mathjax-options
-           '((path  "//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML")
+           '((path  "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML")
              (scale "100")
              (align "center")
              (indent "2em")
              (mathml nil)))
-     (setq org-html-mathjax-template
+     (setf org-html-mathjax-template
+           "<script type=\"text/javascript\" src=\"%PATH\"></script>")
+     ;; CMH: Whatever this crap is below, it keeps mathjax from
+     ;; working right.
+     (setq org-html-mathjax-template-wtf
            "<script type=\"text/x-mathjax-config\">
     MathJax.Hub.Config({
         // Only one of the two following lines, depending on user settings
