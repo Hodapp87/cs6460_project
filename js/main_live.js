@@ -283,11 +283,10 @@ var myModule2 = (function() {
                                            */
             if (pocketgl !== null) {
                 pocketgl.onWindowResize();
-                // How the heck do I make this resize too?
-                //pocketgl.params["width"] = main_width;
-                //pocketgl.params["height"] = main_height;
+                if (pocketgl.editorFragment !== null) {
+                    pocketgl.editorFragment.resize();
+                }
             }
-            //editor_console.resize();
             $("#tutorial_contents").css({position: "absolute", top: tutorial_top, left:tutorial_left, width: tutorial_width, height: tutorial_height});
             $("#setting_window").css({position: "absolute", top:tutorial_top, left:tutorial_left, width: tutorial_width, height: tutorial_height});
         },
