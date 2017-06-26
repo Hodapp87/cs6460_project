@@ -136,9 +136,16 @@ function copy_code(code) {
     if (typeof myModule2 !== 'undefined') {
         var pocketgl = myModule2.get_pocketgl();
         if (pocketgl !== null) {
-            pocketgl.editorFragment.setValue(code, 1)
+            if (pocketgl.editorFragment !== null) {
+                // I don't want to talk about it.
+                pocketgl.tabs.currentTab = pocketgl.tabs.tabs.fragment_shader;
+                pocketgl.tabs.refresh();
+                pocketgl.switchView("fragment_shader");
+                pocketgl.editorFragment.setValue(code, 1);
+            } else {
+                pocketgl.params.fragmentShader = code;
+            }
         }
-        //myModule.process_main_buffer();
     }
 }
 </script>
