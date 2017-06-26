@@ -132,13 +132,13 @@
     });
 }(window, document));
 
-function invoke_leanjs(code) {
-    if (typeof myModule !== 'undefined') {
-        myModule.editor_main.setValue(code, 1)
-        myModule.process_main_buffer();
-    } else {
-        var encodedText = btoa(unescape(encodeURIComponent(code)));
-        var url = "https://leanprover.github.io/live/?code=" + encodedText; window.open(url);
+function copy_code(code) {
+    if (typeof myModule2 !== 'undefined') {
+        var pocketgl = myModule2.get_pocketgl();
+        if (pocketgl !== null) {
+            pocketgl.editorFragment.setValue(code, 1)
+        }
+        //myModule.process_main_buffer();
     }
 }
 </script>

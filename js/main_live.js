@@ -39,12 +39,12 @@ function elapsed_time_string(startTime) {
 }
 
 var myModule2 = (function() {
-    var lang = ace.require("ace/lib/lang");
-    var util = ace.require("ace/autocomplete/util")
-    var langTools = ace.require("ace/ext/language_tools");
+    // var lang = ace.require("ace/lib/lang");
+    // var util = ace.require("ace/autocomplete/util")
+    // var langTools = ace.require("ace/ext/language_tools");
     // var editor_main = ace.edit("editor_main");
     // editor_main.$blockScrolling = Infinity;
-    var Range = ace.require("ace/range").Range;
+    // var Range = ace.require("ace/range").Range;
     // var editor_console = ace.edit("editor_console");
     // editor_console.$blockScrolling = Infinity;
     var livemode = location.search.match("(\\?|&)live") ? true : false;
@@ -108,6 +108,9 @@ var myModule2 = (function() {
             editor_console.resize();
         },
         */
+        get_pocketgl: function() {
+            return pocketgl;
+        },
         set_pocketgl: function(x) {
             pocketgl = x;
         },

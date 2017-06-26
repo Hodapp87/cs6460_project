@@ -1,5 +1,5 @@
-#+Title: A mkleanbook example
-#+Author: Joe Doe
+#+Title: CS6460 Demo Content
+#+Author: Chris Hodapp
 
 * Heading
 
@@ -22,6 +22,37 @@ constant and : Prop -> Prop -> Prop
 -- END
 
 end hide
+#+END_SRC
+
+#+BEGIN_SRC glsl
+// constant Buffer
+cbuffer Constants : register(c0)
+{
+	float3 BBoxMin;
+	float3 BBoxMax;
+	float  Weight;
+	int3   GridDim;
+}
+
+struct Node
+{
+	float3 Data;	
+	int Next;
+};
+
+Texture2D<float> DepthImage : register(t0);
+Texture2D<uint4> ColorImage : register(t1);
+
+StructuredBuffer<int> IndexBuffer : register(t2);
+RWStructuredBuffer<int> IndexBuffer2 : register(u0);
+
+#define threads 32
+
+[numthreads(threads, 1, 1)]
+void main(uint3 DTid : SV_DispatchThreadID)
+{
+
+}
 #+END_SRC
 
 ** Math test

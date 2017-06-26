@@ -1,5 +1,5 @@
-#+Title: A mkleanbook example
-#+Author: Joe Doe
+#+Title: CS6460 Demo Content
+#+Author: Chris Hodapp
 
 * Another heading
 

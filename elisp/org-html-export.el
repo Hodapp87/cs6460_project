@@ -10,7 +10,7 @@
 (require 'dash)
 (require 'dash-functional)
 (add-to-list 'load-path (f-join working-dir "elisp"))
-(require 'lean-export-util)
+;; (require 'lean-export-util)
 
 (setq org-html-style-include-default nil)
 (setq org-html-style-include-scripts nil)
@@ -28,14 +28,14 @@
 '(org-modules (quote (org-bbdb org-bibtex org-info org-jsinfo org-irc org-w3m org-mouse org-eval org-eval-light org-exp-bibtex org-man org-mtags org-panel org-R org-special-blocks org-exp-blocks)))
 
 ;; Return the Lean tutorial example main part
-(defun lean-example-main-part (code)
-  (car (lean-extract-code code)))
+;; (defun lean-example-main-part (code)
+;;   (car (lean-extract-code code)))
 
 ;; Return the Lean tutorial example full code.
-(defun lean-example-full (code)
-  (cdr (lean-extract-code code)))
+;; (defun lean-example-full (code)
+;;   (cdr (lean-extract-code code)))
 
-(defvar-local lean-src-block-counter 0)
+(defvar-local src-block-counter 0)
 
 ;; Redefine org-html-src-block to use juicy-ace-editor
 (eval-after-load "ox-html"
@@ -43,7 +43,7 @@
      "Transcode a SRC-BLOCK element from Org to HTML.
 CONTENTS holds the contents of the item.  INFO is a plist holding
 contextual information."
-     (setq lean-src-block-counter (1+ lean-src-block-counter))
+     (setq src-block-counter (1+ src-block-counter))
      (if (org-export-read-attribute :attr_html src-block :textarea)
          (org-html--textarea-block src-block)
        (let ((lang (org-element-property :language src-block))
@@ -59,23 +59,21 @@ contextual information."
             (if (not caption) ""
               (format "<label class=\"org-src-name\">%s</label>"
                       (org-export-data caption info)))
-            (cond ((or (string= lang "lean")
-                       (string= lang "lean_text"))
-                   (let ((juicy-ace-editor-html
-                       (format "<juicy-ace-editor id='lean-juicy-ace-editor-%d' mode=\"ace/mode/%s\" readonly=\"true\">%s</juicy-ace-editor>"
-                               lean-src-block-counter
-                               "lean"
-                               (lean-example-main-part code)))
-                      (full-code-html (format "<div id='lean-full-code-%d' style='display:none'>%s</div>"
-                                             lean-src-block-counter
-                                             (lean-example-full code)))
-                      (button-html
-                       (if (string= lang "lean")
-                           (format "<div class='no-print' align=\"left\"><button type=\"button\" onclick=\"invoke_leanjs($('#lean-full-code-%d').text());\">Try it yourself &raquo;</button></div>"
-                                   lean-src-block-counter)
-                         "")))
+            (cond (t
+                   (let
+                       ((juicy-ace-editor-html
+                         (format "<juicy-ace-editor id='webgl-juicy-ace-editor-%d' mode=\"ace/mode/%s\" readonly=\"true\">%s</juicy-ace-editor>"
+                                 src-block-counter
+                                 lang
+                                 code))
+                        (full-code-html (format "<div id='webgl-full-code-%d' style='display:none'>%s</div>"
+                                             src-block-counter
+                                             code))
+                        (button-html
+                         (format "<div class='no-print' align=\"left\"><button type=\"button\" onclick=\"copy_code($('#webgl-full-code-%d').text());\">Use code &raquo;</button></div>"
+                                 src-block-counter)))
                      (concat juicy-ace-editor-html full-code-html button-html)))
-                  (t
+                  (nil
                    (format "\n<pre class=\"src src-%s\"%s>%s</pre>" lang label code)))))))))
 (setq org-confirm-babel-evaluate nil)
 
@@ -83,12 +81,12 @@ contextual information."
 (setq org-src-preserve-indentation t
       org-edit-src-content-indentation 0)
 
-(defun lean-extract-chapter-name (str)
+(defun webgl-extract-chapter-name (str)
   (let ((num (string-to-number str)))
     (cond ((= num 0) str)
           (t (format "%d" num)))))
 
-(defun lean-filter-headline (text backend info)
+(defun webgl-filter-headline (text backend info)
   "Adjust the chapter number based on the filename. For example,
 when the filename is '07_Induction_and_Recursion.org', it uses
 '7' as a chapter number instead of '1' which is the default
@@ -108,13 +106,13 @@ value."
                                 (group "</span>"))
                                text)))
           (replace-match (format "\\1 %s\\3\\4"
-                                 (lean-extract-chapter-name (s-left 2 file-name)))
+                                 (webgl-extract-chapter-name (s-left 2 file-name)))
                          t nil text))))))
 
-(defun lean-filter-html-link (text backend info)
+(defun webgl-filter-html-link (text backend info)
   (when (eq backend 'html)
     (cond
-     ;; 1. Extenral Links (starting with 'https://', 'http://', or '//')
+     ;; 1. External Links (starting with 'https://', 'http://', or '//')
      ;;    => add "target='_blank'"
      ((string-match
        (rx (group "href=\"" (or "http://" "https://" "//"))) text)
@@ -167,8 +165,8 @@ value."
 
 (eval-after-load 'ox
   '(progn
-     (add-to-list 'org-export-filter-link-functions 'lean-filter-html-link)
-     (add-to-list 'org-export-filter-headline-functions 'lean-filter-headline)
+     (add-to-list 'org-export-filter-link-functions 'webgl-filter-html-link)
+     (add-to-list 'org-export-filter-headline-functions 'webgl-filter-headline)
      (setq org-html-mathjax-options
            '((path  "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML")
              (scale "100")
