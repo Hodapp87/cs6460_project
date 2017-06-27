@@ -797,7 +797,7 @@ params = {
     copyright: "CS6460 Draft",
     editorTheme: "dark",
     fluidWidth: true,
-    fragmentShaderFile: "./basic_fragment.glsl",
+    fragmentShaderFile: "./spheres.glsl",
     uniforms: [
         { type: "float", value: 1.0, min: 0.0, max: 4.0, name: "z_speed", GUIName: "Z Speed" },
         { type: "float", value: 1.0, min: 0.0, max: 4.0, name: "rot_speed", GUIName: "Rotation Speed" },
