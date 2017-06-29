@@ -1,0 +1,68 @@
+#+Title: Coordinates & Transforms in 2D
+#+Author: Chris Hodapp
+
+The Introduction mentioned that all the code this tutorial deals with
+is /fragment shaders/ (or pixel shaders) in GLSL.  For our sake, what
+that means is that we are dealing with short programs which create
+images (and eventually animations) by explicitly giving the color of
+every pixel in the image.
+
+This may be a bit different than what you are used to in more general
+programming languages.  You are likely used to programs for which, at
+any given point in time, variables have a specific value and the
+program is executing some specific part of the code.
+
+Fragment shaders deviate from this a bit, and require a bit of a
+different mindset.  The way we use them here, they can be thought of
+as programs which run simultaneously over every pixel in the image,
+and likewise, have variables which take on different values for every
+pixel.  (See [[https://en.wikipedia.org/wiki/Stream_processing][Stream processing]] for a little more in-depth information
+on this.)
+
+The below code gives a very simple example of this:
+
+#+BEGIN_SRC glsl
+uniform vec2 resolution;
+
+void main()
+{
+  vec2 uv = gl_FragCoord.xy / resolution.xy;
+  gl_FragColor = vec4(uv.x, uv.y, 0.0, 1.0);
+}
+#+END_SRC
+
+Click "Use code", and then go to the "Render" tab.  You should see a
+gradient - green at the top left corner, yellow at the top right, red
+at the bottom right, black at the bottom left, and colors blended
+everywhere between those.
+
+The code might look familiar if you've used something like C, C++, or
+Java, but with a few unfamiliar constructs.  =vec2= and =vec4= are
+vector types containing 2 elements and 4 elements, respectively (more
+on that later).  For now, just treat a =vec2= as a structure with
+fields =x= and =y=, and a =vec4= as a structure with fields =r=, =g=,
+=b=, and =a=, all of them floating-point values.
+
+=gl_FragCoord= is one of those variables which takes on a different
+value for every pixel in the image; the =.xy= provides us a =vec2= of
+just the X and Y coordinates of each pixel.  =resolution=, on the
+other hand, is a /uniform/ variable - it has the same value over all
+pixels.  In this case, it's something the environment provides to tell
+us the total number of pixels along X and Y.
+
+=gl_FragCoord.xy / resolution.xy= produces a new =vec2= by dividing
+=gl_FragCoord.x= by =resolution.x= and =gl_FragCoord.y= by
+=resolution.y=.  Try the code below if you want to verify yourself
+that it's the same as splitting them out:
+
+#+BEGIN_SRC glsl
+uniform vec2 resolution;
+
+void main()
+{
+  float u = gl_FragCoord.x / resolution.x;
+  float v = gl_FragCoord.y / resolution.y;
+  gl_FragColor = vec4(u, v, 0.0, 1.0);
+}
+#+END_SRC
+
