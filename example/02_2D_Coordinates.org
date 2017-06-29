@@ -239,13 +239,15 @@ void main()
 }
 #+END_SRC
 
-More about implicit functions will follow later.  For now, we just use
-it to create a grid to help illustrate some transformations.  Below is
-one that may be familiar: It converts the coordinates we're using
-already - rectangular, or Cartesian, coordinates in =uv= - to [[https://en.wikipedia.org/wiki/Polar_coordinate_system][polar
-coordinates]].  =uv= is also rescaled and moved so that the center is
-(0,0).  Then, we use polar rather than rectangular coordinates to draw
-this grid.
+Put another way, we just drew [[https://en.wikipedia.org/wiki/Contour_line][isolines]] of that function.
+
+More about this implicit functions will follow later.  For now, we
+just use it to create a grid to help illustrate some transformations.
+Below is one that may be familiar: It converts the coordinates we're
+using already - rectangular, or Cartesian, coordinates in =uv= - to
+[[https://en.wikipedia.org/wiki/Polar_coordinate_system][polar coordinates]].  =uv= is also rescaled and moved so that the center
+is (0,0).  Then, we use polar rather than rectangular coordinates to
+draw this grid.
 
 #+BEGIN_SRC glsl
 uniform vec2 resolution;
@@ -271,7 +273,7 @@ void main()
     // Correct aspect:
     uv.x = uv.x * resolution.x / resolution.y;
 
-    vec2 polar = rect2polar(uv - m);
+    vec2 polar = rect2polar(uv);
     polar.y = polar.y / PI;
     float grey = grid(polar, 0.05, 10.0);
     
@@ -279,12 +281,20 @@ void main()
 }
 #+END_SRC
 
+Note that, despite the notation, fields =x= and =y= of =polar= now
+stand for radius and angle, not X and Y coordinates.
+
 We started with a grid made of equally-sized squares.  The above
 should give some intuitive sense of how the conversion to polar
 coordinates transformed space: The grid "squares" are now
 differently-sized sections of a circle. 
 
 ** Animation & Mouse Input
+
+Up to this point, we've just been rendering images that don't change
+over time or in response to any input (aside from you editing the
+code).  The below code makes a couple modifications to the last
+example to change this:
 
 #+BEGIN_SRC glsl
 uniform vec2 resolution;
@@ -309,39 +319,40 @@ vec2 rect2polar(vec2 xy)
 void main()
 {
     vec2 uv = gl_FragCoord.xy/resolution.xy;
-    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
     // Correct aspect:
     uv.x = uv.x * resolution.x / resolution.y;
+
+    // Normalize mouse position:
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
     m.x = m.x * resolution.x / resolution.y;
 
     vec2 polar = rect2polar(uv - m);
-    polar.y = (polar.y + time / 4.0) / PI;
+    // Radius:
+    polar.x = polar.x - time / 10.0;
+    // Angle:
+    polar.y = (polar.y / PI) + time / 8.0;
     float grey = grid(polar, 0.05, 10.0);
     
     gl_FragColor = vec4(grey, grey, grey, 1.0);
 }
 #+END_SRC
 
-** Animation
+To see the render react to input, click or drag in the render window.
+The environment provides two new variables - =mouse= and =time= -
+which give, respectively, the mouse location and a time value (which
+simply counts up in seconds).  =mouse=, for whatever reason, uses a
+different coordinate system than the rest of the image, so above we
+remedy this when we compute =m= and then we do the same transformation
+to normalize this mouse position as we do each pixel coordinate.
 
-** Mouse Input
+In the last example, the center of the image was (0,0) (in both
+rectangular and polar coordinates, incidentally); in this one, note
+that by subtracting the mouse position, wherever you click is the new
+origin.
 
-#+BEGIN_SRC glsl
-uniform vec2 resolution;
-uniform vec4 mouse;
-
-void main()
-{
-    vec2 uv = gl_FragCoord.xy/resolution.xy;
-    vec2 m = vec2(mouse.x / resolution.x, 1.0 - mouse.y / resolution.y);
-    // Correct aspect:
-    uv.x = uv.x * resolution.x / resolution.y;
-    m.x = m.x * resolution.x / resolution.y;
-
-    float dist = length(uv.xy - m.xy) < 0.1 ? 1.0 : 0.0;
-    
-    gl_FragColor = vec4(dist, dist, dist, 1.0);
-}
-#+END_SRC
+Note also that there are two buttons at the bottom center of the
+render window which let you stop animation completely, and pause or
+resume it.  It will continue to react to mouse input even when paused
+or stopped.
 
 ** Control Input
