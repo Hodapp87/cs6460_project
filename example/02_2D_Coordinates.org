@@ -1,6 +1,10 @@
 #+Title: Coordinates & Transforms in 2D
 #+Author: Chris Hodapp
 
+* Coordinates & Transforms in 2D
+
+** A slightly boring, laborious example
+
 The Introduction mentioned that all the code this tutorial deals with
 is /fragment shaders/ (or pixel shaders) in GLSL.  For our sake, what
 that means is that we are dealing with short programs which create
@@ -66,3 +70,278 @@ void main()
 }
 #+END_SRC
 
+Thus, the =uv= vector (or =u= and =v= separately above) contains X and
+Y coordinates that each have been /normalized/ range from 0 to 1.
+Since it's dividing by the total resolution, it works identically at
+any resolution (resize the render window and see, or click the
+lower-right icon to make it full-screen).  This gives us a normal
+/(x,y)/ coordinate plane (or Cartesian plane) where the lower-left
+point is (0,0), moving to the right increases the X coordinate, and
+moving up increases the Y coordinate - up to the top-right corner
+which is (1,1).  This is a fairly standard transformation to see
+anytime pixel locations are involved.
+
+Finally, =gl_FragColor= is where we assign the pixel's respective
+color into a =vec4= by giving, in order, its red, green, blue, and
+alpha channel values (and we ignore alpha here, as it refers to
+transparency and doesn't make sense to use here).  Each value is from
+0 to 1, and values outside that range are clipped inside of it; try
+messing with the values (e.g. replacing =u= with =u * 4.0=) to verify
+this.
+
+The result, then, is that we've assigned the red channel of each pixel
+to its X coordinate, and the green channel to the Y coordinate.  The
+blue channel was just left at 0.  Thus, at the very lower-left, we'd
+expect to see black (red and green are both 0 because X and Y are
+zero), and moving up to the top-right, we'd expect to see yellow (red
+and green are both at their maximum of 1).
+
+** What can this actually do?
+
+You may be complaining that a colored gradient is a rather
+uninteresting thing to draw, and it is.  However, with some additional
+math, this method of creating graphics is remarkably flexible.
+
+First off, though, we must be able to create some basic shapes and
+constructs to demonstrate things.  We've already shown how the
+computation of =uv= above can create simple color gradients - but
+color gradients by their inherent fuzziness make it difficult to show
+any sort of sharp details or well-defined shapes.
+
+So, consider the below code.  The =uv.x= line isn't especially
+important, but it will appear again and again, and it is there to
+correct the [[https://en.wikipedia.org/wiki/Aspect_ratio_%2528image%2529][aspect ratio]] of the image.  In our case, all it means is
+that =uv.x= will be scaled so that a given step in =uv.x= is the same
+distance as in =uv.y=, and our shapes aren't squashed.
+
+#+BEGIN_SRC glsl
+uniform vec2 resolution;
+float count = 10.0;
+
+void main()
+{
+    vec2 uv = gl_FragCoord.xy/resolution.xy;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    vec2 uv_mod = mod(uv * grid, 1.0);
+    
+    gl_FragColor = vec4(uv_mod.x, uv_mod.y, 0, 1.0);
+}
+#+END_SRC
+
+The important line is the definition of =uv_mod=: we've scaled up =uv=
+by a certain amount in both X and Y, and then used [[https://en.wikipedia.org/wiki/Modulo_operation][modulo]] to turn it
+to a repeating pattern again in X and Y - across some distance, it
+rises from 0 to 1, and then goes back to 0.
+
+You should be able to see a sort of grid pattern emerging, and playing
+with the value of =count=, or changing the =1.0= in =mod(..., 1.0)= to
+something else, should produce some effects that make sense.  However,
+if you look, you'll see it's still just a bunch of smaller gradients.
+Try looking just at =uv_mod.x= or just =uv_mod.y= (i.e. change
+=gl_FragColor= so that the red, green, and blue channel are all
+=uv_mod.x=, and then so they all are =uv_mod.y=).
+
+Now consider: How could we turn this into a grid with sharp lines,
+instead of gradients?  Try to make sense of the below, and change
+values like =thickness= to something else:
+
+#+BEGIN_SRC glsl
+uniform vec2 resolution;
+float count = 10.0;
+float thickness = 0.05;
+
+void main()
+{
+    vec2 uv = gl_FragCoord.xy/resolution.xy;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    vec2 uv_mod = mod(uv * count, 1.0);
+    float x1 = uv_mod.x < thickness ? 1.0 : 0.0;
+    float y1 = uv_mod.y < thickness ? 1.0 : 0.0;
+    
+    gl_FragColor = vec4(x1, y1, 0, 1.0);
+}
+#+END_SRC
+
+This is a fairly small change from the previous code.  If you're not
+familiar, =uv_mod= is now defined using the [[https://en.wikipedia.org/wiki/%253F:#C][ternary operator]] that is
+commonly used in C.  In simple, it has forced the darker parts (see
+=thickness=) to be uniformly light, and the parts other than that to
+be uniformly black.  However, the X and Y grid lines are still
+separated out, and we may simply add them together to give white grid
+lines:
+
+#+BEGIN_SRC glsl
+uniform vec2 resolution;
+float count = 10.0;
+float thickness = 0.05;
+
+void main()
+{
+    vec2 uv = gl_FragCoord.xy/resolution.xy;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    vec2 uv_mod = mod(uv * count, 1.0);
+    float x1 = uv_mod.x < thickness ? 1.0 : 0.0;
+    float y1 = uv_mod.y < thickness ? 1.0 : 0.0;
+    float grey = x1 + y1;
+    
+    gl_FragColor = vec4(grey, grey, grey, 1.0);
+}
+#+END_SRC
+
+** Implicit functions
+
+Perhaps it wasn't obvious why this is significant, but to try to
+explain it further: We just used an [[https://en.wikipedia.org/wiki/Implicit_function][implicit function]] to draw lines.
+Rather than drawing lines by iteratively walking along pixel
+coordinates and darkening certain ones according to a line's formula,
+we started with a formula that was something like:
+
+\begin{equation}
+   f(x,y)=I(x\mod C)+I(y\mod C) \mathrm{ where}\\
+   I(a) = \begin{cases}
+   a < \epsilon & : 1\\
+   a \ge \epsilon & : 0
+   \end{cases}
+\end{equation}
+
+and then evaluated this over every pixel, using $C$ as basically
+=count= and $\epsilon$ as =thickness=.  We've taken some liberties, in
+that we're comparing with $\epsilon$ rather than 0, but that is due to
+using floating point and a discrete number of pixels. If we express
+this function explicitly:
+
+#+BEGIN_SRC glsl
+uniform vec2 resolution;
+
+float grid(vec2 xy, float thickness, float count)
+{
+    vec2 uv_mod = mod(xy * count, 1.0);
+    float x1 = uv_mod.x < thickness ? 1.0 : 0.0;
+    float y1 = uv_mod.y < thickness ? 1.0 : 0.0;
+    return x1 + y1;
+}
+
+void main()
+{
+    vec2 uv = gl_FragCoord.xy/resolution.xy;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    float grey = grid(uv, 0.05, 10.0);
+    
+    gl_FragColor = vec4(grey, grey, grey, 1.0);
+}
+#+END_SRC
+
+More about implicit functions will follow later.  For now, we just use
+it to create a grid to help illustrate some transformations.  Below is
+one that may be familiar: It converts the coordinates we're using
+already - rectangular, or Cartesian, coordinates in =uv= - to [[https://en.wikipedia.org/wiki/Polar_coordinate_system][polar
+coordinates]].  =uv= is also rescaled and moved so that the center is
+(0,0).  Then, we use polar rather than rectangular coordinates to draw
+this grid.
+
+#+BEGIN_SRC glsl
+uniform vec2 resolution;
+const float PI = 3.14159265359;
+
+float grid(vec2 xy, float thickness, float count)
+{
+    vec2 uv_mod = mod(xy * count, 1.0);
+    float x1 = uv_mod.x < thickness ? 1.0 : 0.0;
+    float y1 = uv_mod.y < thickness ? 1.0 : 0.0;
+    return x1 + y1;
+}
+
+vec2 rect2polar(vec2 xy)
+{
+    vec2 polar = vec2(length(xy), atan(xy.y, xy.x));
+    return polar;
+}
+
+void main()
+{
+    vec2 uv = 2.0 * gl_FragCoord.xy/resolution.xy - 1.0;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    vec2 polar = rect2polar(uv - m);
+    polar.y = polar.y / PI;
+    float grey = grid(polar, 0.05, 10.0);
+    
+    gl_FragColor = vec4(grey, grey, grey, 1.0);
+}
+#+END_SRC
+
+We started with a grid made of equally-sized squares.  The above
+should give some intuitive sense of how the conversion to polar
+coordinates transformed space: The grid "squares" are now
+differently-sized sections of a circle. 
+
+** Animation & Mouse Input
+
+#+BEGIN_SRC glsl
+uniform vec2 resolution;
+const float PI = 3.14159265359;
+uniform vec4 mouse;
+uniform float time;
+
+float grid(vec2 xy, float thickness, float count)
+{
+    vec2 uv_mod = mod(xy * count, 1.0);
+    float x1 = uv_mod.x < thickness ? 1.0 : 0.0;
+    float y1 = uv_mod.y < thickness ? 1.0 : 0.0;
+    return x1 + y1;
+}
+
+vec2 rect2polar(vec2 xy)
+{
+    vec2 polar = vec2(sqrt(xy.x * xy.x + xy.y * xy.y), atan(xy.y, xy.x));
+    return polar;
+}
+
+void main()
+{
+    vec2 uv = gl_FragCoord.xy/resolution.xy;
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+    m.x = m.x * resolution.x / resolution.y;
+
+    vec2 polar = rect2polar(uv - m);
+    polar.y = (polar.y + time / 4.0) / PI;
+    float grey = grid(polar, 0.05, 10.0);
+    
+    gl_FragColor = vec4(grey, grey, grey, 1.0);
+}
+#+END_SRC
+
+** Animation
+
+** Mouse Input
+
+#+BEGIN_SRC glsl
+uniform vec2 resolution;
+uniform vec4 mouse;
+
+void main()
+{
+    vec2 uv = gl_FragCoord.xy/resolution.xy;
+    vec2 m = vec2(mouse.x / resolution.x, 1.0 - mouse.y / resolution.y);
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+    m.x = m.x * resolution.x / resolution.y;
+
+    float dist = length(uv.xy - m.xy) < 0.1 ? 1.0 : 0.0;
+    
+    gl_FragColor = vec4(dist, dist, dist, 1.0);
+}
+#+END_SRC
+
+** Control Input
