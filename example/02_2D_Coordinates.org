@@ -340,19 +340,72 @@ void main()
 To see the render react to input, click or drag in the render window.
 The environment provides two new variables - =mouse= and =time= -
 which give, respectively, the mouse location and a time value (which
-simply counts up in seconds).  =mouse=, for whatever reason, uses a
+simply counts up in seconds).  (=mouse=, for whatever reason, uses a
 different coordinate system than the rest of the image, so above we
 remedy this when we compute =m= and then we do the same transformation
-to normalize this mouse position as we do each pixel coordinate.
+to normalize this mouse position as we do each pixel coordinate.)
+
+There are two buttons at the bottom center of the render window which
+let you stop animation completely, and pause or resume it.  It will
+continue to react to mouse input even when paused or stopped.
 
 In the last example, the center of the image was (0,0) (in both
 rectangular and polar coordinates, incidentally); in this one, note
 that by subtracting the mouse position, wherever you click is the new
 origin.
 
-Note also that there are two buttons at the bottom center of the
-render window which let you stop animation completely, and pause or
-resume it.  It will continue to react to mouse input even when paused
-or stopped.
+See the changes to =polar.x= and =polar.y= for the source of the
+animation; change how =time= is used (adding vs. subtracting, and
+dividing by larger and smaller numbers), and it should make sense how
+this works.
 
-** Control Input
+** Control Inputs
+
+# I think I need this interactivity before I can proceed
+
+** Textures?
+
+# Goal: To quickly get into color functions that are more interesting
+# and better for illustrating the nonlinear warps.  From here, I can
+# get into weird spiral things, and eventually into Perlin noise /
+# simplex noise.
+
+# Tying things together: This is useful in its own right (link to
+# Conal's blog and anything else I know of), but also is useful as a
+# way to apply textures to objects in conjunction with more
+# complicated shading (link to Perlin's paper, An image synthesizer).
+# Mention this notion of treating textures like a 3D liquid that the
+# object is dipped in, versus something 2D that is mapped to an
+# object - though, that is done too (link to UV texturing).
+
+** Transformations
+
+We've used various kinds of transformation on the image so far, but
+they haven't really been explained or made explicit.
+
+*** Scaling
+
+*** Translation
+
+*** Rotation
+
+*** Shearing
+
+*** Vectors & Matrices
+# Homogeneous coordinates?
+# Composition
+# Inverses
+
+# Does it even make sense to explain these here, or wait until 3D?  I
+# feel like it's just drudgery to go into too much detail explaining
+# them here - but it may also be too much too fast to wait until 3D to
+# try to explain them.
+#
+# However, I have no particular reason to explain them *before* the texturing stuff.
+
+# Part of the point is to show that WebGL has built-in support for
+# some of these matters, I suppose.
+
+# Misc:
+# WebGL 'mix' function - get softer edges on lines?
+
