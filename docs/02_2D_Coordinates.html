@@ -1,0 +1,653 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2017-07-01 Sat 00:26 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Coordinates &amp; Transforms in 2D</title>
+<meta name="generator" content="Org mode" />
+<meta name="author" content="Chris Hodapp" />
+<link rel="stylesheet" href="css/tutorial.css"/>
+<link rel="stylesheet" href="css/code.css"/>
+<script type="text/javascript" charset="utf-8">if(!window.PolymerGestures) { var head = document.getElementsByTagName('head')[0]; var js = document.createElement("script"); js.type = "text/javascript"; js.src = "//cdn.jsdelivr.net/webcomponentsjs/0.7.20/webcomponents.min.js"; head.appendChild(js); } </script>
+<link rel='import' href='juicy-ace-editor.html'/>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">Coordinates &amp; Transforms in 2D</h1>
+
+<div id="outline-container-orgf62b315" class="outline-2">
+<h2 id="orgf62b315"><span class="section-number-2"> 2</span> Coordinates &amp; Transforms in 2D</h2>
+<div class="outline-text-2" id="text-1">
+</div><div id="outline-container-org51b3404" class="outline-3">
+<h3 id="org51b3404"><span class="section-number-3"> 2.1</span> A slightly boring, laborious example</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+The Introduction mentioned that all the code this tutorial deals with
+is <i>fragment shaders</i> (or pixel shaders) in GLSL.  For our sake, what
+that means is that we are dealing with short programs which create
+images (and eventually animations) by explicitly giving the color of
+every pixel in the image.
+</p>
+
+<p>
+This may be a bit different than what you are used to in more general
+programming languages.  You are likely used to programs for which, at
+any given point in time, variables have a specific value and the
+program is executing some specific part of the code.
+</p>
+
+<p>
+Fragment shaders deviate from this a bit, and require a bit of a
+different mindset.  The way we use them here, they can be thought of
+as programs which run simultaneously over every pixel in the image,
+and likewise, have variables which take on different values for every
+pixel.  (See <a target='_blank' href="https://en.wikipedia.org/wiki/Stream_processing">Stream processing</a> for a little more in-depth information
+on this.)
+</p>
+
+<p>
+The below code gives a very simple example of this:
+</p>
+
+<div class="org-src-container">
+<juicy-ace-editor id='webgl-juicy-ace-editor-1' mode="ace/mode/glsl" readonly="true">uniform vec2 resolution;
+
+void main()
+{
+  vec2 uv = gl_FragCoord.xy / resolution.xy;
+  gl_FragColor = vec4(uv.x, uv.y, 0.0, 1.0);
+}
+</juicy-ace-editor><div id='webgl-full-code-1' style='display:none'>uniform vec2 resolution;
+
+void main()
+{
+  vec2 uv = gl_FragCoord.xy / resolution.xy;
+  gl_FragColor = vec4(uv.x, uv.y, 0.0, 1.0);
+}
+</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-1').text());">Use code &raquo;</button></div>
+</div>
+
+<p>
+Click "Use code", and then go to the "Render" tab.  You should see a
+gradient - green at the top left corner, yellow at the top right, red
+at the bottom right, black at the bottom left, and colors blended
+everywhere between those.
+</p>
+
+<p>
+The code might look familiar if you've used something like C, C++, or
+Java, but with a few unfamiliar constructs.  <code>vec2</code> and <code>vec4</code> are
+vector types containing 2 elements and 4 elements, respectively (more
+on that later).  For now, just treat a <code>vec2</code> as a structure with
+fields <code>x</code> and <code>y</code>, and a <code>vec4</code> as a structure with fields <code>r</code>, <code>g</code>,
+<code>b</code>, and <code>a</code>, all of them floating-point values.
+</p>
+
+<p>
+<code>gl_FragCoord</code> is one of those variables which takes on a different
+value for every pixel in the image; the <code>.xy</code> provides us a <code>vec2</code> of
+just the X and Y coordinates of each pixel.  <code>resolution</code>, on the
+other hand, is a <i>uniform</i> variable - it has the same value over all
+pixels.  In this case, it's something the environment provides to tell
+us the total number of pixels along X and Y.
+</p>
+
+<p>
+<code>gl_FragCoord.xy / resolution.xy</code> produces a new <code>vec2</code> by dividing
+<code>gl_FragCoord.x</code> by <code>resolution.x</code> and <code>gl_FragCoord.y</code> by
+<code>resolution.y</code>.  Try the code below if you want to verify yourself
+that it's the same as splitting them out:
+</p>
+
+<div class="org-src-container">
+<juicy-ace-editor id='webgl-juicy-ace-editor-2' mode="ace/mode/glsl" readonly="true">uniform vec2 resolution;
+
+void main()
+{
+  float u = gl_FragCoord.x / resolution.x;
+  float v = gl_FragCoord.y / resolution.y;
+  gl_FragColor = vec4(u, v, 0.0, 1.0);
+}
+</juicy-ace-editor><div id='webgl-full-code-2' style='display:none'>uniform vec2 resolution;
+
+void main()
+{
+  float u = gl_FragCoord.x / resolution.x;
+  float v = gl_FragCoord.y / resolution.y;
+  gl_FragColor = vec4(u, v, 0.0, 1.0);
+}
+</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-2').text());">Use code &raquo;</button></div>
+</div>
+
+<p>
+Thus, the <code>uv</code> vector (or <code>u</code> and <code>v</code> separately above) contains X and
+Y coordinates that each have been <i>normalized</i> range from 0 to 1.
+Since it's dividing by the total resolution, it works identically at
+any resolution (resize the render window and see, or click the
+lower-right icon to make it full-screen).  This gives us a normal
+<i>(x,y)</i> coordinate plane (or Cartesian plane) where the lower-left
+point is (0,0), moving to the right increases the X coordinate, and
+moving up increases the Y coordinate - up to the top-right corner
+which is (1,1).  This is a fairly standard transformation to see
+anytime pixel locations are involved.
+</p>
+
+<p>
+Finally, <code>gl_FragColor</code> is where we assign the pixel's respective
+color into a <code>vec4</code> by giving, in order, its red, green, blue, and
+alpha channel values (and we ignore alpha here, as it refers to
+transparency and doesn't make sense to use here).  Each value is from
+0 to 1, and values outside that range are clipped inside of it; try
+messing with the values (e.g. replacing <code>u</code> with <code>u * 4.0</code>) to verify
+this.
+</p>
+
+<p>
+The result, then, is that we've assigned the red channel of each pixel
+to its X coordinate, and the green channel to the Y coordinate.  The
+blue channel was just left at 0.  Thus, at the very lower-left, we'd
+expect to see black (red and green are both 0 because X and Y are
+zero), and moving up to the top-right, we'd expect to see yellow (red
+and green are both at their maximum of 1).
+</p>
+</div>
+</div>
+
+<div id="outline-container-org915cfc5" class="outline-3">
+<h3 id="org915cfc5"><span class="section-number-3"> 2.2</span> What can this actually do?</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+You may be complaining that a colored gradient is a rather
+uninteresting thing to draw, and it is.  However, with some additional
+math, this method of creating graphics is remarkably flexible.
+</p>
+
+<p>
+First off, though, we must be able to create some basic shapes and
+constructs to demonstrate things.  We've already shown how the
+computation of <code>uv</code> above can create simple color gradients - but
+color gradients by their inherent fuzziness make it difficult to show
+any sort of sharp details or well-defined shapes.
+</p>
+
+<p>
+So, consider the below code.  The <code>uv.x</code> line isn't especially
+important, but it will appear again and again, and it is there to
+correct the <a target='_blank' href="https://en.wikipedia.org/wiki/Aspect_ratio_%28image%29">aspect ratio</a> of the image.  In our case, all it means is
+that <code>uv.x</code> will be scaled so that a given step in <code>uv.x</code> is the same
+distance as in <code>uv.y</code>, and our shapes aren't squashed.
+</p>
+
+<div class="org-src-container">
+<juicy-ace-editor id='webgl-juicy-ace-editor-3' mode="ace/mode/glsl" readonly="true">uniform vec2 resolution;
+float count = 10.0;
+
+void main()
+{
+    vec2 uv = gl_FragCoord.xy/resolution.xy;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    vec2 uv_mod = mod(uv * grid, 1.0);
+    
+    gl_FragColor = vec4(uv_mod.x, uv_mod.y, 0, 1.0);
+}
+</juicy-ace-editor><div id='webgl-full-code-3' style='display:none'>uniform vec2 resolution;
+float count = 10.0;
+
+void main()
+{
+    vec2 uv = gl_FragCoord.xy/resolution.xy;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    vec2 uv_mod = mod(uv * grid, 1.0);
+    
+    gl_FragColor = vec4(uv_mod.x, uv_mod.y, 0, 1.0);
+}
+</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-3').text());">Use code &raquo;</button></div>
+</div>
+
+<p>
+The important line is the definition of <code>uv_mod</code>: we've scaled up <code>uv</code>
+by a certain amount in both X and Y, and then used <a target='_blank' href="https://en.wikipedia.org/wiki/Modulo_operation">modulo</a> to turn it
+to a repeating pattern again in X and Y - across some distance, it
+rises from 0 to 1, and then goes back to 0.
+</p>
+
+<p>
+You should be able to see a sort of grid pattern emerging, and playing
+with the value of <code>count</code>, or changing the <code>1.0</code> in <code>mod(..., 1.0)</code> to
+something else, should produce some effects that make sense.  However,
+if you look, you'll see it's still just a bunch of smaller gradients.
+Try looking just at <code>uv_mod.x</code> or just <code>uv_mod.y</code> (i.e. change
+<code>gl_FragColor</code> so that the red, green, and blue channel are all
+<code>uv_mod.x</code>, and then so they all are <code>uv_mod.y</code>).
+</p>
+
+<p>
+Now consider: How could we turn this into a grid with sharp lines,
+instead of gradients?  Try to make sense of the below, and change
+values like <code>thickness</code> to something else:
+</p>
+
+<div class="org-src-container">
+<juicy-ace-editor id='webgl-juicy-ace-editor-4' mode="ace/mode/glsl" readonly="true">uniform vec2 resolution;
+float count = 10.0;
+float thickness = 0.05;
+
+void main()
+{
+    vec2 uv = gl_FragCoord.xy/resolution.xy;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    vec2 uv_mod = mod(uv * count, 1.0);
+    float x1 = uv_mod.x &lt; thickness ? 1.0 : 0.0;
+    float y1 = uv_mod.y &lt; thickness ? 1.0 : 0.0;
+    
+    gl_FragColor = vec4(x1, y1, 0, 1.0);
+}
+</juicy-ace-editor><div id='webgl-full-code-4' style='display:none'>uniform vec2 resolution;
+float count = 10.0;
+float thickness = 0.05;
+
+void main()
+{
+    vec2 uv = gl_FragCoord.xy/resolution.xy;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    vec2 uv_mod = mod(uv * count, 1.0);
+    float x1 = uv_mod.x &lt; thickness ? 1.0 : 0.0;
+    float y1 = uv_mod.y &lt; thickness ? 1.0 : 0.0;
+    
+    gl_FragColor = vec4(x1, y1, 0, 1.0);
+}
+</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-4').text());">Use code &raquo;</button></div>
+</div>
+
+<p>
+This is a fairly small change from the previous code.  If you're not
+familiar, <code>uv_mod</code> is now defined using the <a target='_blank' href="https://en.wikipedia.org/wiki/%3F:#C">ternary operator</a> that is
+commonly used in C.  In simple, it has forced the darker parts (see
+<code>thickness</code>) to be uniformly light, and the parts other than that to
+be uniformly black.  However, the X and Y grid lines are still
+separated out, and we may simply add them together to give white grid
+lines:
+</p>
+
+<div class="org-src-container">
+<juicy-ace-editor id='webgl-juicy-ace-editor-5' mode="ace/mode/glsl" readonly="true">uniform vec2 resolution;
+float count = 10.0;
+float thickness = 0.05;
+
+void main()
+{
+    vec2 uv = gl_FragCoord.xy/resolution.xy;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    vec2 uv_mod = mod(uv * count, 1.0);
+    float x1 = uv_mod.x &lt; thickness ? 1.0 : 0.0;
+    float y1 = uv_mod.y &lt; thickness ? 1.0 : 0.0;
+    float grey = x1 + y1;
+    
+    gl_FragColor = vec4(grey, grey, grey, 1.0);
+}
+</juicy-ace-editor><div id='webgl-full-code-5' style='display:none'>uniform vec2 resolution;
+float count = 10.0;
+float thickness = 0.05;
+
+void main()
+{
+    vec2 uv = gl_FragCoord.xy/resolution.xy;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    vec2 uv_mod = mod(uv * count, 1.0);
+    float x1 = uv_mod.x &lt; thickness ? 1.0 : 0.0;
+    float y1 = uv_mod.y &lt; thickness ? 1.0 : 0.0;
+    float grey = x1 + y1;
+    
+    gl_FragColor = vec4(grey, grey, grey, 1.0);
+}
+</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-5').text());">Use code &raquo;</button></div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org519132f" class="outline-3">
+<h3 id="org519132f"><span class="section-number-3"> 2.3</span> Implicit functions</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+Perhaps it wasn't obvious why this is significant, but to try to
+explain it further: We just used an <a target='_blank' href="https://en.wikipedia.org/wiki/Implicit_function">implicit function</a> to draw lines.
+Rather than drawing lines by iteratively walking along pixel
+coordinates and darkening certain ones according to a line's formula,
+we started with a formula that was something like:
+</p>
+
+\begin{equation}
+   f(x,y)=I(x\mod C)+I(y\mod C) \mathrm{ where}\\
+   I(a) = \begin{cases}
+   a < \epsilon & : 1\\
+   a \ge \epsilon & : 0
+   \end{cases}
+\end{equation}
+
+<p>
+and then evaluated this over every pixel, using \(C\) as basically
+<code>count</code> and \(\epsilon\) as <code>thickness</code>.  We've taken some liberties, in
+that we're comparing with \(\epsilon\) rather than 0, but that is due to
+using floating point and a discrete number of pixels. If we express
+this function explicitly:
+</p>
+
+<div class="org-src-container">
+<juicy-ace-editor id='webgl-juicy-ace-editor-6' mode="ace/mode/glsl" readonly="true">uniform vec2 resolution;
+
+float grid(vec2 xy, float thickness, float count)
+{
+    vec2 uv_mod = mod(xy * count, 1.0);
+    float x1 = uv_mod.x &lt; thickness ? 1.0 : 0.0;
+    float y1 = uv_mod.y &lt; thickness ? 1.0 : 0.0;
+    return x1 + y1;
+}
+
+void main()
+{
+    vec2 uv = gl_FragCoord.xy/resolution.xy;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    float grey = grid(uv, 0.05, 10.0);
+    
+    gl_FragColor = vec4(grey, grey, grey, 1.0);
+}
+</juicy-ace-editor><div id='webgl-full-code-6' style='display:none'>uniform vec2 resolution;
+
+float grid(vec2 xy, float thickness, float count)
+{
+    vec2 uv_mod = mod(xy * count, 1.0);
+    float x1 = uv_mod.x &lt; thickness ? 1.0 : 0.0;
+    float y1 = uv_mod.y &lt; thickness ? 1.0 : 0.0;
+    return x1 + y1;
+}
+
+void main()
+{
+    vec2 uv = gl_FragCoord.xy/resolution.xy;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    float grey = grid(uv, 0.05, 10.0);
+    
+    gl_FragColor = vec4(grey, grey, grey, 1.0);
+}
+</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-6').text());">Use code &raquo;</button></div>
+</div>
+
+<p>
+Put another way, we just drew <a target='_blank' href="https://en.wikipedia.org/wiki/Contour_line">isolines</a> of that function.
+</p>
+
+<p>
+More about this implicit functions will follow later.  For now, we
+just use it to create a grid to help illustrate some transformations.
+Below is one that may be familiar: It converts the coordinates we're
+using already - rectangular, or Cartesian, coordinates in <code>uv</code> - to
+<a target='_blank' href="https://en.wikipedia.org/wiki/Polar_coordinate_system">polar coordinates</a>.  <code>uv</code> is also rescaled and moved so that the center
+is (0,0).  Then, we use polar rather than rectangular coordinates to
+draw this grid.
+</p>
+
+<div class="org-src-container">
+<juicy-ace-editor id='webgl-juicy-ace-editor-7' mode="ace/mode/glsl" readonly="true">uniform vec2 resolution;
+const float PI = 3.14159265359;
+
+float grid(vec2 xy, float thickness, float count)
+{
+    vec2 uv_mod = mod(xy * count, 1.0);
+    float x1 = uv_mod.x &lt; thickness ? 1.0 : 0.0;
+    float y1 = uv_mod.y &lt; thickness ? 1.0 : 0.0;
+    return x1 + y1;
+}
+
+vec2 rect2polar(vec2 xy)
+{
+    vec2 polar = vec2(length(xy), atan(xy.y, xy.x));
+    return polar;
+}
+
+void main()
+{
+    vec2 uv = 2.0 * gl_FragCoord.xy/resolution.xy - 1.0;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    vec2 polar = rect2polar(uv);
+    polar.y = polar.y / PI;
+    float grey = grid(polar, 0.05, 10.0);
+    
+    gl_FragColor = vec4(grey, grey, grey, 1.0);
+}
+</juicy-ace-editor><div id='webgl-full-code-7' style='display:none'>uniform vec2 resolution;
+const float PI = 3.14159265359;
+
+float grid(vec2 xy, float thickness, float count)
+{
+    vec2 uv_mod = mod(xy * count, 1.0);
+    float x1 = uv_mod.x &lt; thickness ? 1.0 : 0.0;
+    float y1 = uv_mod.y &lt; thickness ? 1.0 : 0.0;
+    return x1 + y1;
+}
+
+vec2 rect2polar(vec2 xy)
+{
+    vec2 polar = vec2(length(xy), atan(xy.y, xy.x));
+    return polar;
+}
+
+void main()
+{
+    vec2 uv = 2.0 * gl_FragCoord.xy/resolution.xy - 1.0;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    vec2 polar = rect2polar(uv);
+    polar.y = polar.y / PI;
+    float grey = grid(polar, 0.05, 10.0);
+    
+    gl_FragColor = vec4(grey, grey, grey, 1.0);
+}
+</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-7').text());">Use code &raquo;</button></div>
+</div>
+
+<p>
+Note that, despite the notation, fields <code>x</code> and <code>y</code> of <code>polar</code> now
+stand for radius and angle, not X and Y coordinates.
+</p>
+
+<p>
+We started with a grid made of equally-sized squares.  The above
+should give some intuitive sense of how the conversion to polar
+coordinates transformed space: The grid "squares" are now
+differently-sized sections of a circle. 
+</p>
+</div>
+</div>
+
+<div id="outline-container-org7bff0d6" class="outline-3">
+<h3 id="org7bff0d6"><span class="section-number-3"> 2.4</span> Animation &amp; Mouse Input</h3>
+<div class="outline-text-3" id="text-1-4">
+<p>
+Up to this point, we've just been rendering images that don't change
+over time or in response to any input (aside from you editing the
+code).  The below code makes a couple modifications to the last
+example to change this:
+</p>
+
+<div class="org-src-container">
+<juicy-ace-editor id='webgl-juicy-ace-editor-8' mode="ace/mode/glsl" readonly="true">uniform vec2 resolution;
+const float PI = 3.14159265359;
+uniform vec4 mouse;
+uniform float time;
+
+float grid(vec2 xy, float thickness, float count)
+{
+    vec2 uv_mod = mod(xy * count, 1.0);
+    float x1 = uv_mod.x &lt; thickness ? 1.0 : 0.0;
+    float y1 = uv_mod.y &lt; thickness ? 1.0 : 0.0;
+    return x1 + y1;
+}
+
+vec2 rect2polar(vec2 xy)
+{
+    vec2 polar = vec2(sqrt(xy.x * xy.x + xy.y * xy.y), atan(xy.y, xy.x));
+    return polar;
+}
+
+void main()
+{
+    vec2 uv = gl_FragCoord.xy/resolution.xy;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    // Normalize mouse position:
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
+    m.x = m.x * resolution.x / resolution.y;
+
+    vec2 polar = rect2polar(uv - m);
+    // Radius:
+    polar.x = polar.x - time / 10.0;
+    // Angle:
+    polar.y = (polar.y / PI) + time / 8.0;
+    float grey = grid(polar, 0.05, 10.0);
+    
+    gl_FragColor = vec4(grey, grey, grey, 1.0);
+}
+</juicy-ace-editor><div id='webgl-full-code-8' style='display:none'>uniform vec2 resolution;
+const float PI = 3.14159265359;
+uniform vec4 mouse;
+uniform float time;
+
+float grid(vec2 xy, float thickness, float count)
+{
+    vec2 uv_mod = mod(xy * count, 1.0);
+    float x1 = uv_mod.x &lt; thickness ? 1.0 : 0.0;
+    float y1 = uv_mod.y &lt; thickness ? 1.0 : 0.0;
+    return x1 + y1;
+}
+
+vec2 rect2polar(vec2 xy)
+{
+    vec2 polar = vec2(sqrt(xy.x * xy.x + xy.y * xy.y), atan(xy.y, xy.x));
+    return polar;
+}
+
+void main()
+{
+    vec2 uv = gl_FragCoord.xy/resolution.xy;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    // Normalize mouse position:
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
+    m.x = m.x * resolution.x / resolution.y;
+
+    vec2 polar = rect2polar(uv - m);
+    // Radius:
+    polar.x = polar.x - time / 10.0;
+    // Angle:
+    polar.y = (polar.y / PI) + time / 8.0;
+    float grey = grid(polar, 0.05, 10.0);
+    
+    gl_FragColor = vec4(grey, grey, grey, 1.0);
+}
+</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-8').text());">Use code &raquo;</button></div>
+</div>
+
+<p>
+To see the render react to input, click or drag in the render window.
+The environment provides two new variables - <code>mouse</code> and <code>time</code> -
+which give, respectively, the mouse location and a time value (which
+simply counts up in seconds).  (<code>mouse</code>, for whatever reason, uses a
+different coordinate system than the rest of the image, so above we
+remedy this when we compute <code>m</code> and then we do the same transformation
+to normalize this mouse position as we do each pixel coordinate.)
+</p>
+
+<p>
+There are two buttons at the bottom center of the render window which
+let you stop animation completely, and pause or resume it.  It will
+continue to react to mouse input even when paused or stopped.
+</p>
+
+<p>
+In the last example, the center of the image was (0,0) (in both
+rectangular and polar coordinates, incidentally); in this one, note
+that by subtracting the mouse position, wherever you click is the new
+origin.
+</p>
+
+<p>
+See the changes to <code>polar.x</code> and <code>polar.y</code> for the source of the
+animation; change how <code>time</code> is used (adding vs. subtracting, and
+dividing by larger and smaller numbers), and it should make sense how
+this works.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgac04710" class="outline-3">
+<h3 id="orgac04710"><span class="section-number-3"> 2.5</span> Control Inputs</h3>
+<div class="outline-text-3" id="text-1-5">
+</div>
+</div>
+
+<div id="outline-container-org71f3174" class="outline-3">
+<h3 id="org71f3174"><span class="section-number-3"> 2.6</span> Textures?</h3>
+<div class="outline-text-3" id="text-1-6">
+</div>
+</div>
+
+<div id="outline-container-orgc74ff2b" class="outline-3">
+<h3 id="orgc74ff2b"><span class="section-number-3"> 2.7</span> Transformations</h3>
+<div class="outline-text-3" id="text-1-7">
+<p>
+We've used various kinds of transformation on the image so far, but
+they haven't really been explained or made explicit.
+</p>
+</div>
+
+<div id="outline-container-org7d09630" class="outline-4">
+<h4 id="org7d09630"><span class="section-number-4"> 2.7.1</span> Scaling</h4>
+</div>
+
+<div id="outline-container-org8f29c42" class="outline-4">
+<h4 id="org8f29c42"><span class="section-number-4"> 2.7.2</span> Translation</h4>
+</div>
+
+<div id="outline-container-orgd6d725f" class="outline-4">
+<h4 id="orgd6d725f"><span class="section-number-4"> 2.7.3</span> Rotation</h4>
+</div>
+
+<div id="outline-container-orgcca7cd8" class="outline-4">
+<h4 id="orgcca7cd8"><span class="section-number-4"> 2.7.4</span> Shearing</h4>
+</div>
+
+<div id="outline-container-org9ab3aca" class="outline-4">
+<h4 id="org9ab3aca"><span class="section-number-4"> 2.7.5</span> Vectors &amp; Matrices</h4>
+<div class="outline-text-4" id="text-1-7-5">
+</div>
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>

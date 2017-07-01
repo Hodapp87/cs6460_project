@@ -1,0 +1,420 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2017-07-01 Sat 00:26 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Introduction</title>
+<meta name="generator" content="Org mode" />
+<meta name="author" content="Chris Hodapp" />
+<link rel="stylesheet" href="css/tutorial.css"/>
+<link rel="stylesheet" href="css/code.css"/>
+<script type="text/javascript" charset="utf-8">if(!window.PolymerGestures) { var head = document.getElementsByTagName('head')[0]; var js = document.createElement("script"); js.type = "text/javascript"; js.src = "//cdn.jsdelivr.net/webcomponentsjs/0.7.20/webcomponents.min.js"; head.appendChild(js); } </script>
+<link rel='import' href='juicy-ace-editor.html'/>
+</head>
+<body>
+<div id="content">
+<h1 class="title">Introduction</h1>
+
+<div id="outline-container-orgf29d96c" class="outline-2">
+<h2 id="orgf29d96c"><span class="section-number-2"> 1</span> What this is</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+The purpose of this tutorial is to introduce you to some pieces of
+linear algebra and analytic geometry - and to use visual, interactive
+programming in WebGL as the context to do so.
+</p>
+
+<p>
+Most explanation is given alongside bits of code which run directly in
+the browser.  To the right of this content (or possibly elsewhere,
+depending on your browser), you'll see a pane with a couple tabs.  The
+whole point of this pane is to let you play around with this code, and
+see results immediately - without having to install an entire
+development environment, without having to manually adapt equations or
+pseudocode, without having to build an entire framework to test
+something simple, and without having any real risk that you will
+destroy anything.
+</p>
+
+<p>
+Everything about this tutorial is open source.  Further, the code
+that's included here, and any code that you'll write, is all "real"
+code written in a standard language that runs in countless other
+places (with a little adaptation) - it's simply fragment shaders
+written in GLSL (<a target='_blank' href="https://en.wikipedia.org/wiki/OpenGL_Shading_Language">OpenGL Shading Language</a>).  That is, I didn't invent a
+toy programming language or API for this tutorial.  On top of that,
+nearly anything you write could be translated easily to many other
+shading languages (e.g. <a target='_blank' href="https://en.wikipedia.org/wiki/Cg_(programming_language)">Cg</a>, <a target='_blank' href="https://en.wikipedia.org/wiki/High-level_shader_language">HLSL</a>, <a target='_blank' href="https://en.wikipedia.org/wiki/RenderMan_Shading_Language">RSL</a>) that work very similarly, or
+really to any other language.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org8cd96b9" class="outline-2">
+<h2 id="org8cd96b9"><span class="section-number-2"> 1</span> Requirements</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+To make full use of this, you'll require:
+</p>
+
+<ul class="org-ul">
+<li>A browser that <a target='_blank' href="https://en.wikipedia.org/wiki/WebGL#Support">supports WebGL</a>, and has enabled it</li>
+<li>A graphics card that is fast enough for the demos here</li>
+</ul>
+
+<p>
+This assumes some background:
+</p>
+
+<ul class="org-ul">
+<li>Some familiarity with some form of general programming - something
+like C, C++, Java, or JavaScript.</li>
+<li>Some minimal background in graphics.  You should know that pixels
+are used to represent images on a computer, and how colors are
+represented.</li>
+<li>Some background in algebra and geometry.  You should know what a
+coordinate plane is.</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgee0f88d" class="outline-2">
+<h2 id="orgee0f88d"><span class="section-number-2"> 1</span> What this is not</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+This tutorial is not:
+</p>
+
+<ul class="org-ul">
+<li>An introduction to web programming in general - including with
+WebGL.  Other tutorials better serve that task, such as <a target='_blank' href="https://webglfundamentals.org/">WebGL
+Fundamentals</a>.  This tutorial uses a fairly small part of what WebGL
+provides.</li>
+<li>A rigorous, formal treatment of the topic.  However, I do try to
+link to external resources of that sort where appropriate.</li>
+<li>An introduction into programming for those who have no experience
+whatsoever.</li>
+</ul>
+</div>
+
+<div id="outline-container-org1ffc934" class="outline-3">
+<h3 id="org1ffc934"><span class="section-number-3"> 1.1</span> Sub-heading</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+If you only want to show part of the code in the text, then you can enclose the
+part of the code that you want to show with <code>BEGIN</code> / <code>END</code> comments:
+</p>
+
+<div class="org-src-container">
+<juicy-ace-editor id='webgl-juicy-ace-editor-1' mode="ace/mode/lean" readonly="true">namespace hide
+
+-- BEGIN
+constant and : Prop -&gt; Prop -&gt; Prop
+-- END
+
+end hide
+</juicy-ace-editor><div id='webgl-full-code-1' style='display:none'>namespace hide
+
+-- BEGIN
+constant and : Prop -&gt; Prop -&gt; Prop
+-- END
+
+end hide
+</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-1').text());">Use code &raquo;</button></div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orga07fa5f" class="outline-3">
+<h3 id="orga07fa5f"><span class="section-number-3"> 1.2</span> Texture</h3>
+<div class="outline-text-3" id="text-3-2">
+<p>
+Courtesy of <a target='_blank' href="https://fabricecastel.github.io/blog/2015-08-03/main.html">Sphere Tracing 101</a>
+</p>
+
+<div class="org-src-container">
+<juicy-ace-editor id='webgl-juicy-ace-editor-2' mode="ace/mode/glsl" readonly="true">uniform vec2 resolution;
+uniform vec4 mouse;
+uniform float time;
+
+void main()
+{
+  vec2 uv = gl_FragCoord.xy/resolution.xy;
+  float green = uv.x;
+  gl_FragColor = vec4(0.0, green, 0.0, 1.0);
+}
+</juicy-ace-editor><div id='webgl-full-code-2' style='display:none'>uniform vec2 resolution;
+uniform vec4 mouse;
+uniform float time;
+
+void main()
+{
+  vec2 uv = gl_FragCoord.xy/resolution.xy;
+  float green = uv.x;
+  gl_FragColor = vec4(0.0, green, 0.0, 1.0);
+}
+</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-2').text());">Use code &raquo;</button></div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org0f27e0c" class="outline-3">
+<h3 id="org0f27e0c"><span class="section-number-3"> 1.3</span> Sphere Tracing</h3>
+<div class="outline-text-3" id="text-3-3">
+<div class="org-src-container">
+<juicy-ace-editor id='webgl-juicy-ace-editor-3' mode="ace/mode/glsl" readonly="true">uniform vec2 resolution;
+uniform vec4 mouse;
+uniform float time;
+
+// camera attributes
+// cameraDirection and cameraUp MUST be normalized
+// (ie. their length must be equal to 1)
+const vec3 cameraPosition_ = vec3(0.0, 0.0, 10.0);
+const vec3 cameraDirection = vec3(0.0, 0.0, -1.0);
+const vec3 cameraUp = vec3(0.0, 1.0, 0.0);
+
+// ray computation vars
+const float PI = 3.14159265359;
+const float fov = 50.0;
+const float fovx = PI * fov / 360.0;
+float fovy = fovx * resolution.y/resolution.x;
+float ulen = tan(fovx);
+float vlen = tan(fovy);
+
+float distanceToNearestSurface(vec3 p){
+    return length(p) - 1.0;
+}
+
+bool intersectsWithWorld(vec3 p, vec3 dir){
+  float dist = 0.0;
+  for(int i = 0; i &lt; 20; i++){
+    float nearest = distanceToNearestSurface(p + dir*dist);
+    if(nearest &lt; 0.01) return true;
+    dist += nearest;
+  }
+  return false;
+}
+
+void main()
+{
+    vec2 uv = gl_FragCoord.xy/resolution.xy;
+  
+    // generate the ray for this pixel
+    vec2 camUV = uv*2.0 - vec2(1.0, 1.0);
+    vec3 nright = normalize(cross(cameraUp, cameraDirection));
+    vec3 pixel = cameraPosition_ + cameraDirection +
+                 nright*camUV.x*ulen + cameraUp*camUV.y*vlen;
+    vec3 rayDirection = normalize(pixel - cameraPosition_);
+    
+    float collidedWithWorld = 0.0;
+    if(intersectsWithWorld(cameraPosition_, rayDirection))
+        collidedWithWorld = 1.0;
+    
+    gl_FragColor = vec4(collidedWithWorld, 0.0, 0.0, 1.0);
+}
+</juicy-ace-editor><div id='webgl-full-code-3' style='display:none'>uniform vec2 resolution;
+uniform vec4 mouse;
+uniform float time;
+
+// camera attributes
+// cameraDirection and cameraUp MUST be normalized
+// (ie. their length must be equal to 1)
+const vec3 cameraPosition_ = vec3(0.0, 0.0, 10.0);
+const vec3 cameraDirection = vec3(0.0, 0.0, -1.0);
+const vec3 cameraUp = vec3(0.0, 1.0, 0.0);
+
+// ray computation vars
+const float PI = 3.14159265359;
+const float fov = 50.0;
+const float fovx = PI * fov / 360.0;
+float fovy = fovx * resolution.y/resolution.x;
+float ulen = tan(fovx);
+float vlen = tan(fovy);
+
+float distanceToNearestSurface(vec3 p){
+    return length(p) - 1.0;
+}
+
+bool intersectsWithWorld(vec3 p, vec3 dir){
+  float dist = 0.0;
+  for(int i = 0; i &lt; 20; i++){
+    float nearest = distanceToNearestSurface(p + dir*dist);
+    if(nearest &lt; 0.01) return true;
+    dist += nearest;
+  }
+  return false;
+}
+
+void main()
+{
+    vec2 uv = gl_FragCoord.xy/resolution.xy;
+  
+    // generate the ray for this pixel
+    vec2 camUV = uv*2.0 - vec2(1.0, 1.0);
+    vec3 nright = normalize(cross(cameraUp, cameraDirection));
+    vec3 pixel = cameraPosition_ + cameraDirection +
+                 nright*camUV.x*ulen + cameraUp*camUV.y*vlen;
+    vec3 rayDirection = normalize(pixel - cameraPosition_);
+    
+    float collidedWithWorld = 0.0;
+    if(intersectsWithWorld(cameraPosition_, rayDirection))
+        collidedWithWorld = 1.0;
+    
+    gl_FragColor = vec4(collidedWithWorld, 0.0, 0.0, 1.0);
+}
+</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-3').text());">Use code &raquo;</button></div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org8a95473" class="outline-3">
+<h3 id="org8a95473"><span class="section-number-3"> 1.4</span> Sphere Tracing, repeated</h3>
+<div class="outline-text-3" id="text-3-4">
+<div class="org-src-container">
+<juicy-ace-editor id='webgl-juicy-ace-editor-4' mode="ace/mode/glsl" readonly="true">uniform vec2 resolution;
+uniform vec4 mouse;
+uniform float time;
+
+uniform float z_speed;
+uniform float rot_speed;
+uniform float twist;
+uniform float fov;
+uniform float hOffset, vOffset;
+uniform float manualLod;
+
+uniform sampler2D texture;
+
+#define PI 3.1415926
+#define PI_INVERSE 1.0/PI
+#define DEG2PI 3.1415926/180.0
+#define VELOCITY 0.1
+#define TWIST 0.5
+#define LONGITUDE_SCALE 1.0
+#define LATITUDE_SCALE 2.0
+#define EXP 1.0
+
+void main()	{
+	vec2 p = -1.0 + 2.0 * gl_FragCoord.xy / resolution.xy;
+	p.y *= resolution.y / resolution.x;
+
+	float focalDistance = 1.0 / tan(fov * DEG2PI * 0.5);
+
+	vec3 viewDirection = normalize(vec3(focalDistance, p.x, p.y));
+	vec3 offsetViewPoint = vec3(0, hOffset, vOffset);
+
+	float tmp = dot(viewDirection, offsetViewPoint);
+	vec3 radialDirection = offsetViewPoint + (sqrt(tmp * tmp - dot(offsetViewPoint, offsetViewPoint) + 1.0) - tmp) * viewDirection;
+
+	// Rotation
+	vec2 rot = -vec2(mouse.z, mouse.w) / resolution * vec2(2.0*PI, PI);
+	vec3 XAxis = vec3(cos(rot.y)*cos(rot.x), sin(rot.x), -cos(rot.x)*sin(rot.y));
+	vec3 YAxis = vec3(-cos(rot.y)*sin(rot.x), cos(rot.x), sin(rot.y)*sin(rot.x));
+	vec3 ZAxis = vec3(sin(rot.y), 0 , cos(rot.y));
+
+	radialDirection = XAxis * radialDirection.x + YAxis * radialDirection.y + ZAxis * radialDirection.z;
+
+	float longitude = atan(radialDirection.z, radialDirection.y) * PI_INVERSE * 0.5;
+	float latitude  = 1.0 - atan(sqrt(radialDirection.y*radialDirection.y + radialDirection.z*radialDirection.z), radialDirection.x) * PI_INVERSE;
+
+	// Apply non linear latitude mapping: we want the variation speed for circumferences to be constant along the latitudes
+	float t = 1.0 - 2.0 * abs(latitude - 0.5);
+    float h = pow(t, 0.5);
+    float r = 1.0 + (h - 1.0) * sign(0.5 - latitude);
+    latitude = r * 0.5;
+        
+	vec2 uv = vec2(
+	    (longitude + latitude * twist) * LONGITUDE_SCALE + time * rot_speed * VELOCITY,
+	    latitude * LATITUDE_SCALE + time * z_speed * VELOCITY);
+
+    if(length(dFdx(uv) + dFdy(uv)) &gt; 0.9)
+    {
+    	// avoids artifacts when longitude jumps from 0.5 to -0.5
+    	float mipmapLevel = pow((1.0 - t), 20.0) * 10.0;
+	    gl_FragColor = vec4(texture2DLodEXT(texture, uv, mipmapLevel).rgb, 1.0);
+    }
+	else
+	{
+	    gl_FragColor = vec4(texture2D(texture, uv).rgb, 1.0);	
+	}
+}
+</juicy-ace-editor><div id='webgl-full-code-4' style='display:none'>uniform vec2 resolution;
+uniform vec4 mouse;
+uniform float time;
+
+uniform float z_speed;
+uniform float rot_speed;
+uniform float twist;
+uniform float fov;
+uniform float hOffset, vOffset;
+uniform float manualLod;
+
+uniform sampler2D texture;
+
+#define PI 3.1415926
+#define PI_INVERSE 1.0/PI
+#define DEG2PI 3.1415926/180.0
+#define VELOCITY 0.1
+#define TWIST 0.5
+#define LONGITUDE_SCALE 1.0
+#define LATITUDE_SCALE 2.0
+#define EXP 1.0
+
+void main()	{
+	vec2 p = -1.0 + 2.0 * gl_FragCoord.xy / resolution.xy;
+	p.y *= resolution.y / resolution.x;
+
+	float focalDistance = 1.0 / tan(fov * DEG2PI * 0.5);
+
+	vec3 viewDirection = normalize(vec3(focalDistance, p.x, p.y));
+	vec3 offsetViewPoint = vec3(0, hOffset, vOffset);
+
+	float tmp = dot(viewDirection, offsetViewPoint);
+	vec3 radialDirection = offsetViewPoint + (sqrt(tmp * tmp - dot(offsetViewPoint, offsetViewPoint) + 1.0) - tmp) * viewDirection;
+
+	// Rotation
+	vec2 rot = -vec2(mouse.z, mouse.w) / resolution * vec2(2.0*PI, PI);
+	vec3 XAxis = vec3(cos(rot.y)*cos(rot.x), sin(rot.x), -cos(rot.x)*sin(rot.y));
+	vec3 YAxis = vec3(-cos(rot.y)*sin(rot.x), cos(rot.x), sin(rot.y)*sin(rot.x));
+	vec3 ZAxis = vec3(sin(rot.y), 0 , cos(rot.y));
+
+	radialDirection = XAxis * radialDirection.x + YAxis * radialDirection.y + ZAxis * radialDirection.z;
+
+	float longitude = atan(radialDirection.z, radialDirection.y) * PI_INVERSE * 0.5;
+	float latitude  = 1.0 - atan(sqrt(radialDirection.y*radialDirection.y + radialDirection.z*radialDirection.z), radialDirection.x) * PI_INVERSE;
+
+	// Apply non linear latitude mapping: we want the variation speed for circumferences to be constant along the latitudes
+	float t = 1.0 - 2.0 * abs(latitude - 0.5);
+    float h = pow(t, 0.5);
+    float r = 1.0 + (h - 1.0) * sign(0.5 - latitude);
+    latitude = r * 0.5;
+        
+	vec2 uv = vec2(
+	    (longitude + latitude * twist) * LONGITUDE_SCALE + time * rot_speed * VELOCITY,
+	    latitude * LATITUDE_SCALE + time * z_speed * VELOCITY);
+
+    if(length(dFdx(uv) + dFdy(uv)) &gt; 0.9)
+    {
+    	// avoids artifacts when longitude jumps from 0.5 to -0.5
+    	float mipmapLevel = pow((1.0 - t), 20.0) * 10.0;
+	    gl_FragColor = vec4(texture2DLodEXT(texture, uv, mipmapLevel).rgb, 1.0);
+    }
+	else
+	{
+	    gl_FragColor = vec4(texture2D(texture, uv).rgb, 1.0);	
+	}
+}
+</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-4').text());">Use code &raquo;</button></div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgebf93c9" class="outline-3">
+<h3 id="orgebf93c9"><span class="section-number-3"> 1.5</span> Math test</h3>
+</div>
+</div>
+</div>
+</body>
+</html>
