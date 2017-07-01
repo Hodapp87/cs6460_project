@@ -1,7 +1,9 @@
 #+Title: Introduction
 #+Author: Chris Hodapp
 
-* What this is
+* Introduction
+
+** What this is
 
 The purpose of this tutorial is to introduce you to some pieces of
 linear algebra and analytic geometry - and to use visual, interactive
@@ -31,7 +33,7 @@ really to any other language.
 
 # TODO: Supply GitHub link above.
 
-* Requirements
+** Requirements
 
 To make full use of this, you'll require:
 
@@ -48,7 +50,7 @@ This assumes some background:
 - Some background in algebra and geometry.  You should know what a
   coordinate plane is.
 
-* What this is not
+** What this is not
 
 This tutorial is not:
 
