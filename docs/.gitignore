@@ -6,7 +6,6 @@
 *.fdb_latexmk
 *.fls
 *.glo
-*.html
 *.idx
 *.ilg
 *.ind
@@ -26,10 +25,3 @@
 .DS_Store
 gitHeadInfo.gin
 *.org.*.lean
-
-/css
-/fonts
-/images
-/js
-/index.html
-/juicy-ace-editor.html
