@@ -283,7 +283,9 @@ var myModule2 = (function() {
                                            */
             if (pocketgl !== null) {
                 pocketgl.onWindowResize();
-                if (pocketgl.editorFragment !== null) {
+                if (pocketgl.editorFragment !== undefined &&
+                    pocketgl.editorFragment !== null)
+                {
                     pocketgl.editorFragment.resize();
                 }
             }
@@ -790,21 +792,73 @@ $(function () {
 myModule2.init();
 
 // $.ajaxPrefilter(undefined);
-loadJSFile("https://cdn.rawgit.com/gportelli/pocket.gl/v1.2.3/dist/pocket.gl.min.js");
-myModule2.append_console("-- Loading pocket.gl...            ");
+// loadJSFile("https://cdn.rawgit.com/gportelli/pocket.gl/v1.2.3/dist/pocket.gl.min.js");
+loadJSFile("https://cdn.rawgit.com/Hodapp87/pocket.gl/2111d6ba/dist/pocket.gl.min.js");
+// loadJSFile("dist/pocket.gl.js");
+//myModule2.append_console("-- Loading pocket.gl...            ");
 
 params = {
     copyright: "CS6460 Draft",
     editorTheme: "dark",
     fluidWidth: true,
-    fragmentShaderFile: "./spheres.glsl",
+    fragmentShaderFile: "./spiral.glsl",
     uniforms: [
-        { type: "float", value: 1.0, min: 0.0, max: 4.0, name: "z_speed", GUIName: "Z Speed" },
-        { type: "float", value: 1.0, min: 0.0, max: 4.0, name: "rot_speed", GUIName: "Rotation Speed" },
-        { type: "float", value: 1.0, min: 0.0, max: 1.0, name: "twist", GUIName: "Twist" },
-        { type: "integer", value: 90, min: 60, max: 120, name: "fov", GUIName: "FOV" },
-        { type: "float", value: 0, min: -0.7, max: 0.7, name: "hOffset", GUIName: "Horiz Offset" },
-        { type: "float", value: 0, min: -0.7, max: 0.7, name: "vOffset", GUIName: "Vertical Offset" },
+        {
+            "type": "float",
+            "value": 0.1,
+            "min": -1,
+            "max": 1,
+            "name": "freq",
+            "GUIName": "Freq1"
+        },
+        {
+            "type": "float",
+            "value": -0.19,
+            "min": -1,
+            "max": 1,
+            "name": "freq2",
+            "GUIName": "Freq2"
+        },
+        {
+            "type": "float",
+            "value": -0.04,
+            "min": -1,
+            "max": 1,
+            "name": "f_rad",
+            "GUIName": "Rad"
+        },
+        {
+            "type": "float",
+            "value": 0,
+            "min": -5,
+            "max": 5,
+            "name": "f_inv",
+            "GUIName": "Inv"
+        },
+        {
+            "type": "float",
+            "value": 5,
+            "min": -10,
+            "max": 10,
+            "name": "f_sin",
+            "GUIName": "SinAmp"
+        },
+        {
+            "type": "float",
+            "value": -0.22,
+            "min": -1,
+            "max": 1,
+            "name": "a_sin",
+            "GUIName": "SinFreq"
+        },
+        {
+            "type": "float",
+            "value": 1,
+            "min": -10,
+            "max": 10,
+            "name": "f2_sin",
+            "GUIName": "SinFreq2"
+        }
     ],
     textures: [
         { 
