@@ -10,7 +10,7 @@
 (require 'dash)
 (require 'dash-functional)
 (add-to-list 'load-path (f-join working-dir "elisp"))
-;; (require 'lean-export-util)
+(require 'export-util)
 
 (setq org-html-style-include-default nil)
 (setq org-html-style-include-scripts nil)
@@ -27,14 +27,6 @@
 '(org-export-html-with-timestamp nil)
 '(org-modules (quote (org-bbdb org-bibtex org-info org-jsinfo org-irc org-w3m org-mouse org-eval org-eval-light org-exp-bibtex org-man org-mtags org-panel org-R org-special-blocks org-exp-blocks)))
 
-;; Return the Lean tutorial example main part
-;; (defun lean-example-main-part (code)
-;;   (car (lean-extract-code code)))
-
-;; Return the Lean tutorial example full code.
-;; (defun lean-example-full (code)
-;;   (cdr (lean-extract-code code)))
-
 (defvar-local src-block-counter 0)
 
 ;; Redefine org-html-src-block to use juicy-ace-editor
@@ -46,14 +38,17 @@ contextual information."
      (setq src-block-counter (1+ src-block-counter))
      (if (org-export-read-attribute :attr_html src-block :textarea)
          (org-html--textarea-block src-block)
-       (let ((lang (org-element-property :language src-block))
-             (caption (org-export-get-caption src-block))
-             (code (org-html-format-code src-block info))
-             (label (let ((lbl (org-element-property :name src-block)))
+       (let* ((lang (org-element-property :language src-block))
+              (caption (org-export-get-caption src-block))
+              (code (org-html-format-code src-block info))
+              (code_both (extract-code code))
+              (code_glsl (car code_both))
+              (code_shader (cdr code_both))
+              (label (let ((lbl (org-element-property :name src-block)))
                       (if (not lbl) ""
                         (format " id=\"%s\""
                                 (org-export-solidify-link-text lbl))))))
-         (if (not lang) (format "<pre class=\"example\"%s>\n%s</pre>" label code)
+         (if (not lang) (format "<pre class=\"example\"%s>\n%s</pre>" label code_glsl)
            (format
             "<div class=\"org-src-container\">\n%s%s\n</div>"
             (if (not caption) ""
@@ -65,16 +60,16 @@ contextual information."
                          (format "<juicy-ace-editor id='webgl-juicy-ace-editor-%d' mode=\"ace/mode/%s\" readonly=\"true\">%s</juicy-ace-editor>"
                                  src-block-counter
                                  lang
-                                 code))
+                                 code_glsl))
                         (full-code-html (format "<div id='webgl-full-code-%d' style='display:none'>%s</div>"
                                              src-block-counter
-                                             code))
+                                             code_glsl))
                         (button-html
                          (format "<div class='no-print' align=\"left\"><button type=\"button\" onclick=\"copy_code($('#webgl-full-code-%d').text());\">Use code &raquo;</button></div>"
                                  src-block-counter)))
                      (concat juicy-ace-editor-html full-code-html button-html)))
                   (nil
-                   (format "\n<pre class=\"src src-%s\"%s>%s</pre>" lang label code)))))))))
+                   (format "\n<pre class=\"src src-%s\"%s>%s</pre>" lang label code_glsl)))))))))
 (setq org-confirm-babel-evaluate nil)
 
 ; don't convert spaces to tabs

@@ -5,7 +5,7 @@
 (setq make-backup-files nil)
 (require 'org)
 (require 'ox)
-(require 'lean-export-util)
+(require 'export-util)
 (setq org-confirm-babel-evaluate nil)
 
 ;;; XeLaTeX customisations

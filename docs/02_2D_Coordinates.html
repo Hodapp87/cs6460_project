@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2017-07-01 Sat 12:04 -->
+<!-- 2017-07-06 Thu 14:08 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Coordinates &amp; Transforms in 2D</title>
@@ -19,11 +19,11 @@
 <div id="content">
 <h1 class="title">Coordinates &amp; Transforms in 2D</h1>
 
-<div id="outline-container-org7afb8e5" class="outline-2">
-<h2 id="org7afb8e5"><span class="section-number-2"> 2</span> Coordinates &amp; Transforms in 2D</h2>
+<div id="outline-container-orga3b5fe1" class="outline-2">
+<h2 id="orga3b5fe1"><span class="section-number-2"> 2</span> Coordinates &amp; Transforms in 2D</h2>
 <div class="outline-text-2" id="text-1">
-</div><div id="outline-container-orgc06df49" class="outline-3">
-<h3 id="orgc06df49"><span class="section-number-3"> 2.1</span> A slightly boring, laborious example</h3>
+</div><div id="outline-container-orge915d95" class="outline-3">
+<h3 id="orge915d95"><span class="section-number-3"> 2.1</span> A slightly boring, laborious example</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
 The Introduction mentioned that all the code this tutorial deals with
@@ -157,8 +157,8 @@ and green are both at their maximum of 1).
 </div>
 </div>
 
-<div id="outline-container-orgd36d158" class="outline-3">
-<h3 id="orgd36d158"><span class="section-number-3"> 2.2</span> What can this actually do?</h3>
+<div id="outline-container-orgc6f4fa5" class="outline-3">
+<h3 id="orgc6f4fa5"><span class="section-number-3"> 2.2</span> What can this actually do?</h3>
 <div class="outline-text-3" id="text-1-2">
 <p>
 You may be complaining that a colored gradient is a rather
@@ -321,8 +321,8 @@ void main()
 </div>
 </div>
 
-<div id="outline-container-org77a76e5" class="outline-3">
-<h3 id="org77a76e5"><span class="section-number-3"> 2.3</span> Implicit functions</h3>
+<div id="outline-container-org6a05578" class="outline-3">
+<h3 id="org6a05578"><span class="section-number-3"> 2.3</span> Implicit functions</h3>
 <div class="outline-text-3" id="text-1-3">
 <p>
 Perhaps it wasn't obvious why this is significant, but to try to
@@ -482,8 +482,8 @@ differently-sized sections of a circle.
 </div>
 </div>
 
-<div id="outline-container-org3b50c20" class="outline-3">
-<h3 id="org3b50c20"><span class="section-number-3"> 2.4</span> Animation &amp; Mouse Input</h3>
+<div id="outline-container-org9b74127" class="outline-3">
+<h3 id="org9b74127"><span class="section-number-3"> 2.4</span> Animation &amp; Mouse Input</h3>
 <div class="outline-text-3" id="text-1-4">
 <p>
 Up to this point, we've just been rendering images that don't change
@@ -604,20 +604,28 @@ this works.
 </div>
 </div>
 
-<div id="outline-container-org7d2bd22" class="outline-3">
-<h3 id="org7d2bd22"><span class="section-number-3"> 2.5</span> Control Inputs</h3>
+<div id="outline-container-org3feb9dc" class="outline-3">
+<h3 id="org3feb9dc"><span class="section-number-3"> 2.5</span> Control Inputs</h3>
 <div class="outline-text-3" id="text-1-5">
+<p>
+I mentioned <i>uniform</i> variables earlier, and we've dealt with a couple
+of them like <code>resolution</code> and <code>mouse</code>.  
+</p>
+
+<div class="org-src-container">
+<juicy-ace-editor id='webgl-juicy-ace-editor-9' mode="ace/mode/glsl" readonly="true"></juicy-ace-editor><div id='webgl-full-code-9' style='display:none'></div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-9').text());">Use code &raquo;</button></div>
+</div>
 </div>
 </div>
 
-<div id="outline-container-org262e18d" class="outline-3">
-<h3 id="org262e18d"><span class="section-number-3"> 2.6</span> Textures?</h3>
+<div id="outline-container-orga4bbc11" class="outline-3">
+<h3 id="orga4bbc11"><span class="section-number-3"> 2.6</span> Textures?</h3>
 <div class="outline-text-3" id="text-1-6">
 </div>
 </div>
 
-<div id="outline-container-orgafc193a" class="outline-3">
-<h3 id="orgafc193a"><span class="section-number-3"> 2.7</span> Transformations</h3>
+<div id="outline-container-org2831c03" class="outline-3">
+<h3 id="org2831c03"><span class="section-number-3"> 2.7</span> Transformations</h3>
 <div class="outline-text-3" id="text-1-7">
 <p>
 We've used various kinds of transformation on the image so far, but
@@ -625,24 +633,24 @@ they haven't really been explained or made explicit.
 </p>
 </div>
 
-<div id="outline-container-org674544e" class="outline-4">
-<h4 id="org674544e"><span class="section-number-4"> 2.7.1</span> Scaling</h4>
+<div id="outline-container-orgdf931cf" class="outline-4">
+<h4 id="orgdf931cf"><span class="section-number-4"> 2.7.1</span> Scaling</h4>
 </div>
 
-<div id="outline-container-orgb14bb9e" class="outline-4">
-<h4 id="orgb14bb9e"><span class="section-number-4"> 2.7.2</span> Translation</h4>
+<div id="outline-container-org4901ab3" class="outline-4">
+<h4 id="org4901ab3"><span class="section-number-4"> 2.7.2</span> Translation</h4>
 </div>
 
-<div id="outline-container-org1be641b" class="outline-4">
-<h4 id="org1be641b"><span class="section-number-4"> 2.7.3</span> Rotation</h4>
+<div id="outline-container-org26a0d4e" class="outline-4">
+<h4 id="org26a0d4e"><span class="section-number-4"> 2.7.3</span> Rotation</h4>
 </div>
 
-<div id="outline-container-orgfc1c1b6" class="outline-4">
-<h4 id="orgfc1c1b6"><span class="section-number-4"> 2.7.4</span> Shearing</h4>
+<div id="outline-container-org68eb704" class="outline-4">
+<h4 id="org68eb704"><span class="section-number-4"> 2.7.4</span> Shearing</h4>
 </div>
 
-<div id="outline-container-org8cfea03" class="outline-4">
-<h4 id="org8cfea03"><span class="section-number-4"> 2.7.5</span> Vectors &amp; Matrices</h4>
+<div id="outline-container-orgef13037" class="outline-4">
+<h4 id="orgef13037"><span class="section-number-4"> 2.7.5</span> Vectors &amp; Matrices</h4>
 <div class="outline-text-4" id="text-1-7-5">
 </div>
 </div>

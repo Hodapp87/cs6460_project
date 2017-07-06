@@ -361,6 +361,52 @@ this works.
 
 ** Control Inputs
 
+I mentioned /uniform/ variables earlier, and we've dealt with a couple
+of them like =resolution= and =mouse=.  
+
+#+BEGIN_SRC glsl
+/* PARAMETERS
+END */
+uniform vec2 resolution;
+const float PI = 3.14159265359;
+uniform vec4 mouse;
+uniform float time;
+
+float grid(vec2 xy, float thickness, float count)
+{
+    vec2 uv_mod = mod(xy * count, 1.0);
+    float x1 = uv_mod.x < thickness ? 1.0 : 0.0;
+    float y1 = uv_mod.y < thickness ? 1.0 : 0.0;
+    return x1 + y1;
+}
+
+vec2 rect2polar(vec2 xy)
+{
+    vec2 polar = vec2(sqrt(xy.x * xy.x + xy.y * xy.y), atan(xy.y, xy.x));
+    return polar;
+}
+
+void main()
+{
+    vec2 uv = gl_FragCoord.xy/resolution.xy;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    // Normalize mouse position:
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
+    m.x = m.x * resolution.x / resolution.y;
+
+    vec2 polar = rect2polar(uv - m);
+    // Radius:
+    polar.x = polar.x - time / 10.0;
+    // Angle:
+    polar.y = (polar.y / PI) + time / 8.0;
+    float grey = grid(polar, 0.05, 10.0);
+    
+    gl_FragColor = vec4(grey, grey, grey, 1.0);
+}
+#+END_SRC
+
 # I think I need this interactivity before I can proceed
 
 ** Textures?
