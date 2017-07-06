@@ -132,16 +132,59 @@
     });
 }(window, document));
 
+// Given a block of code in 'code' (as a string, including newlines),
+// this separates out anything in between two lines with /* PARAMETERS
+// and END */ (exactly as written), and outside of those two lines.
+// These parts, respectively, are 'params' and 'glsl' in the returned
+// object.  If those two lines are not found, 'params' is left at its
+// default value of "[]".
+function separate_parts(code) {
+    var parts = { glsl: "", params: "" };
+    var inside_param = false;
+    var lines = code.split('\n')
+    for (line_num in lines) {
+        var line = lines[line_num] + "\n";
+        if (line.trim() === "/* PARAMETERS") {
+            inside_param = true;
+        } else if (line.trim() == "END */") {
+            inside_param = false;
+        } else if (inside_param) {
+            parts.params += line;
+        } else {
+            parts.glsl += line;
+        }
+    }
+
+    parts.params = parts.params === "" ? "[]" : parts.params;
+    
+    return parts;
+}
+
+// Separate out GLSL and parameter JSON from 'code', and set these two
+// values into the fragment shader editors and parameter JSON editor
+// in pocket.gl.
 function copy_code(code) {
     if (typeof myModule2 !== 'undefined') {
         var pocketgl = myModule2.get_pocketgl();
         if (pocketgl !== null) {
+            var parts = separate_parts(code);
+            // No, I don't want to talk about it.
+            
+            // TODO: Separate out parameter code & 'main' code
+            // pocketgl.
+            if (pocketgl.editorParams !== null) {
+                pocketgl.tabs.currentTab = pocketgl.tabs.tabs.params;
+                pocketgl.tabs.refresh();
+                pocketgl.switchView("params");
+                pocketgl.editorParams.setValue(parts.params, 1);
+            } else {
+            }
+
             if (pocketgl.editorFragment !== null) {
-                // I don't want to talk about it.
                 pocketgl.tabs.currentTab = pocketgl.tabs.tabs.fragment_shader;
                 pocketgl.tabs.refresh();
                 pocketgl.switchView("fragment_shader");
-                pocketgl.editorFragment.setValue(code, 1);
+                pocketgl.editorFragment.setValue(parts.glsl, 1);
             } else {
                 pocketgl.params.fragmentShader = code;
             }

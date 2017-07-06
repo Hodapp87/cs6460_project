@@ -35,17 +35,18 @@ void main()
 }
 #+END_SRC
 
-Click "Use code", and then go to the "Render" tab.  You should see a
+Click *Use code*, and then go to the *Render* tab.  You should see a
 gradient - green at the top left corner, yellow at the top right, red
 at the bottom right, black at the bottom left, and colors blended
 everywhere between those.
 
-The code might look familiar if you've used something like C, C++, or
-Java, but with a few unfamiliar constructs.  =vec2= and =vec4= are
-vector types containing 2 elements and 4 elements, respectively (more
-on that later).  For now, just treat a =vec2= as a structure with
-fields =x= and =y=, and a =vec4= as a structure with fields =r=, =g=,
-=b=, and =a=, all of them floating-point values.
+Click back to the *Fragment Shader* tab (ignore the *Parameters* tab
+for now).  The code might look familiar if you've used something like
+C, C++, or Java, but with a few unfamiliar constructs.  =vec2= and
+=vec4= are vector types containing 2 elements and 4 elements,
+respectively (more on that later).  For now, just treat a =vec2= as a
+structure with fields =x= and =y=, and a =vec4= as a structure with
+fields =r=, =g=, =b=, and =a=, all of them floating-point values.
 
 =gl_FragCoord= is one of those variables which takes on a different
 value for every pixel in the image; the =.xy= provides us a =vec2= of
@@ -362,15 +363,42 @@ this works.
 ** Control Inputs
 
 I mentioned /uniform/ variables earlier, and we've dealt with a couple
-of them like =resolution= and =mouse=.  
+of them like =resolution=, =mouse=, and =time=.  We've also introduced
+some code which uses parameters here and there that (so far) had to be
+edited manually in the code.
+
+Helpfully, the environment we're working in also provides the ability
+to create our own uniform variables and adjust them in the renderer.
+Click *Use code* below and then look at the *Parameters* tab.
 
 #+BEGIN_SRC glsl
 /* PARAMETERS
+[
+   {
+       "type": "float",
+       "value": 0.1,
+       "min": -1,
+       "max": 1,
+       "name": "freq_rad",
+       "GUIName": "FreqRad"
+   },
+   {
+       "type": "float",
+       "value": 0.1,
+       "min": -1,
+       "max": 1,
+       "name": "freq_ang",
+       "GUIName": "FreqAng"
+   }
+]
 END */
 uniform vec2 resolution;
 const float PI = 3.14159265359;
 uniform vec4 mouse;
 uniform float time;
+
+uniform float freq_rad;
+uniform float freq_ang;
 
 float grid(vec2 xy, float thickness, float count)
 {
@@ -398,16 +426,32 @@ void main()
 
     vec2 polar = rect2polar(uv - m);
     // Radius:
-    polar.x = polar.x - time / 10.0;
+    polar.x = polar.x + time * freq_rad;
     // Angle:
-    polar.y = (polar.y / PI) + time / 8.0;
+    polar.y = (polar.y / PI) + time * freq_ang;
     float grey = grid(polar, 0.05, 10.0);
     
     gl_FragColor = vec4(grey, grey, grey, 1.0);
 }
 #+END_SRC
 
-# I think I need this interactivity before I can proceed
+# TODO: Link JSON example somehow
+
+Note that the code (the *Fragment Shader* code) is near-identical to
+the last example, except that:
+
+ - Two =uniform float= variables are now declared, and their names
+   (=freq_rad= and =freq_ang=).
+ - The names of the above two variables are identical to the =name=
+   field in the JSON definitions in the *Parameters* tab.
+ - The lines with =polar.x= and =polar.y= now use the uniform 
+
+Click *Render* and see that a controls panel should now be visible at
+the top right (you may need to click *Open Controls*).  It should have
+sliders with the names you supplied in =GUIName= in the JSON
+definitions.  Adjust these sliders, and you should see parts of the
+animation proceed at different speeds (and directions, if you change
+between positive and negative).
 
 ** Textures?
 

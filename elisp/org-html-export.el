@@ -63,7 +63,7 @@ contextual information."
                                  code_glsl))
                         (full-code-html (format "<div id='webgl-full-code-%d' style='display:none'>%s</div>"
                                              src-block-counter
-                                             code_glsl))
+                                             code))
                         (button-html
                          (format "<div class='no-print' align=\"left\"><button type=\"button\" onclick=\"copy_code($('#webgl-full-code-%d').text());\">Use code &raquo;</button></div>"
                                  src-block-counter)))

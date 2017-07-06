@@ -19,5 +19,5 @@
           (s-join "\n" (car separated)))))
 
 ;;(car (extract-code "foo\nbaz"))
-;;(extract-code "/* PARAMETERS\nbar\nEND */\nfoo\nbaz")
+;;(car (extract-code "/* PARAMETERS\nbar\nEND */\nfoo\nbaz"))
 (provide 'export-util)
