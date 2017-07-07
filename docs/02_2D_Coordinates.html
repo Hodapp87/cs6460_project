@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2017-07-06 Thu 23:21 -->
+<!-- 2017-07-07 Fri 11:41 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Coordinates &amp; Transforms in 2D</title>
@@ -19,11 +19,11 @@
 <div id="content">
 <h1 class="title">Coordinates &amp; Transforms in 2D</h1>
 
-<div id="outline-container-org8116bf8" class="outline-2">
-<h2 id="org8116bf8"><span class="section-number-2"> 2</span> Coordinates &amp; Transforms in 2D</h2>
+<div id="outline-container-orge420fd2" class="outline-2">
+<h2 id="orge420fd2"><span class="section-number-2"> 2</span> Coordinates &amp; Transforms in 2D</h2>
 <div class="outline-text-2" id="text-1">
-</div><div id="outline-container-orgbb11a30" class="outline-3">
-<h3 id="orgbb11a30"><span class="section-number-3"> 2.1</span> A slightly boring, laborious example</h3>
+</div><div id="outline-container-org596e286" class="outline-3">
+<h3 id="org596e286"><span class="section-number-3"> 2.1</span> A slightly boring, laborious example</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
 The Introduction mentioned that all the code this tutorial deals with
@@ -158,8 +158,8 @@ and green are both at their maximum of 1).
 </div>
 </div>
 
-<div id="outline-container-org883d1d7" class="outline-3">
-<h3 id="org883d1d7"><span class="section-number-3"> 2.2</span> What can this actually do?</h3>
+<div id="outline-container-orgec8f7dc" class="outline-3">
+<h3 id="orgec8f7dc"><span class="section-number-3"> 2.2</span> What can this actually do?</h3>
 <div class="outline-text-3" id="text-1-2">
 <p>
 You may be complaining that a colored gradient is a rather
@@ -322,8 +322,8 @@ void main()
 </div>
 </div>
 
-<div id="outline-container-org8d8a9a1" class="outline-3">
-<h3 id="org8d8a9a1"><span class="section-number-3"> 2.3</span> Implicit functions</h3>
+<div id="outline-container-orgeb1d5fc" class="outline-3">
+<h3 id="orgeb1d5fc"><span class="section-number-3"> 2.3</span> Implicit functions</h3>
 <div class="outline-text-3" id="text-1-3">
 <p>
 Perhaps it wasn't obvious why this is significant, but to try to
@@ -483,8 +483,8 @@ differently-sized sections of a circle.
 </div>
 </div>
 
-<div id="outline-container-org94c50bb" class="outline-3">
-<h3 id="org94c50bb"><span class="section-number-3"> 2.4</span> Animation &amp; Mouse Input</h3>
+<div id="outline-container-org3ec60a4" class="outline-3">
+<h3 id="org3ec60a4"><span class="section-number-3"> 2.4</span> Animation &amp; Mouse Input</h3>
 <div class="outline-text-3" id="text-1-4">
 <p>
 Up to this point, we've just been rendering images that don't change
@@ -605,8 +605,8 @@ this works.
 </div>
 </div>
 
-<div id="outline-container-org72977c7" class="outline-3">
-<h3 id="org72977c7"><span class="section-number-3"> 2.5</span> Control Inputs</h3>
+<div id="outline-container-org024b7c5" class="outline-3">
+<h3 id="org024b7c5"><span class="section-number-3"> 2.5</span> Control Inputs</h3>
 <div class="outline-text-3" id="text-1-5">
 <p>
 I mentioned <i>uniform</i> variables earlier, and we've dealt with a couple
@@ -751,8 +751,8 @@ between positive and negative).
 </div>
 </div>
 
-<div id="outline-container-orgcb5b8ae" class="outline-3">
-<h3 id="orgcb5b8ae"><span class="section-number-3"> 2.6</span> Function composition</h3>
+<div id="outline-container-org0f7bd75" class="outline-3">
+<h3 id="org0f7bd75"><span class="section-number-3"> 2.6</span> Function composition</h3>
 <div class="outline-text-3" id="text-1-6">
 <p>
 In the prior examples, we achieved some simple transformations on
@@ -794,8 +794,11 @@ in between 2 and 3 for the animation.
 </p>
 
 <p>
-To give another example, let's start with the simple grid we've seen
-before - but 
+To give another example, let's start with the simple rectangular grid
+we've seen before - but warp the domain of <code>grid</code> a little.  Look
+particularly at the <code>sine_warp</code> function, and note that what in place
+of <code>uv</code> (the input to <code>grid</code>) we've instead used <code>uv</code> as the input to
+<code>sine_warp</code>, and put its output in place of <code>uv</code>.
 </p>
 
 <div class="org-src-container">
@@ -929,21 +932,67 @@ void main()
 }
 </div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-10').text());">Use code &raquo;</button></div>
 </div>
+
+<p>
+Click around in the render, and also adjust the sliders.  Note that
+adjusting <b>Ampl</b> to zero completely eliminates the effect.
+</p>
+
+<p>
+<code>sine_warp</code> might take some explanation:
+</p>
+
+<ul class="org-ul">
+<li>It converts the input coordinates (assumed to be rectangular
+coordinates) to polar coordinates, \((r,\theta)\) - <code>polar.x</code> and
+<code>polar.y</code> in the code.</li>
+<li>It distorts radius \(r\) by adding a sinusoid to it.  This sine wave's
+amplitude is <code>ampl</code>, it varies with radius by frequency <code>freq</code>, and
+it has phase adjusted by <code>phase</code>.  Note that if <code>ampl=0</code>, \(r\) is
+simply left as-is.</li>
+<li>It converts the distorted radius and original angle back to
+rectangular coordinates, and returns that.</li>
+</ul>
+
+<p>
+Thus, we're distorting the entire grid based on its radius - i.e. its
+distance from whatever the center of the coordinate space is, which in
+this case is defined by the mouse click.  The nature of that
+distortion is that peaks in the sinewave occur at certain distances,
+and at those distances we've stretched space outward a bit (note how
+the grid lines are further apart); troughs in the sinewave occur at
+other distances, and at those distances we've forced space inward a
+bit (note how the grid lines are closer together).  Since the pixels
+that are a specific distance from some point form a circle, this gives
+a sort of circular distortion which repeats as you move outward.
+</p>
+
+<p>
+By typing <code>time</code> to this sinewave's phase (with <code>freq_t</code> to set how
+fast that phase varies), we add some animation to it.
+</p>
+
+<p>
+This is all trying to convey intuitively that when you have a function
+that turns a point in space to something (such as color in this case),
+warping that function's domain is distorting or transforming space in
+some way.
+</p>
 </div>
 
-<div id="outline-container-org6b39953" class="outline-4">
-<h4 id="org6b39953"><span class="section-number-4"> 2.6.1</span> Colors?</h4>
+<div id="outline-container-org4bd1642" class="outline-4">
+<h4 id="org4bd1642"><span class="section-number-4"> 2.6.1</span> Colors?</h4>
 </div>
 
-<div id="outline-container-org1a2b5a3" class="outline-4">
-<h4 id="org1a2b5a3"><span class="section-number-4"> 2.6.2</span> Simplex noise, Perlin noise</h4>
+<div id="outline-container-orgf399cce" class="outline-4">
+<h4 id="orgf399cce"><span class="section-number-4"> 2.6.2</span> Simplex noise, Perlin noise</h4>
 <div class="outline-text-4" id="text-1-6-2">
 </div>
 </div>
 </div>
 
-<div id="outline-container-org1e85af9" class="outline-3">
-<h3 id="org1e85af9"><span class="section-number-3"> 2.7</span> Transformations</h3>
+<div id="outline-container-org64f9eb4" class="outline-3">
+<h3 id="org64f9eb4"><span class="section-number-3"> 2.7</span> Transformations</h3>
 <div class="outline-text-3" id="text-1-7">
 <p>
 We've used various kinds of transformation on the image so far, but
@@ -951,24 +1000,24 @@ they haven't really been explained or made explicit.
 </p>
 </div>
 
-<div id="outline-container-org6447984" class="outline-4">
-<h4 id="org6447984"><span class="section-number-4"> 2.7.1</span> Scaling</h4>
+<div id="outline-container-org073ae4e" class="outline-4">
+<h4 id="org073ae4e"><span class="section-number-4"> 2.7.1</span> Scaling</h4>
 </div>
 
-<div id="outline-container-org60b72bc" class="outline-4">
-<h4 id="org60b72bc"><span class="section-number-4"> 2.7.2</span> Translation</h4>
+<div id="outline-container-org73ca704" class="outline-4">
+<h4 id="org73ca704"><span class="section-number-4"> 2.7.2</span> Translation</h4>
 </div>
 
-<div id="outline-container-orge8d46ee" class="outline-4">
-<h4 id="orge8d46ee"><span class="section-number-4"> 2.7.3</span> Rotation</h4>
+<div id="outline-container-orgbb803af" class="outline-4">
+<h4 id="orgbb803af"><span class="section-number-4"> 2.7.3</span> Rotation</h4>
 </div>
 
-<div id="outline-container-org823dc26" class="outline-4">
-<h4 id="org823dc26"><span class="section-number-4"> 2.7.4</span> Shearing</h4>
+<div id="outline-container-org8ef83a2" class="outline-4">
+<h4 id="org8ef83a2"><span class="section-number-4"> 2.7.4</span> Shearing</h4>
 </div>
 
-<div id="outline-container-org9f27964" class="outline-4">
-<h4 id="org9f27964"><span class="section-number-4"> 2.7.5</span> Vectors &amp; Matrices</h4>
+<div id="outline-container-orgd4cc261" class="outline-4">
+<h4 id="orgd4cc261"><span class="section-number-4"> 2.7.5</span> Vectors &amp; Matrices</h4>
 <div class="outline-text-4" id="text-1-7-5">
 </div>
 </div>

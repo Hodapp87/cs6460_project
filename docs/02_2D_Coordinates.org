@@ -484,8 +484,11 @@ As we added in the effect of the mouse and the animation, we spliced
 in additional functions - first in between 1 and 2 for the mouse, then
 in between 2 and 3 for the animation.
 
-To give another example, let's start with the simple grid we've seen
-before - but 
+To give another example, let's start with the simple rectangular grid
+we've seen before - but warp the domain of =grid= a little.  Look
+particularly at the =sine_warp= function, and note that what in place
+of =uv= (the input to =grid=) we've instead used =uv= as the input to
+=sine_warp=, and put its output in place of =uv=.
 
 #+BEGIN_SRC glsl
 /* PARAMETERS
@@ -568,9 +571,39 @@ void main()
 }
 #+END_SRC
 
-# Maybe start with a rectangular grid again, and show a simple
-# nonlinear warp.
-# Then show what it looks like to compose this with the radial grid.
+Click around in the render, and also adjust the sliders.  Note that
+adjusting *Ampl* to zero completely eliminates the effect.
+
+=sine_warp= might take some explanation:
+
+- It converts the input coordinates (assumed to be rectangular
+  coordinates) to polar coordinates, $(r,\theta)$ - =polar.x= and
+  =polar.y= in the code.
+- It distorts radius $r$ by adding a sinusoid to it.  This sine wave's
+  amplitude is =ampl=, it varies with radius by frequency =freq=, and
+  it has phase adjusted by =phase=.  Note that if =ampl=0=, $r$ is
+  simply left as-is.
+- It converts the distorted radius and original angle back to
+  rectangular coordinates, and returns that.
+
+Thus, we're distorting the entire grid based on its radius - i.e. its
+distance from whatever the center of the coordinate space is, which in
+this case is defined by the mouse click.  The nature of that
+distortion is that peaks in the sinewave occur at certain distances,
+and at those distances we've stretched space outward a bit (note how
+the grid lines are further apart); troughs in the sinewave occur at
+other distances, and at those distances we've forced space inward a
+bit (note how the grid lines are closer together).  Since the pixels
+that are a specific distance from some point form a circle, this gives
+a sort of circular distortion which repeats as you move outward.
+
+By typing =time= to this sinewave's phase (with =freq_t= to set how
+fast that phase varies), we add some animation to it.
+
+This is all trying to convey intuitively that when you have a function
+that turns a point in space to something (such as color in this case),
+warping that function's domain is distorting or transforming space in
+some way.
 
 *** Colors?
 
