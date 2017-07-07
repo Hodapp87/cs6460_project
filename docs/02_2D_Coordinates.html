@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2017-07-06 Thu 16:45 -->
+<!-- 2017-07-06 Thu 23:21 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Coordinates &amp; Transforms in 2D</title>
@@ -19,11 +19,11 @@
 <div id="content">
 <h1 class="title">Coordinates &amp; Transforms in 2D</h1>
 
-<div id="outline-container-org11114f9" class="outline-2">
-<h2 id="org11114f9"><span class="section-number-2"> 2</span> Coordinates &amp; Transforms in 2D</h2>
+<div id="outline-container-org8116bf8" class="outline-2">
+<h2 id="org8116bf8"><span class="section-number-2"> 2</span> Coordinates &amp; Transforms in 2D</h2>
 <div class="outline-text-2" id="text-1">
-</div><div id="outline-container-orgf1b114e" class="outline-3">
-<h3 id="orgf1b114e"><span class="section-number-3"> 2.1</span> A slightly boring, laborious example</h3>
+</div><div id="outline-container-orgbb11a30" class="outline-3">
+<h3 id="orgbb11a30"><span class="section-number-3"> 2.1</span> A slightly boring, laborious example</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
 The Introduction mentioned that all the code this tutorial deals with
@@ -158,8 +158,8 @@ and green are both at their maximum of 1).
 </div>
 </div>
 
-<div id="outline-container-orgabced19" class="outline-3">
-<h3 id="orgabced19"><span class="section-number-3"> 2.2</span> What can this actually do?</h3>
+<div id="outline-container-org883d1d7" class="outline-3">
+<h3 id="org883d1d7"><span class="section-number-3"> 2.2</span> What can this actually do?</h3>
 <div class="outline-text-3" id="text-1-2">
 <p>
 You may be complaining that a colored gradient is a rather
@@ -322,8 +322,8 @@ void main()
 </div>
 </div>
 
-<div id="outline-container-orgb88623d" class="outline-3">
-<h3 id="orgb88623d"><span class="section-number-3"> 2.3</span> Implicit functions</h3>
+<div id="outline-container-org8d8a9a1" class="outline-3">
+<h3 id="org8d8a9a1"><span class="section-number-3"> 2.3</span> Implicit functions</h3>
 <div class="outline-text-3" id="text-1-3">
 <p>
 Perhaps it wasn't obvious why this is significant, but to try to
@@ -483,8 +483,8 @@ differently-sized sections of a circle.
 </div>
 </div>
 
-<div id="outline-container-org4230581" class="outline-3">
-<h3 id="org4230581"><span class="section-number-3"> 2.4</span> Animation &amp; Mouse Input</h3>
+<div id="outline-container-org94c50bb" class="outline-3">
+<h3 id="org94c50bb"><span class="section-number-3"> 2.4</span> Animation &amp; Mouse Input</h3>
 <div class="outline-text-3" id="text-1-4">
 <p>
 Up to this point, we've just been rendering images that don't change
@@ -605,8 +605,8 @@ this works.
 </div>
 </div>
 
-<div id="outline-container-orge69114a" class="outline-3">
-<h3 id="orge69114a"><span class="section-number-3"> 2.5</span> Control Inputs</h3>
+<div id="outline-container-org72977c7" class="outline-3">
+<h3 id="org72977c7"><span class="section-number-3"> 2.5</span> Control Inputs</h3>
 <div class="outline-text-3" id="text-1-5">
 <p>
 I mentioned <i>uniform</i> variables earlier, and we've dealt with a couple
@@ -728,7 +728,8 @@ void main()
 </div>
 
 <p>
-Note that this code is near-identical to the last example, except that:
+Note that the code (the <b>Fragment Shader</b> code) is near-identical to
+the last example, except that:
 </p>
 
 <ul class="org-ul">
@@ -744,19 +745,205 @@ Click <b>Render</b> and see that a controls panel should now be visible at
 the top right (you may need to click <b>Open Controls</b>).  It should have
 sliders with the names you supplied in <code>GUIName</code> in the JSON
 definitions.  Adjust these sliders, and you should see parts of the
-animation proceed at different speeds.
+animation proceed at different speeds (and directions, if you change
+between positive and negative).
 </p>
 </div>
 </div>
 
-<div id="outline-container-org119c2a8" class="outline-3">
-<h3 id="org119c2a8"><span class="section-number-3"> 2.6</span> Textures?</h3>
+<div id="outline-container-orgcb5b8ae" class="outline-3">
+<h3 id="orgcb5b8ae"><span class="section-number-3"> 2.6</span> Function composition</h3>
 <div class="outline-text-3" id="text-1-6">
+<p>
+In the prior examples, we achieved some simple transformations on
+graphics by starting with the \((r,\theta)\) of polar coordinates above,
+we achieved rotation by turning \(\theta\) to \(\theta+f_1t\) (where \(t\)
+is something like the variable <code>time</code>, and \(f_1\) like <code>freq_ang</code>), and
+we achieved a sort of radial expansion or contraction by turning \(r\)
+to \(r+f_2t\).  If you look a little deeper, we're using the same method
+to move the graphics around by turning rectangular coordinates \((x,y)\)
+to \((x-x_m, y-y_m)\), where \((x_m, y_m)\) are the mouse coordinates.
+</p>
+
+<p>
+More generally, in both cases we were changing the <a target='_blank' href="https://en.wikipedia.org/wiki/Domain_of_a_function">domain</a> of some
+<b>function</b> (in mostly the mathematical sense of the term) by <a target='_blank' href="https://en.wikipedia.org/wiki/Function_composition">composing</a>
+another function with it. Fundamentally, this fragment shader is just
+a function which turns domain \((X,Y)\) - the pixel location - to
+codomain \((r,g,b)\) - the pixel's color.
+</p>
+
+<p>
+From this standpoint, we started out with a function itself made by
+composing together several other functions in order (if "compose"
+feels too odd of a term here, just think of it like steps a pipeline):
+</p>
+
+<ol class="org-ol">
+<li>Converting pixel location <code>gl_FragCoord</code> to normalized pixel location <code>uv</code>.</li>
+<li>Converting <code>uv</code> to polar coordinates <code>polar</code>.</li>
+<li>Using <code>polar</code> to create a grid with function <code>grid</code> (consisting of
+just values 0 and 1).</li>
+<li>Turning those 0 &amp; 1 grid values into \((r,g,b)\) in <code>gl_FragColor</code>.</li>
+</ol>
+
+<p>
+As we added in the effect of the mouse and the animation, we spliced
+in additional functions - first in between 1 and 2 for the mouse, then
+in between 2 and 3 for the animation.
+</p>
+
+<p>
+To give another example, let's start with the simple grid we've seen
+before - but 
+</p>
+
+<div class="org-src-container">
+<juicy-ace-editor id='webgl-juicy-ace-editor-10' mode="ace/mode/glsl" readonly="true">uniform vec2 resolution;
+uniform float time;
+uniform vec4 mouse;
+
+uniform float freq_r;
+uniform float freq_t;
+uniform float ampl;
+
+float grid(vec2 xy, float thickness, float count)
+{
+    vec2 uv_mod = mod(xy * count, 1.0);
+    float x1 = uv_mod.x &lt; thickness ? 1.0 : 0.0;
+    float y1 = uv_mod.y &lt; thickness ? 1.0 : 0.0;
+    return x1 + y1;
+}
+
+vec2 rect2polar(vec2 xy)
+{
+    vec2 polar = vec2(sqrt(xy.x * xy.x + xy.y * xy.y), atan(xy.y, xy.x));
+    return polar;
+}
+
+vec2 polar2rect(vec2 polar)
+{
+    vec2 rect = vec2(polar.x * cos(polar.y), polar.x * sin(polar.y));
+    return rect;
+}
+
+vec2 sine_warp(vec2 xy, float ampl, float freq, float phase)
+{
+    vec2 polar = rect2polar(xy);
+    float rad = polar.x + ampl*sin(freq * polar.x + phase);
+    return polar2rect(vec2(rad, polar.y));
+}
+
+void main()
+{
+    vec2 uv = gl_FragCoord.xy/resolution.xy;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    // Normalize mouse position:
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
+    m.x = m.x * resolution.x / resolution.y;
+
+    vec2 uv2 = sine_warp(uv - m, ampl, freq_r, -time*freq_t);
+    float grey = grid(uv2, 0.05, 20.0);
+    
+    gl_FragColor = vec4(grey, grey, grey, 1.0);
+}
+</juicy-ace-editor><div id='webgl-full-code-10' style='display:none'>/* PARAMETERS
+[
+   {
+       "type": "float",
+       "value": 17,
+       "min": 0,
+       "max": 50,
+       "name": "freq_r",
+       "GUIName": "FreqR"
+   },
+   {
+       "type": "float",
+       "value": 3.5,
+       "min": 0,
+       "max": 10,
+       "name": "freq_t",
+       "GUIName": "FreqT"
+   },
+   {
+       "type": "float",
+       "value": 0.02,
+       "min": 0,
+       "max": 0.2,
+       "name": "ampl",
+       "GUIName": "Ampl"
+   }
+]
+END */
+uniform vec2 resolution;
+uniform float time;
+uniform vec4 mouse;
+
+uniform float freq_r;
+uniform float freq_t;
+uniform float ampl;
+
+float grid(vec2 xy, float thickness, float count)
+{
+    vec2 uv_mod = mod(xy * count, 1.0);
+    float x1 = uv_mod.x &lt; thickness ? 1.0 : 0.0;
+    float y1 = uv_mod.y &lt; thickness ? 1.0 : 0.0;
+    return x1 + y1;
+}
+
+vec2 rect2polar(vec2 xy)
+{
+    vec2 polar = vec2(sqrt(xy.x * xy.x + xy.y * xy.y), atan(xy.y, xy.x));
+    return polar;
+}
+
+vec2 polar2rect(vec2 polar)
+{
+    vec2 rect = vec2(polar.x * cos(polar.y), polar.x * sin(polar.y));
+    return rect;
+}
+
+vec2 sine_warp(vec2 xy, float ampl, float freq, float phase)
+{
+    vec2 polar = rect2polar(xy);
+    float rad = polar.x + ampl*sin(freq * polar.x + phase);
+    return polar2rect(vec2(rad, polar.y));
+}
+
+void main()
+{
+    vec2 uv = gl_FragCoord.xy/resolution.xy;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    // Normalize mouse position:
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
+    m.x = m.x * resolution.x / resolution.y;
+
+    vec2 uv2 = sine_warp(uv - m, ampl, freq_r, -time*freq_t);
+    float grey = grid(uv2, 0.05, 20.0);
+    
+    gl_FragColor = vec4(grey, grey, grey, 1.0);
+}
+</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-10').text());">Use code &raquo;</button></div>
 </div>
 </div>
 
-<div id="outline-container-org0d2037c" class="outline-3">
-<h3 id="org0d2037c"><span class="section-number-3"> 2.7</span> Transformations</h3>
+<div id="outline-container-org6b39953" class="outline-4">
+<h4 id="org6b39953"><span class="section-number-4"> 2.6.1</span> Colors?</h4>
+</div>
+
+<div id="outline-container-org1a2b5a3" class="outline-4">
+<h4 id="org1a2b5a3"><span class="section-number-4"> 2.6.2</span> Simplex noise, Perlin noise</h4>
+<div class="outline-text-4" id="text-1-6-2">
+</div>
+</div>
+</div>
+
+<div id="outline-container-org1e85af9" class="outline-3">
+<h3 id="org1e85af9"><span class="section-number-3"> 2.7</span> Transformations</h3>
 <div class="outline-text-3" id="text-1-7">
 <p>
 We've used various kinds of transformation on the image so far, but
@@ -764,24 +951,24 @@ they haven't really been explained or made explicit.
 </p>
 </div>
 
-<div id="outline-container-org30247f0" class="outline-4">
-<h4 id="org30247f0"><span class="section-number-4"> 2.7.1</span> Scaling</h4>
+<div id="outline-container-org6447984" class="outline-4">
+<h4 id="org6447984"><span class="section-number-4"> 2.7.1</span> Scaling</h4>
 </div>
 
-<div id="outline-container-orgb4f55a7" class="outline-4">
-<h4 id="orgb4f55a7"><span class="section-number-4"> 2.7.2</span> Translation</h4>
+<div id="outline-container-org60b72bc" class="outline-4">
+<h4 id="org60b72bc"><span class="section-number-4"> 2.7.2</span> Translation</h4>
 </div>
 
-<div id="outline-container-org164657d" class="outline-4">
-<h4 id="org164657d"><span class="section-number-4"> 2.7.3</span> Rotation</h4>
+<div id="outline-container-orge8d46ee" class="outline-4">
+<h4 id="orge8d46ee"><span class="section-number-4"> 2.7.3</span> Rotation</h4>
 </div>
 
-<div id="outline-container-org126468a" class="outline-4">
-<h4 id="org126468a"><span class="section-number-4"> 2.7.4</span> Shearing</h4>
+<div id="outline-container-org823dc26" class="outline-4">
+<h4 id="org823dc26"><span class="section-number-4"> 2.7.4</span> Shearing</h4>
 </div>
 
-<div id="outline-container-org837a860" class="outline-4">
-<h4 id="org837a860"><span class="section-number-4"> 2.7.5</span> Vectors &amp; Matrices</h4>
+<div id="outline-container-org9f27964" class="outline-4">
+<h4 id="org9f27964"><span class="section-number-4"> 2.7.5</span> Vectors &amp; Matrices</h4>
 <div class="outline-text-4" id="text-1-7-5">
 </div>
 </div>
