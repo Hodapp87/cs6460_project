@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2017-07-07 Fri 11:41 -->
+<!-- 2017-07-07 Fri 13:34 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Coordinates &amp; Transforms in 2D</title>
@@ -19,11 +19,11 @@
 <div id="content">
 <h1 class="title">Coordinates &amp; Transforms in 2D</h1>
 
-<div id="outline-container-orge420fd2" class="outline-2">
-<h2 id="orge420fd2"><span class="section-number-2"> 2</span> Coordinates &amp; Transforms in 2D</h2>
+<div id="outline-container-org818df0b" class="outline-2">
+<h2 id="org818df0b"><span class="section-number-2"> 2</span> Coordinates &amp; Transforms in 2D</h2>
 <div class="outline-text-2" id="text-1">
-</div><div id="outline-container-org596e286" class="outline-3">
-<h3 id="org596e286"><span class="section-number-3"> 2.1</span> A slightly boring, laborious example</h3>
+</div><div id="outline-container-org432cb36" class="outline-3">
+<h3 id="org432cb36"><span class="section-number-3"> 2.1</span> A slightly boring, laborious example</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
 The Introduction mentioned that all the code this tutorial deals with
@@ -158,8 +158,8 @@ and green are both at their maximum of 1).
 </div>
 </div>
 
-<div id="outline-container-orgec8f7dc" class="outline-3">
-<h3 id="orgec8f7dc"><span class="section-number-3"> 2.2</span> What can this actually do?</h3>
+<div id="outline-container-org3cefa99" class="outline-3">
+<h3 id="org3cefa99"><span class="section-number-3"> 2.2</span> What can this actually do?</h3>
 <div class="outline-text-3" id="text-1-2">
 <p>
 You may be complaining that a colored gradient is a rather
@@ -322,8 +322,8 @@ void main()
 </div>
 </div>
 
-<div id="outline-container-orgeb1d5fc" class="outline-3">
-<h3 id="orgeb1d5fc"><span class="section-number-3"> 2.3</span> Implicit functions</h3>
+<div id="outline-container-org3743bfc" class="outline-3">
+<h3 id="org3743bfc"><span class="section-number-3"> 2.3</span> Implicit functions</h3>
 <div class="outline-text-3" id="text-1-3">
 <p>
 Perhaps it wasn't obvious why this is significant, but to try to
@@ -483,8 +483,8 @@ differently-sized sections of a circle.
 </div>
 </div>
 
-<div id="outline-container-org3ec60a4" class="outline-3">
-<h3 id="org3ec60a4"><span class="section-number-3"> 2.4</span> Animation &amp; Mouse Input</h3>
+<div id="outline-container-orgb253ab0" class="outline-3">
+<h3 id="orgb253ab0"><span class="section-number-3"> 2.4</span> Animation &amp; Mouse Input</h3>
 <div class="outline-text-3" id="text-1-4">
 <p>
 Up to this point, we've just been rendering images that don't change
@@ -605,8 +605,8 @@ this works.
 </div>
 </div>
 
-<div id="outline-container-org024b7c5" class="outline-3">
-<h3 id="org024b7c5"><span class="section-number-3"> 2.5</span> Control Inputs</h3>
+<div id="outline-container-org2304be2" class="outline-3">
+<h3 id="org2304be2"><span class="section-number-3"> 2.5</span> Control Inputs</h3>
 <div class="outline-text-3" id="text-1-5">
 <p>
 I mentioned <i>uniform</i> variables earlier, and we've dealt with a couple
@@ -748,11 +748,16 @@ definitions.  Adjust these sliders, and you should see parts of the
 animation proceed at different speeds (and directions, if you change
 between positive and negative).
 </p>
+
+<p>
+For some information on this type of variable, see <a target='_blank' href="http://pocket.gl/documentation/#GUI_Variables_uniforms">pocket.gl
+documentation</a>.
+</p>
 </div>
 </div>
 
-<div id="outline-container-org0f7bd75" class="outline-3">
-<h3 id="org0f7bd75"><span class="section-number-3"> 2.6</span> Function composition</h3>
+<div id="outline-container-org4f1ba2c" class="outline-3">
+<h3 id="org4f1ba2c"><span class="section-number-3"> 2.6</span> Function composition</h3>
 <div class="outline-text-3" id="text-1-6">
 <p>
 In the prior examples, we achieved some simple transformations on
@@ -978,47 +983,201 @@ that turns a point in space to something (such as color in this case),
 warping that function's domain is distorting or transforming space in
 some way.
 </p>
+
+<p>
+That is, we can swap out <code>grid</code> for any other function and see space
+distorted in the same way; the grid was just used there to make it
+more obvious how space is distorted.
+</p>
+
+<div class="org-src-container">
+<juicy-ace-editor id='webgl-juicy-ace-editor-11' mode="ace/mode/glsl" readonly="true">uniform vec2 resolution;
+uniform float time;
+uniform vec4 mouse;
+const float PI = 3.14159265359;
+
+uniform float freq_r;
+uniform float freq_t;
+uniform float ampl;
+
+float grid(vec2 xy, float thickness, float count)
+{
+    vec2 uv_mod = mod(xy * count, 1.0);
+    float x1 = uv_mod.x &lt; thickness ? 1.0 : 0.0;
+    float y1 = uv_mod.y &lt; thickness ? 1.0 : 0.0;
+    return x1 + y1;
+}
+
+// Thank you to http://lolengine.net/blog/2013/07/27/rgb-to-hsv-in-glsl
+vec3 hsv2rgb(vec3 c) {
+  vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+  vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+  return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+}
+
+vec2 rect2polar(vec2 xy)
+{
+    vec2 polar = vec2(sqrt(xy.x * xy.x + xy.y * xy.y), atan(xy.y, xy.x));
+    return polar;
+}
+
+vec2 polar2rect(vec2 polar)
+{
+    vec2 rect = vec2(polar.x * cos(polar.y), polar.x * sin(polar.y));
+    return rect;
+}
+
+vec2 sine_warp(vec2 xy, float ampl, float freq, float phase)
+{
+    vec2 polar = rect2polar(xy);
+    float rad = polar.x + ampl*sin(freq * polar.x + phase);
+    return polar2rect(vec2(rad, polar.y));
+}
+
+void main()
+{
+    vec2 uv = gl_FragCoord.xy/resolution.xy;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    // Normalize mouse position:
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
+    m.x = m.x * resolution.x / resolution.y;
+
+    vec2 uv2 = sine_warp(uv - m, ampl, freq_r, -time*freq_t);
+    vec2 polar = rect2polar(uv2);
+    
+    gl_FragColor = vec4(hsv2rgb(vec3(polar.y / PI / 2.0, 1.0, 1.0)), 1.0);
+}
+</juicy-ace-editor><div id='webgl-full-code-11' style='display:none'>/* PARAMETERS
+[
+   {
+       "type": "float",
+       "value": 17,
+       "min": 0,
+       "max": 50,
+       "name": "freq_r",
+       "GUIName": "FreqR"
+   },
+   {
+       "type": "float",
+       "value": 3.5,
+       "min": 0,
+       "max": 10,
+       "name": "freq_t",
+       "GUIName": "FreqT"
+   },
+   {
+       "type": "float",
+       "value": 0.02,
+       "min": 0,
+       "max": 0.2,
+       "name": "ampl",
+       "GUIName": "Ampl"
+   }
+]
+END */
+uniform vec2 resolution;
+uniform float time;
+uniform vec4 mouse;
+const float PI = 3.14159265359;
+
+uniform float freq_r;
+uniform float freq_t;
+uniform float ampl;
+
+float grid(vec2 xy, float thickness, float count)
+{
+    vec2 uv_mod = mod(xy * count, 1.0);
+    float x1 = uv_mod.x &lt; thickness ? 1.0 : 0.0;
+    float y1 = uv_mod.y &lt; thickness ? 1.0 : 0.0;
+    return x1 + y1;
+}
+
+// Thank you to http://lolengine.net/blog/2013/07/27/rgb-to-hsv-in-glsl
+vec3 hsv2rgb(vec3 c) {
+  vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+  vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+  return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+}
+
+vec2 rect2polar(vec2 xy)
+{
+    vec2 polar = vec2(sqrt(xy.x * xy.x + xy.y * xy.y), atan(xy.y, xy.x));
+    return polar;
+}
+
+vec2 polar2rect(vec2 polar)
+{
+    vec2 rect = vec2(polar.x * cos(polar.y), polar.x * sin(polar.y));
+    return rect;
+}
+
+vec2 sine_warp(vec2 xy, float ampl, float freq, float phase)
+{
+    vec2 polar = rect2polar(xy);
+    float rad = polar.x + ampl*sin(freq * polar.x + phase);
+    return polar2rect(vec2(rad, polar.y));
+}
+
+void main()
+{
+    vec2 uv = gl_FragCoord.xy/resolution.xy;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    // Normalize mouse position:
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
+    m.x = m.x * resolution.x / resolution.y;
+
+    vec2 uv2 = sine_warp(uv - m, ampl, freq_r, -time*freq_t);
+    vec2 polar = rect2polar(uv2);
+    
+    gl_FragColor = vec4(hsv2rgb(vec3(polar.y / PI / 2.0, 1.0, 1.0)), 1.0);
+}
+</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-11').text());">Use code &raquo;</button></div>
+</div>
+</div>
 </div>
 
-<div id="outline-container-org4bd1642" class="outline-4">
-<h4 id="org4bd1642"><span class="section-number-4"> 2.6.1</span> Colors?</h4>
+<div id="outline-container-orgc27fe3b" class="outline-3">
+<h3 id="orgc27fe3b"><span class="section-number-3"> 2.7</span> Colors</h3>
 </div>
 
-<div id="outline-container-orgf399cce" class="outline-4">
-<h4 id="orgf399cce"><span class="section-number-4"> 2.6.2</span> Simplex noise, Perlin noise</h4>
-<div class="outline-text-4" id="text-1-6-2">
-</div>
+<div id="outline-container-orgd8020b6" class="outline-3">
+<h3 id="orgd8020b6"><span class="section-number-3"> 2.8</span> Simplex noise, Perlin noise</h3>
+<div class="outline-text-3" id="text-1-8">
 </div>
 </div>
 
-<div id="outline-container-org64f9eb4" class="outline-3">
-<h3 id="org64f9eb4"><span class="section-number-3"> 2.7</span> Transformations</h3>
-<div class="outline-text-3" id="text-1-7">
+<div id="outline-container-orgaf84ce7" class="outline-3">
+<h3 id="orgaf84ce7"><span class="section-number-3"> 2.9</span> Transformations</h3>
+<div class="outline-text-3" id="text-1-9">
 <p>
 We've used various kinds of transformation on the image so far, but
 they haven't really been explained or made explicit.
 </p>
 </div>
 
-<div id="outline-container-org073ae4e" class="outline-4">
-<h4 id="org073ae4e"><span class="section-number-4"> 2.7.1</span> Scaling</h4>
+<div id="outline-container-org35adaa1" class="outline-4">
+<h4 id="org35adaa1"><span class="section-number-4"> 2.9.1</span> Scaling</h4>
 </div>
 
-<div id="outline-container-org73ca704" class="outline-4">
-<h4 id="org73ca704"><span class="section-number-4"> 2.7.2</span> Translation</h4>
+<div id="outline-container-orge82eb08" class="outline-4">
+<h4 id="orge82eb08"><span class="section-number-4"> 2.9.2</span> Translation</h4>
 </div>
 
-<div id="outline-container-orgbb803af" class="outline-4">
-<h4 id="orgbb803af"><span class="section-number-4"> 2.7.3</span> Rotation</h4>
+<div id="outline-container-orga3f931c" class="outline-4">
+<h4 id="orga3f931c"><span class="section-number-4"> 2.9.3</span> Rotation</h4>
 </div>
 
-<div id="outline-container-org8ef83a2" class="outline-4">
-<h4 id="org8ef83a2"><span class="section-number-4"> 2.7.4</span> Shearing</h4>
+<div id="outline-container-org404c8b7" class="outline-4">
+<h4 id="org404c8b7"><span class="section-number-4"> 2.9.4</span> Shearing</h4>
 </div>
 
-<div id="outline-container-orgd4cc261" class="outline-4">
-<h4 id="orgd4cc261"><span class="section-number-4"> 2.7.5</span> Vectors &amp; Matrices</h4>
-<div class="outline-text-4" id="text-1-7-5">
+<div id="outline-container-org28ee878" class="outline-4">
+<h4 id="org28ee878"><span class="section-number-4"> 2.9.5</span> Vectors &amp; Matrices</h4>
+<div class="outline-text-4" id="text-1-9-5">
 </div>
 </div>
 </div>

@@ -453,6 +453,9 @@ definitions.  Adjust these sliders, and you should see parts of the
 animation proceed at different speeds (and directions, if you change
 between positive and negative).
 
+For some information on this type of variable, see [[http://pocket.gl/documentation/#GUI_Variables_uniforms][pocket.gl
+documentation]].
+
 ** Function composition
 
 In the prior examples, we achieved some simple transformations on
@@ -605,9 +608,102 @@ that turns a point in space to something (such as color in this case),
 warping that function's domain is distorting or transforming space in
 some way.
 
-*** Colors?
+That is, we can swap out =grid= for any other function and see space
+distorted in the same way; the grid was just used there to make it
+more obvious how space is distorted.
 
-*** Simplex noise, Perlin noise
+#+BEGIN_SRC glsl
+/* PARAMETERS
+[
+   {
+       "type": "float",
+       "value": 17,
+       "min": 0,
+       "max": 50,
+       "name": "freq_r",
+       "GUIName": "FreqR"
+   },
+   {
+       "type": "float",
+       "value": 3.5,
+       "min": 0,
+       "max": 10,
+       "name": "freq_t",
+       "GUIName": "FreqT"
+   },
+   {
+       "type": "float",
+       "value": 0.02,
+       "min": 0,
+       "max": 0.2,
+       "name": "ampl",
+       "GUIName": "Ampl"
+   }
+]
+END */
+uniform vec2 resolution;
+uniform float time;
+uniform vec4 mouse;
+const float PI = 3.14159265359;
+
+uniform float freq_r;
+uniform float freq_t;
+uniform float ampl;
+
+float grid(vec2 xy, float thickness, float count)
+{
+    vec2 uv_mod = mod(xy * count, 1.0);
+    float x1 = uv_mod.x < thickness ? 1.0 : 0.0;
+    float y1 = uv_mod.y < thickness ? 1.0 : 0.0;
+    return x1 + y1;
+}
+
+// Thank you to http://lolengine.net/blog/2013/07/27/rgb-to-hsv-in-glsl
+vec3 hsv2rgb(vec3 c) {
+  vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+  vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+  return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+}
+
+vec2 rect2polar(vec2 xy)
+{
+    vec2 polar = vec2(sqrt(xy.x * xy.x + xy.y * xy.y), atan(xy.y, xy.x));
+    return polar;
+}
+
+vec2 polar2rect(vec2 polar)
+{
+    vec2 rect = vec2(polar.x * cos(polar.y), polar.x * sin(polar.y));
+    return rect;
+}
+
+vec2 sine_warp(vec2 xy, float ampl, float freq, float phase)
+{
+    vec2 polar = rect2polar(xy);
+    float rad = polar.x + ampl*sin(freq * polar.x + phase);
+    return polar2rect(vec2(rad, polar.y));
+}
+
+void main()
+{
+    vec2 uv = gl_FragCoord.xy/resolution.xy;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    // Normalize mouse position:
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
+    m.x = m.x * resolution.x / resolution.y;
+
+    vec2 uv2 = sine_warp(uv - m, ampl, freq_r, -time*freq_t);
+    vec2 polar = rect2polar(uv2);
+    
+    gl_FragColor = vec4(hsv2rgb(vec3(polar.y / PI / 2.0, 1.0, 1.0)), 1.0);
+}
+#+END_SRC
+
+** Colors
+
+** Simplex noise, Perlin noise
 
 # Tying things together: This is useful in its own right (link to
 # Conal's blog and anything else I know of), but also is useful as a
