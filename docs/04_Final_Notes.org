@@ -1,0 +1,22 @@
+#+Title: Textures, Colors, & Noise
+#+Author: Chris Hodapp
+
+* Final Notes
+
+Here are a few other references that may be relevant:
+
+- From Fabrice Castel's blog:
+  - [[https://fabricecastel.github.io/blog/2015-08-03/main.html][Sphere Tracing 101 - Hello Sphere!]]
+  - [[https://fabricecastel.github.io/blog/2015-09-06/main.html][Sphere Tracing 102 - Simple Lighting]]
+  - [[https://fabricecastel.github.io/blog/2016-02-11/main.html][Sphere Tracing 103 - Generating a Cube]]
+  - [[https://fabricecastel.github.io/blog/2016-06-17/main.html][Sphere Tracing 104 - CSG]]
+  - [[https://fabricecastel.github.io/blog/2016-08-17/main.html][Sphere Tracing 105 - Domain Repetition]]
+- Basically anything by [[http://www.iquilezles.org/][Íñigo Quílez]], e.g. [[http://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm][Modeling with Distance Functions]]
+- From John Hart: [[http://graphics.cs.williams.edu/courses/cs371/f14/reading/implicit.pdf][Numerical Methods for Ray Tracing Implicitly Defined Surfaces]]
+- The [[http://blog.hvidtfeldts.net/][Syntopia]] blog from Mikael Hvidtfeldt Christensen
+- [[https://thebookofshaders.com/][The Book of Shaders]]
+
+These tools may also be useful in further explorations:
+
+- [[https://syntopia.github.io/Fragmentarium/][Fragmentarium]]
+- [[https://www.shadertoy.com/][Shadertoy]]
