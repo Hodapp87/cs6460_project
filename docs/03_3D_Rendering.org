@@ -1,0 +1,77 @@
+#+Title: 3D Rendering
+#+Author: Chris Hodapp
+
+* 3D Rendering
+
+** Sphere example
+
+#+BEGIN_SRC glsl
+uniform vec2 resolution;
+uniform vec4 mouse;
+uniform float time;
+
+// camera attributes
+// cameraDirection and cameraUp MUST be normalized
+// (ie. their length must be equal to 1)
+const vec3 cameraPosition_ = vec3(0.0, 0.0, 10.0);
+const vec3 cameraDirection = vec3(0.0, 0.0, -1.0);
+const vec3 cameraUp = vec3(0.0, 1.0, 0.0);
+
+// ray computation vars
+const float PI = 3.14159265359;
+const float fov = 50.0;
+const float fovx = PI * fov / 360.0;
+float fovy = fovx * resolution.y/resolution.x;
+float ulen = tan(fovx);
+float vlen = tan(fovy);
+
+float distanceToNearestSurface(vec3 p){
+    return length(p) - 1.0;
+}
+
+bool intersectsWithWorld(vec3 p, vec3 dir){
+  float dist = 0.0;
+  for(int i = 0; i < 20; i++){
+    float nearest = distanceToNearestSurface(p + dir*dist);
+    if(nearest < 0.01) return true;
+    dist += nearest;
+  }
+  return false;
+}
+
+void main()
+{
+    vec2 uv = gl_FragCoord.xy/resolution.xy;
+  
+    // generate the ray for this pixel
+    vec2 camUV = uv*2.0 - vec2(1.0, 1.0);
+    vec3 nright = normalize(cross(cameraUp, cameraDirection));
+    vec3 pixel = cameraPosition_ + cameraDirection +
+                 nright*camUV.x*ulen + cameraUp*camUV.y*vlen;
+    vec3 rayDirection = normalize(pixel - cameraPosition_);
+    
+    float collidedWithWorld = 0.0;
+    if(intersectsWithWorld(cameraPosition_, rayDirection))
+        collidedWithWorld = 1.0;
+    
+    gl_FragColor = vec4(collidedWithWorld, 0.0, 0.0, 1.0);
+}
+#+END_SRC
+
+** Transformations
+
+# See "Programming in 3 Dimensions"
+
+*** Scaling
+
+*** Translation
+
+*** Rotation
+
+*** Shearing
+
+*** Vectors & Matrices
+# Homogeneous coordinates?
+# Composition
+# Inverses
+
