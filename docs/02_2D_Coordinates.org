@@ -125,7 +125,7 @@ void main()
     // Correct aspect:
     uv.x = uv.x * resolution.x / resolution.y;
 
-    vec2 uv_mod = mod(uv * grid, 1.0);
+    vec2 uv_mod = mod(uv * count, 1.0);
     
     gl_FragColor = vec4(uv_mod.x, uv_mod.y, 0, 1.0);
 }
