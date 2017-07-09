@@ -214,8 +214,8 @@ we started with a formula that was something like:
 and then evaluated this over every pixel, using $C$ as basically
 =count= and $\epsilon$ as =thickness=.  We've taken some liberties, in
 that we're comparing with $\epsilon$ rather than 0, but that is due to
-using floating point and a discrete number of pixels. If we express
-this function explicitly:
+using floating point and a discrete number of pixels. If we break this
+(mathematical) function out into a separate (GLSL) function:
 
 #+BEGIN_SRC glsl
 uniform vec2 resolution;
@@ -306,9 +306,9 @@ uniform float time;
 float grid(vec2 xy, float thickness, float count)
 {
     vec2 uv_mod = mod(xy * count, 1.0);
-    float x1 = uv_mod.x < thickness ? 1.0 : 0.0;
-    float y1 = uv_mod.y < thickness ? 1.0 : 0.0;
-    return x1 + y1;
+    float x1 = clamp(thickness - uv_mod.x, 0.0, 1.0);
+    float y1 = clamp(thickness - uv_mod.y, 0.0, 1.0);
+    return (min(x1, thickness-x1) + min(y1,thickness-y1))/thickness;
 }
 
 vec2 rect2polar(vec2 xy)
@@ -332,11 +332,17 @@ void main()
     polar.x = polar.x - time / 10.0;
     // Angle:
     polar.y = (polar.y / PI) + time / 8.0;
-    float grey = grid(polar, 0.05, 10.0);
+    float grey = grid(polar, 0.1, 10.0);
     
     gl_FragColor = vec4(grey, grey, grey, 1.0);
 }
 #+END_SRC
+
+(The =grid= function was rewritten to have lines with softer edges as
+a primitive [[https://en.wikipedia.org/wiki/Spatial_anti-aliasing][anti-aliasing]] approach.  You can try to understand how it
+works, but it doesn't much matter.  If by chance it runs too slowly on
+your GPU, feel free to copy & paste the old =grid= definition in
+instead.)
 
 To see the render react to input, click or drag in the render window.
 The environment provides two new variables - =mouse= and =time= -
@@ -403,9 +409,9 @@ uniform float freq_ang;
 float grid(vec2 xy, float thickness, float count)
 {
     vec2 uv_mod = mod(xy * count, 1.0);
-    float x1 = uv_mod.x < thickness ? 1.0 : 0.0;
-    float y1 = uv_mod.y < thickness ? 1.0 : 0.0;
-    return x1 + y1;
+    float x1 = clamp(thickness - uv_mod.x, 0.0, 1.0);
+    float y1 = clamp(thickness - uv_mod.y, 0.0, 1.0);
+    return (min(x1, thickness-x1) + min(y1,thickness-y1))/thickness;
 }
 
 vec2 rect2polar(vec2 xy)
@@ -429,7 +435,7 @@ void main()
     polar.x = polar.x + time * freq_rad;
     // Angle:
     polar.y = (polar.y / PI) + time * freq_ang;
-    float grey = grid(polar, 0.05, 10.0);
+    float grey = grid(polar, 0.1, 10.0);
     
     gl_FragColor = vec4(grey, grey, grey, 1.0);
 }
@@ -533,9 +539,9 @@ uniform float ampl;
 float grid(vec2 xy, float thickness, float count)
 {
     vec2 uv_mod = mod(xy * count, 1.0);
-    float x1 = uv_mod.x < thickness ? 1.0 : 0.0;
-    float y1 = uv_mod.y < thickness ? 1.0 : 0.0;
-    return x1 + y1;
+    float x1 = clamp(thickness - uv_mod.x, 0.0, 1.0);
+    float y1 = clamp(thickness - uv_mod.y, 0.0, 1.0);
+    return (min(x1, thickness-x1) + min(y1,thickness-y1))/thickness;
 }
 
 vec2 rect2polar(vec2 xy)
@@ -568,7 +574,7 @@ void main()
     m.x = m.x * resolution.x / resolution.y;
 
     vec2 uv2 = sine_warp(uv - m, ampl, freq_r, -time*freq_t);
-    float grey = grid(uv2, 0.05, 20.0);
+    float grey = grid(uv2, 0.1, 20.0);
     
     gl_FragColor = vec4(grey, grey, grey, 1.0);
 }
@@ -608,16 +614,14 @@ that turns a point in space to something (such as color in this case),
 warping that function's domain is distorting or transforming space in
 some way.
 
-That is, we can swap out =grid= for any other function and see space
-distorted in the same way; the grid was just used there to make it
-more obvious how space is distorted.
+We can transform the space multiple times too:
 
 #+BEGIN_SRC glsl
 /* PARAMETERS
 [
    {
        "type": "float",
-       "value": 17,
+       "value": 27,
        "min": 0,
        "max": 50,
        "name": "freq_r",
@@ -625,7 +629,7 @@ more obvious how space is distorted.
    },
    {
        "type": "float",
-       "value": 3.5,
+       "value": 8,
        "min": 0,
        "max": 10,
        "name": "freq_t",
@@ -633,36 +637,55 @@ more obvious how space is distorted.
    },
    {
        "type": "float",
-       "value": 0.02,
+       "value": 0.015,
        "min": 0,
        "max": 0.2,
        "name": "ampl",
        "GUIName": "Ampl"
+   },
+   {
+       "type": "float",
+       "value": 5,
+       "min": 0,
+       "max": 50,
+       "name": "freq_r2",
+       "GUIName": "FreqR2"
+   },
+   {
+       "type": "float",
+       "value": 1.0,
+       "min": 0,
+       "max": 10,
+       "name": "freq_t2",
+       "GUIName": "FreqT2"
+   },
+   {
+       "type": "float",
+       "value": 0.08,
+       "min": 0,
+       "max": 0.2,
+       "name": "ampl2",
+       "GUIName": "Ampl2"
    }
 ]
 END */
 uniform vec2 resolution;
 uniform float time;
 uniform vec4 mouse;
-const float PI = 3.14159265359;
 
 uniform float freq_r;
 uniform float freq_t;
 uniform float ampl;
+uniform float freq_r2;
+uniform float freq_t2;
+uniform float ampl2;
 
 float grid(vec2 xy, float thickness, float count)
 {
     vec2 uv_mod = mod(xy * count, 1.0);
-    float x1 = uv_mod.x < thickness ? 1.0 : 0.0;
-    float y1 = uv_mod.y < thickness ? 1.0 : 0.0;
-    return x1 + y1;
-}
-
-// Thank you to http://lolengine.net/blog/2013/07/27/rgb-to-hsv-in-glsl
-vec3 hsv2rgb(vec3 c) {
-  vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
-  vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
-  return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+    float x1 = clamp(thickness - uv_mod.x, 0.0, 1.0);
+    float y1 = clamp(thickness - uv_mod.y, 0.0, 1.0);
+    return (min(x1, thickness-x1) + min(y1,thickness-y1))/thickness;
 }
 
 vec2 rect2polar(vec2 xy)
@@ -695,56 +718,228 @@ void main()
     m.x = m.x * resolution.x / resolution.y;
 
     vec2 uv2 = sine_warp(uv - m, ampl, freq_r, -time*freq_t);
-    vec2 polar = rect2polar(uv2);
+    vec2 uv3 = sine_warp(uv2, ampl2, freq_r2, -time*freq_t2);
+    float grey = grid(uv3, 0.1, 20.0);
     
-    gl_FragColor = vec4(hsv2rgb(vec3(polar.y / PI / 2.0, 1.0, 1.0)), 1.0);
+    gl_FragColor = vec4(grey, grey, grey, 1.0);
 }
 #+END_SRC
 
-** Colors
+The below likewise transforms space twice, but in different ways this
+time.  =angle_warp= distorts the angle in polar coordinates,
+proportional to the radius; play with the =AngCoef= parameter to see
+the effect.
 
-** Simplex noise, Perlin noise
+#+BEGIN_SRC glsl
+/* PARAMETERS
+[
+   {
+       "type": "float",
+       "value": 17,
+       "min": 0,
+       "max": 50,
+       "name": "freq_r",
+       "GUIName": "FreqR"
+   },
+   {
+       "type": "float",
+       "value": 3.5,
+       "min": 0,
+       "max": 10,
+       "name": "freq_t",
+       "GUIName": "FreqT"
+   },
+   {
+       "type": "float",
+       "value": 0.02,
+       "min": 0,
+       "max": 0.2,
+       "name": "ampl",
+       "GUIName": "Ampl"
+   },
+   {
+       "type": "float",
+       "value": 0.1,
+       "min": -2,
+       "max": 2,
+       "name": "angle_coef",
+       "GUIName": "AngCoef"
+   }
+]
+END */
+uniform vec2 resolution;
+uniform float time;
+uniform vec4 mouse;
 
-# Tying things together: This is useful in its own right (link to
-# Conal's blog and anything else I know of), but also is useful as a
-# way to apply textures to objects in conjunction with more
-# complicated shading (link to Perlin's paper, An image synthesizer).
-# Mention this notion of treating textures like a 3D liquid that the
-# object is dipped in, versus something 2D that is mapped to an
-# object - though, that is done too (link to UV texturing).
+uniform float freq_r;
+uniform float freq_t;
+uniform float ampl;
+uniform float angle_coef;
 
-# See "Texturing & Modeling" text perhaps?
+float grid(vec2 xy, float thickness, float count)
+{
+    vec2 uv_mod = mod(xy * count, 1.0);
+    float x1 = clamp(thickness - uv_mod.x, 0.0, 1.0);
+    float y1 = clamp(thickness - uv_mod.y, 0.0, 1.0);
+    return (min(x1, thickness-x1) + min(y1,thickness-y1))/thickness;
+}
 
-** Transformations
+vec2 rect2polar(vec2 xy)
+{
+    vec2 polar = vec2(sqrt(xy.x * xy.x + xy.y * xy.y), atan(xy.y, xy.x));
+    return polar;
+}
 
-# See "Programming in 3 Dimensions"
+vec2 polar2rect(vec2 polar)
+{
+    vec2 rect = vec2(polar.x * cos(polar.y), polar.x * sin(polar.y));
+    return rect;
+}
 
-We've used various kinds of transformation on the image so far, but
-they haven't really been explained or made explicit.
+vec2 sine_warp(vec2 xy, float ampl, float freq, float phase)
+{
+    vec2 polar = rect2polar(xy);
+    float rad = polar.x + ampl*sin(freq * polar.x + phase);
+    return polar2rect(vec2(rad, polar.y));
+}
 
-*** Scaling
+vec2 angle_warp(vec2 xy, float a)
+{
+    vec2 polar = rect2polar(xy);
+    float ang = polar.y + a*polar.x;
+    return polar2rect(vec2(polar.x, ang));
+}
 
-*** Translation
+void main()
+{
+    vec2 uv = gl_FragCoord.xy/resolution.xy;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
 
-*** Rotation
+    // Normalize mouse position:
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
+    m.x = m.x * resolution.x / resolution.y;
 
-*** Shearing
+    vec2 uv2 = sine_warp(uv - m, ampl, freq_r, -time*freq_t);
+    vec2 uv3 = angle_warp(uv2, angle_coef);
+    float grey = grid(uv3, 0.1, 20.0);
+    
+    gl_FragColor = vec4(grey, grey, grey, 1.0);
+}
+#+END_SRC
 
-*** Vectors & Matrices
-# Homogeneous coordinates?
-# Composition
-# Inverses
+We can swap out =grid= for any other function and see space distorted
+in the same way; the grid was just used there to make it more obvious
+how we are distorting space itself.  The below code does the same
+transformations - but on the color gradient that was used early on in
+this chapter.
 
-# Does it even make sense to explain these here, or wait until 3D?  I
-# feel like it's just drudgery to go into too much detail explaining
-# them here - but it may also be too much too fast to wait until 3D to
-# try to explain them.
-#
-# However, I have no particular reason to explain them *before* the texturing stuff.
+#+BEGIN_SRC glsl
+/* PARAMETERS
+[
+   {
+       "type": "float",
+       "value": 17,
+       "min": 0,
+       "max": 50,
+       "name": "freq_r",
+       "GUIName": "FreqR"
+   },
+   {
+       "type": "float",
+       "value": 3.5,
+       "min": 0,
+       "max": 10,
+       "name": "freq_t",
+       "GUIName": "FreqT"
+   },
+   {
+       "type": "float",
+       "value": 0.02,
+       "min": 0,
+       "max": 0.2,
+       "name": "ampl",
+       "GUIName": "Ampl"
+   },
+   {
+       "type": "float",
+       "value": 0.1,
+       "min": -2,
+       "max": 2,
+       "name": "angle_coef",
+       "GUIName": "AngCoef"
+   }
+]
+END */
+uniform vec2 resolution;
+uniform float time;
+uniform vec4 mouse;
 
-# Part of the point is to show that WebGL has built-in support for
-# some of these matters, I suppose.
+uniform float freq_r;
+uniform float freq_t;
+uniform float ampl;
+uniform float angle_coef;
 
-# Misc:
-# WebGL 'mix' function - get softer edges on lines?
+vec2 rect2polar(vec2 xy)
+{
+    vec2 polar = vec2(sqrt(xy.x * xy.x + xy.y * xy.y), atan(xy.y, xy.x));
+    return polar;
+}
 
+vec2 polar2rect(vec2 polar)
+{
+    vec2 rect = vec2(polar.x * cos(polar.y), polar.x * sin(polar.y));
+    return rect;
+}
+
+vec2 sine_warp(vec2 xy, float ampl, float freq, float phase)
+{
+    vec2 polar = rect2polar(xy);
+    float rad = polar.x + ampl*sin(freq * polar.x + phase);
+    return polar2rect(vec2(rad, polar.y));
+}
+
+vec2 angle_warp(vec2 xy, float a)
+{
+    vec2 polar = rect2polar(xy);
+    float ang = polar.y + a*polar.x;
+    return polar2rect(vec2(polar.x, ang));
+}
+
+void main()
+{
+    vec2 uv = gl_FragCoord.xy/resolution.xy;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    // Normalize mouse position:
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
+    m.x = m.x * resolution.x / resolution.y;
+
+    vec2 uv2 = sine_warp(uv - m, ampl, freq_r, -time*freq_t);
+    vec2 uv3 = angle_warp(uv2, angle_coef);
+    
+    gl_FragColor = vec4(uv3.x, uv3.y, 0.0, 1.0);
+}
+#+END_SRC
+
+** Summary
+
+The intention of this section was to give a crash course in how
+shaders work in this context, how functions are a meaningful
+representation for graphics, and how transformations on the function's
+domain can be visualized as warping space.
+
+This whole section was focused on the use of shaders to create 2D
+graphics.  The next section extends this to their use in creating a 3D
+renderer.
+
+** Further References
+
+For the case particularly of creating 2D images from functions, look
+at [[http://conal.net/papers/functional-images/][Functional Images]] from Conal Elliott.  For using shaders over 3
+dimensions to create "solid textures", look at Ken Perlin's seminal
+paper, [[https://www.semanticscholar.org/paper/An-image-synthesizer-Perlin/e04d7772b91a83a901408eb0876bbb7814b1d4b5][An image synthesizer]]. Beyond this, there are countless
+references on shaders are used in 3D graphics - both in realtime
+applications such as games, and in computer-generated imagery for
+movies and TV.
