@@ -13,55 +13,64 @@ x=\sqrt{b}
 ** Sphere example
 
 #+BEGIN_SRC glsl
+#define ENABLE_SPHERE_TRACING
+
 uniform vec2 resolution;
 uniform vec4 mouse;
 uniform float time;
 
-// camera attributes
-// cameraDirection and cameraUp MUST be normalized
-// (ie. their length must be equal to 1)
-const vec3 cameraPosition_ = vec3(0.0, 0.0, 10.0);
-const vec3 cameraDirection = vec3(0.0, 0.0, -1.0);
-const vec3 cameraUp = vec3(0.0, 1.0, 0.0);
-
-// ray computation vars
-const float PI = 3.14159265359;
-const float fov = 50.0;
-const float fovx = PI * fov / 360.0;
-float fovy = fovx * resolution.y/resolution.x;
-float ulen = tan(fovx);
-float vlen = tan(fovy);
-
-float distanceToNearestSurface(vec3 p){
-    return length(p) - 1.0;
-}
-
-bool intersectsWithWorld(vec3 p, vec3 dir){
-  float dist = 0.0;
-  for(int i = 0; i < 20; i++){
-    float nearest = distanceToNearestSurface(p + dir*dist);
-    if(nearest < 0.01) return true;
-    dist += nearest;
-  }
-  return false;
+vec2 map(in vec3 pos)
+{
+    vec2 res = opU(vec2(sdPlane(    pos), 1.0),
+	                vec2(sdSphere(   pos-vec3(0.0,0.25, 0.0), 0.25), 46.9));
+    res = opU(res, vec2(sdBox(      pos-vec3(1.0,0.25, 0.0), vec3(0.25)), 3.0));
+    res = opU(res, vec2(udRoundBox( pos-vec3(1.0,0.25, 1.0), vec3(0.15), 0.1), 41.0));
+	res = opU(res, vec2(sdTorus(    pos-vec3(0.0,0.25, 1.0), vec2(0.20,0.05)), 25.0));
+    res = opU(res, vec2(sdCapsule(  pos,vec3(-1.3,0.10,-0.1), vec3(-0.8,0.50,0.2), 0.1 ), 31.9));
+	res = opU(res, vec2(sdTriPrism( pos-vec3(-1.0,0.25,-1.0), vec2(0.25,0.05)),43.5));
+	res = opU(res, vec2(sdCylinder( pos-vec3(1.0,0.30,-1.0), vec2(0.1,0.2)), 8.0));
+	res = opU(res, vec2(sdCone(     pos-vec3(0.0,0.50,-1.0), vec3(0.8,0.6,0.3)), 55.0));
+	res = opU(res, vec2(sdTorus82(  pos-vec3(0.0,0.25, 2.0), vec2(0.20,0.05)),50.0));
+	res = opU(res, vec2(sdTorus88(  pos-vec3(-1.0,0.25, 2.0), vec2(0.20,0.05)),43.0));
+	res = opU(res, vec2(sdCylinder6(pos-vec3(1.0,0.30, 2.0), vec2(0.1,0.2)), 12.0));
+	res = opU(res, vec2(sdHexPrism( pos-vec3(-1.0,0.20, 1.0), vec2(0.25,0.05)),17.0));
+	res = opU(res, vec2(sdPyramid4( pos-vec3(-1.0,0.15,-2.0), vec3(0.8,0.6,0.25)),37.0));
+    res = opU(res, vec2(opS(udRoundBox( pos-vec3(-2.0,0.2, 1.0), vec3(0.15),0.05),
+	                           sdSphere(   pos-vec3(-2.0,0.2, 1.0), 0.25)), 13.0));
+    res = opU(res, vec2(opS(sdTorus82( pos-vec3(-2.0,0.2, 0.0), vec2(0.20,0.1)),
+	                           sdCylinder( opRep(vec3(atan(pos.x+2.0,pos.z)/6.2831, pos.y, 0.02+0.5*length(pos-vec3(-2.0,0.2, 0.0))), vec3(0.05,1.0,0.05)), vec2(0.02,0.6))), 51.0));
+	res = opU(res, vec2(0.5*sdSphere(   pos-vec3(-2.0,0.25,-1.0), 0.2) + 0.01*sin(50.0*pos.x)*sin(50.0*pos.y)*sin(50.0*pos.z), 65.0));
+	res = opU(res, vec2(0.5*sdTorus(opTwist(pos-vec3(-2.0,0.25, 2.0)),vec2(0.20,0.05)), 46.7));
+    res = opU(res, vec2(sdConeSection(pos-vec3(0.0,0.35,-2.0), 0.15, 0.2, 0.1), 13.67));
+    res = opU(res, vec2(sdEllipsoid(pos-vec3(1.0,0.35,-2.0), vec3(0.15, 0.2, 0.05)), 43.17));
+        
+    return res;
 }
 
 void main()
 {
-    vec2 uv = gl_FragCoord.xy/resolution.xy;
-  
-    // generate the ray for this pixel
-    vec2 camUV = uv*2.0 - vec2(1.0, 1.0);
-    vec3 nright = normalize(cross(cameraUp, cameraDirection));
-    vec3 pixel = cameraPosition_ + cameraDirection +
-                 nright*camUV.x*ulen + cameraUp*camUV.y*vlen;
-    vec3 rayDirection = normalize(pixel - cameraPosition_);
+    vec2 mo = mouse.xy/resolution.xy;
+	float time = 15.0 + time;
     
-    float collidedWithWorld = 0.0;
-    if(intersectsWithWorld(cameraPosition_, rayDirection))
-        collidedWithWorld = 1.0;
+    vec3 tot = vec3(0.0);
+    vec2 p = (-resolution.xy + 2.0*gl_FragCoord.xy)/resolution.y;
+    // Camera location:
+    vec3 ro = vec3(-0.5+3.5*cos(0.1*time + 6.0*mo.x), 1.0 + 2.0*mo.y, 0.5 + 4.0*sin(0.1*time + 6.0*mo.x));
+    // Camera target:
+    vec3 ta = vec3(-0.5, -0.4, 0.5);
     
-    gl_FragColor = vec4(collidedWithWorld, 0.0, 0.0, 1.0);
+    // Camera-to-world transformation
+    mat3 ca = setCamera(ro, ta, 0.0);
+    
+    // ray direction
+    vec3 rd = ca * normalize(vec3(p.xy, 2.0));
+
+    // render	
+    vec3 col = render(ro, rd);
+
+    // gamma
+    col = pow(col, vec3(0.4545));
+    gl_FragColor = vec4(col, 1.0);
 }
 #+END_SRC
 

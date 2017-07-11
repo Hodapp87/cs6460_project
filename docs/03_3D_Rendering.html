@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2017-07-11 Tue 15:59 -->
+<!-- 2017-07-11 Tue 16:29 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>3D Rendering</title>
@@ -19,8 +19,8 @@
 <div id="content">
 <h1 class="title">3D Rendering</h1>
 
-<div id="outline-container-orgf29151a" class="outline-2">
-<h2 id="orgf29151a"><span class="section-number-2"> 3</span> 3D Rendering</h2>
+<div id="outline-container-orga1a25b7" class="outline-2">
+<h2 id="orga1a25b7"><span class="section-number-2"> 3</span> 3D Rendering</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 If \(a^2=b\) and \( b=2 \), then the solution must be
@@ -32,165 +32,183 @@ x=\sqrt{b}
 \end{equation}
 </div>
 
-<div id="outline-container-orgff51896" class="outline-3">
-<h3 id="orgff51896"><span class="section-number-3"> 3.1</span> Sphere example</h3>
+<div id="outline-container-orgae422ad" class="outline-3">
+<h3 id="orgae422ad"><span class="section-number-3"> 3.1</span> Sphere example</h3>
 <div class="outline-text-3" id="text-1-1">
 <div class="org-src-container">
-<juicy-ace-editor id='webgl-juicy-ace-editor-1' mode="ace/mode/glsl" readonly="true">uniform vec2 resolution;
+<juicy-ace-editor id='webgl-juicy-ace-editor-1' mode="ace/mode/glsl" readonly="true">#define ENABLE_SPHERE_TRACING
+
+uniform vec2 resolution;
 uniform vec4 mouse;
 uniform float time;
 
-// camera attributes
-// cameraDirection and cameraUp MUST be normalized
-// (ie. their length must be equal to 1)
-const vec3 cameraPosition_ = vec3(0.0, 0.0, 10.0);
-const vec3 cameraDirection = vec3(0.0, 0.0, -1.0);
-const vec3 cameraUp = vec3(0.0, 1.0, 0.0);
-
-// ray computation vars
-const float PI = 3.14159265359;
-const float fov = 50.0;
-const float fovx = PI * fov / 360.0;
-float fovy = fovx * resolution.y/resolution.x;
-float ulen = tan(fovx);
-float vlen = tan(fovy);
-
-float distanceToNearestSurface(vec3 p){
-    return length(p) - 1.0;
-}
-
-bool intersectsWithWorld(vec3 p, vec3 dir){
-  float dist = 0.0;
-  for(int i = 0; i &lt; 20; i++){
-    float nearest = distanceToNearestSurface(p + dir*dist);
-    if(nearest &lt; 0.01) return true;
-    dist += nearest;
-  }
-  return false;
+vec2 map(in vec3 pos)
+{
+    vec2 res = opU(vec2(sdPlane(    pos), 1.0),
+	                vec2(sdSphere(   pos-vec3(0.0,0.25, 0.0), 0.25), 46.9));
+    res = opU(res, vec2(sdBox(      pos-vec3(1.0,0.25, 0.0), vec3(0.25)), 3.0));
+    res = opU(res, vec2(udRoundBox( pos-vec3(1.0,0.25, 1.0), vec3(0.15), 0.1), 41.0));
+	res = opU(res, vec2(sdTorus(    pos-vec3(0.0,0.25, 1.0), vec2(0.20,0.05)), 25.0));
+    res = opU(res, vec2(sdCapsule(  pos,vec3(-1.3,0.10,-0.1), vec3(-0.8,0.50,0.2), 0.1 ), 31.9));
+	res = opU(res, vec2(sdTriPrism( pos-vec3(-1.0,0.25,-1.0), vec2(0.25,0.05)),43.5));
+	res = opU(res, vec2(sdCylinder( pos-vec3(1.0,0.30,-1.0), vec2(0.1,0.2)), 8.0));
+	res = opU(res, vec2(sdCone(     pos-vec3(0.0,0.50,-1.0), vec3(0.8,0.6,0.3)), 55.0));
+	res = opU(res, vec2(sdTorus82(  pos-vec3(0.0,0.25, 2.0), vec2(0.20,0.05)),50.0));
+	res = opU(res, vec2(sdTorus88(  pos-vec3(-1.0,0.25, 2.0), vec2(0.20,0.05)),43.0));
+	res = opU(res, vec2(sdCylinder6(pos-vec3(1.0,0.30, 2.0), vec2(0.1,0.2)), 12.0));
+	res = opU(res, vec2(sdHexPrism( pos-vec3(-1.0,0.20, 1.0), vec2(0.25,0.05)),17.0));
+	res = opU(res, vec2(sdPyramid4( pos-vec3(-1.0,0.15,-2.0), vec3(0.8,0.6,0.25)),37.0));
+    res = opU(res, vec2(opS(udRoundBox( pos-vec3(-2.0,0.2, 1.0), vec3(0.15),0.05),
+	                           sdSphere(   pos-vec3(-2.0,0.2, 1.0), 0.25)), 13.0));
+    res = opU(res, vec2(opS(sdTorus82( pos-vec3(-2.0,0.2, 0.0), vec2(0.20,0.1)),
+	                           sdCylinder( opRep(vec3(atan(pos.x+2.0,pos.z)/6.2831, pos.y, 0.02+0.5*length(pos-vec3(-2.0,0.2, 0.0))), vec3(0.05,1.0,0.05)), vec2(0.02,0.6))), 51.0));
+	res = opU(res, vec2(0.5*sdSphere(   pos-vec3(-2.0,0.25,-1.0), 0.2) + 0.01*sin(50.0*pos.x)*sin(50.0*pos.y)*sin(50.0*pos.z), 65.0));
+	res = opU(res, vec2(0.5*sdTorus(opTwist(pos-vec3(-2.0,0.25, 2.0)),vec2(0.20,0.05)), 46.7));
+    res = opU(res, vec2(sdConeSection(pos-vec3(0.0,0.35,-2.0), 0.15, 0.2, 0.1), 13.67));
+    res = opU(res, vec2(sdEllipsoid(pos-vec3(1.0,0.35,-2.0), vec3(0.15, 0.2, 0.05)), 43.17));
+        
+    return res;
 }
 
 void main()
 {
-    vec2 uv = gl_FragCoord.xy/resolution.xy;
-  
-    // generate the ray for this pixel
-    vec2 camUV = uv*2.0 - vec2(1.0, 1.0);
-    vec3 nright = normalize(cross(cameraUp, cameraDirection));
-    vec3 pixel = cameraPosition_ + cameraDirection +
-                 nright*camUV.x*ulen + cameraUp*camUV.y*vlen;
-    vec3 rayDirection = normalize(pixel - cameraPosition_);
+    vec2 mo = mouse.xy/resolution.xy;
+	float time = 15.0 + time;
     
-    float collidedWithWorld = 0.0;
-    if(intersectsWithWorld(cameraPosition_, rayDirection))
-        collidedWithWorld = 1.0;
+    vec3 tot = vec3(0.0);
+    vec2 p = (-resolution.xy + 2.0*gl_FragCoord.xy)/resolution.y;
+    // Camera location:
+    vec3 ro = vec3(-0.5+3.5*cos(0.1*time + 6.0*mo.x), 1.0 + 2.0*mo.y, 0.5 + 4.0*sin(0.1*time + 6.0*mo.x));
+    // Camera target:
+    vec3 ta = vec3(-0.5, -0.4, 0.5);
     
-    gl_FragColor = vec4(collidedWithWorld, 0.0, 0.0, 1.0);
+    // Camera-to-world transformation
+    mat3 ca = setCamera(ro, ta, 0.0);
+    
+    // ray direction
+    vec3 rd = ca * normalize(vec3(p.xy, 2.0));
+
+    // render	
+    vec3 col = render(ro, rd);
+
+    // gamma
+    col = pow(col, vec3(0.4545));
+    gl_FragColor = vec4(col, 1.0);
 }
-</juicy-ace-editor><div id='webgl-full-code-1' style='display:none'>uniform vec2 resolution;
+</juicy-ace-editor><div id='webgl-full-code-1' style='display:none'>#define ENABLE_SPHERE_TRACING
+
+uniform vec2 resolution;
 uniform vec4 mouse;
 uniform float time;
 
-// camera attributes
-// cameraDirection and cameraUp MUST be normalized
-// (ie. their length must be equal to 1)
-const vec3 cameraPosition_ = vec3(0.0, 0.0, 10.0);
-const vec3 cameraDirection = vec3(0.0, 0.0, -1.0);
-const vec3 cameraUp = vec3(0.0, 1.0, 0.0);
-
-// ray computation vars
-const float PI = 3.14159265359;
-const float fov = 50.0;
-const float fovx = PI * fov / 360.0;
-float fovy = fovx * resolution.y/resolution.x;
-float ulen = tan(fovx);
-float vlen = tan(fovy);
-
-float distanceToNearestSurface(vec3 p){
-    return length(p) - 1.0;
-}
-
-bool intersectsWithWorld(vec3 p, vec3 dir){
-  float dist = 0.0;
-  for(int i = 0; i &lt; 20; i++){
-    float nearest = distanceToNearestSurface(p + dir*dist);
-    if(nearest &lt; 0.01) return true;
-    dist += nearest;
-  }
-  return false;
+vec2 map(in vec3 pos)
+{
+    vec2 res = opU(vec2(sdPlane(    pos), 1.0),
+	                vec2(sdSphere(   pos-vec3(0.0,0.25, 0.0), 0.25), 46.9));
+    res = opU(res, vec2(sdBox(      pos-vec3(1.0,0.25, 0.0), vec3(0.25)), 3.0));
+    res = opU(res, vec2(udRoundBox( pos-vec3(1.0,0.25, 1.0), vec3(0.15), 0.1), 41.0));
+	res = opU(res, vec2(sdTorus(    pos-vec3(0.0,0.25, 1.0), vec2(0.20,0.05)), 25.0));
+    res = opU(res, vec2(sdCapsule(  pos,vec3(-1.3,0.10,-0.1), vec3(-0.8,0.50,0.2), 0.1 ), 31.9));
+	res = opU(res, vec2(sdTriPrism( pos-vec3(-1.0,0.25,-1.0), vec2(0.25,0.05)),43.5));
+	res = opU(res, vec2(sdCylinder( pos-vec3(1.0,0.30,-1.0), vec2(0.1,0.2)), 8.0));
+	res = opU(res, vec2(sdCone(     pos-vec3(0.0,0.50,-1.0), vec3(0.8,0.6,0.3)), 55.0));
+	res = opU(res, vec2(sdTorus82(  pos-vec3(0.0,0.25, 2.0), vec2(0.20,0.05)),50.0));
+	res = opU(res, vec2(sdTorus88(  pos-vec3(-1.0,0.25, 2.0), vec2(0.20,0.05)),43.0));
+	res = opU(res, vec2(sdCylinder6(pos-vec3(1.0,0.30, 2.0), vec2(0.1,0.2)), 12.0));
+	res = opU(res, vec2(sdHexPrism( pos-vec3(-1.0,0.20, 1.0), vec2(0.25,0.05)),17.0));
+	res = opU(res, vec2(sdPyramid4( pos-vec3(-1.0,0.15,-2.0), vec3(0.8,0.6,0.25)),37.0));
+    res = opU(res, vec2(opS(udRoundBox( pos-vec3(-2.0,0.2, 1.0), vec3(0.15),0.05),
+	                           sdSphere(   pos-vec3(-2.0,0.2, 1.0), 0.25)), 13.0));
+    res = opU(res, vec2(opS(sdTorus82( pos-vec3(-2.0,0.2, 0.0), vec2(0.20,0.1)),
+	                           sdCylinder( opRep(vec3(atan(pos.x+2.0,pos.z)/6.2831, pos.y, 0.02+0.5*length(pos-vec3(-2.0,0.2, 0.0))), vec3(0.05,1.0,0.05)), vec2(0.02,0.6))), 51.0));
+	res = opU(res, vec2(0.5*sdSphere(   pos-vec3(-2.0,0.25,-1.0), 0.2) + 0.01*sin(50.0*pos.x)*sin(50.0*pos.y)*sin(50.0*pos.z), 65.0));
+	res = opU(res, vec2(0.5*sdTorus(opTwist(pos-vec3(-2.0,0.25, 2.0)),vec2(0.20,0.05)), 46.7));
+    res = opU(res, vec2(sdConeSection(pos-vec3(0.0,0.35,-2.0), 0.15, 0.2, 0.1), 13.67));
+    res = opU(res, vec2(sdEllipsoid(pos-vec3(1.0,0.35,-2.0), vec3(0.15, 0.2, 0.05)), 43.17));
+        
+    return res;
 }
 
 void main()
 {
-    vec2 uv = gl_FragCoord.xy/resolution.xy;
-  
-    // generate the ray for this pixel
-    vec2 camUV = uv*2.0 - vec2(1.0, 1.0);
-    vec3 nright = normalize(cross(cameraUp, cameraDirection));
-    vec3 pixel = cameraPosition_ + cameraDirection +
-                 nright*camUV.x*ulen + cameraUp*camUV.y*vlen;
-    vec3 rayDirection = normalize(pixel - cameraPosition_);
+    vec2 mo = mouse.xy/resolution.xy;
+	float time = 15.0 + time;
     
-    float collidedWithWorld = 0.0;
-    if(intersectsWithWorld(cameraPosition_, rayDirection))
-        collidedWithWorld = 1.0;
+    vec3 tot = vec3(0.0);
+    vec2 p = (-resolution.xy + 2.0*gl_FragCoord.xy)/resolution.y;
+    // Camera location:
+    vec3 ro = vec3(-0.5+3.5*cos(0.1*time + 6.0*mo.x), 1.0 + 2.0*mo.y, 0.5 + 4.0*sin(0.1*time + 6.0*mo.x));
+    // Camera target:
+    vec3 ta = vec3(-0.5, -0.4, 0.5);
     
-    gl_FragColor = vec4(collidedWithWorld, 0.0, 0.0, 1.0);
+    // Camera-to-world transformation
+    mat3 ca = setCamera(ro, ta, 0.0);
+    
+    // ray direction
+    vec3 rd = ca * normalize(vec3(p.xy, 2.0));
+
+    // render	
+    vec3 col = render(ro, rd);
+
+    // gamma
+    col = pow(col, vec3(0.4545));
+    gl_FragColor = vec4(col, 1.0);
 }
 </div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-1').text());">Use code &raquo;</button></div>
 </div>
 </div>
 </div>
 
-<div id="outline-container-orgc40ec42" class="outline-3">
-<h3 id="orgc40ec42"><span class="section-number-3"> 3.2</span> Distance Bounds &amp; Distance Fields</h3>
+<div id="outline-container-org39efe47" class="outline-3">
+<h3 id="org39efe47"><span class="section-number-3"> 3.2</span> Distance Bounds &amp; Distance Fields</h3>
 <div class="outline-text-3" id="text-1-2">
-</div><div id="outline-container-org0ddd9a7" class="outline-4">
-<h4 id="org0ddd9a7"><span class="section-number-4"> 3.2.1</span> Why a sphere tracer?</h4>
+</div><div id="outline-container-org53fb88f" class="outline-4">
+<h4 id="org53fb88f"><span class="section-number-4"> 3.2.1</span> Why a sphere tracer?</h4>
 </div>
 </div>
 
-<div id="outline-container-orgf2a5bef" class="outline-3">
-<h3 id="orgf2a5bef"><span class="section-number-3"> 3.3</span> Transformations</h3>
+<div id="outline-container-orgc2e3ee1" class="outline-3">
+<h3 id="orgc2e3ee1"><span class="section-number-3"> 3.3</span> Transformations</h3>
 <div class="outline-text-3" id="text-1-3">
 </div>
 
-<div id="outline-container-orgfba86b3" class="outline-4">
-<h4 id="orgfba86b3"><span class="section-number-4"> 3.3.1</span> Scaling</h4>
+<div id="outline-container-org372ca98" class="outline-4">
+<h4 id="org372ca98"><span class="section-number-4"> 3.3.1</span> Scaling</h4>
 </div>
 
-<div id="outline-container-orgf65df6c" class="outline-4">
-<h4 id="orgf65df6c"><span class="section-number-4"> 3.3.2</span> Translation</h4>
+<div id="outline-container-orgf11f5b5" class="outline-4">
+<h4 id="orgf11f5b5"><span class="section-number-4"> 3.3.2</span> Translation</h4>
 </div>
 
-<div id="outline-container-org485b369" class="outline-4">
-<h4 id="org485b369"><span class="section-number-4"> 3.3.3</span> Rotation</h4>
+<div id="outline-container-orgdcc46f2" class="outline-4">
+<h4 id="orgdcc46f2"><span class="section-number-4"> 3.3.3</span> Rotation</h4>
 </div>
 
-<div id="outline-container-org3017194" class="outline-4">
-<h4 id="org3017194"><span class="section-number-4"> 3.3.4</span> Shearing</h4>
+<div id="outline-container-orgbe422ae" class="outline-4">
+<h4 id="orgbe422ae"><span class="section-number-4"> 3.3.4</span> Shearing</h4>
 </div>
 
-<div id="outline-container-org42bce77" class="outline-4">
-<h4 id="org42bce77"><span class="section-number-4"> 3.3.5</span> Vectors &amp; Matrices</h4>
+<div id="outline-container-org01dcc8e" class="outline-4">
+<h4 id="org01dcc8e"><span class="section-number-4"> 3.3.5</span> Vectors &amp; Matrices</h4>
 <div class="outline-text-4" id="text-1-3-5">
 </div>
 </div>
 </div>
 
-<div id="outline-container-org2a6a970" class="outline-3">
-<h3 id="org2a6a970"><span class="section-number-3"> 3.4</span> Constructive Solid Geometry</h3>
+<div id="outline-container-org4f8861d" class="outline-3">
+<h3 id="org4f8861d"><span class="section-number-3"> 3.4</span> Constructive Solid Geometry</h3>
 </div>
 
-<div id="outline-container-orgcd5b794" class="outline-3">
-<h3 id="orgcd5b794"><span class="section-number-3"> 3.5</span> Domain Warping</h3>
+<div id="outline-container-org360bf63" class="outline-3">
+<h3 id="org360bf63"><span class="section-number-3"> 3.5</span> Domain Warping</h3>
 </div>
 
-<div id="outline-container-org6dd50f8" class="outline-3">
-<h3 id="org6dd50f8"><span class="section-number-3"> 3.6</span> Domain Repetition</h3>
+<div id="outline-container-org59dd22e" class="outline-3">
+<h3 id="org59dd22e"><span class="section-number-3"> 3.6</span> Domain Repetition</h3>
 </div>
 
-<div id="outline-container-org8475ce0" class="outline-3">
-<h3 id="org8475ce0"><span class="section-number-3"> 3.7</span> Summary</h3>
+<div id="outline-container-orgc2f82ba" class="outline-3">
+<h3 id="orgc2f82ba"><span class="section-number-3"> 3.7</span> Summary</h3>
 <div class="outline-text-3" id="text-1-7">
 <p>
 This concludes the tutorial - at least, until I write more.

@@ -25,11 +25,7 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // ----------------------------------------------------------------------
 
-//uniform vec2 resolution;
-//uniform vec4 mouse;
-//uniform float time;
-
-uniform float fov;
+#ifdef ENABLE_SPHERE_TRACING
 
 #define AA 1   // make this 1 is your machine is too slow
 
@@ -37,7 +33,7 @@ uniform float fov;
 
 float sdPlane(vec3 p)
 {
-	return p.y;
+    return p.y;
 }
 
 float sdSphere(vec3 p, float s)
@@ -80,9 +76,9 @@ float sdHexPrism(vec3 p, vec2 h)
 
 float sdCapsule(vec3 p, vec3 a, vec3 b, float r)
 {
-	vec3 pa = p-a, ba = b-a;
-	float h = clamp(dot(pa,ba)/dot(ba,ba), 0.0, 1.0);
-	return length(pa - ba*h) - r;
+    vec3 pa = p-a, ba = b-a;
+    float h = clamp(dot(pa,ba)/dot(ba,ba), 0.0, 1.0);
+    return length(pa - ba*h) - r;
 }
 
 float sdTriPrism(vec3 p, vec2 h)
@@ -136,19 +132,19 @@ float sdPyramid4(vec3 p, vec3 h) // h = { cos a, sin a, height }
 
 float length2(vec2 p)
 {
-	return sqrt(p.x*p.x + p.y*p.y);
+    return sqrt(p.x*p.x + p.y*p.y);
 }
 
 float length6(vec2 p)
 {
-	p = p*p*p; p = p*p;
-	return pow(p.x + p.y, 1.0/6.0);
+    p = p*p*p; p = p*p;
+    return pow(p.x + p.y, 1.0/6.0);
 }
 
 float length8(vec2 p)
 {
-	p = p*p; p = p*p; p = p*p;
-	return pow(p.x + p.y, 1.0/8.0);
+    p = p*p; p = p*p; p = p*p;
+    return pow(p.x + p.y, 1.0/8.0);
 }
 
 float sdTorus82(vec3 p, vec2 t)
@@ -177,7 +173,7 @@ float opS(float d1, float d2)
 
 vec2 opU(vec2 d1, vec2 d2)
 {
-	return (d1.x<d2.x) ? d1 : d2;
+    return (d1.x<d2.x) ? d1 : d2;
 }
 
 vec3 opRep(vec3 p, vec3 c)
@@ -195,7 +191,7 @@ vec3 opTwist(vec3 p)
 
 //------------------------------------------------------------------
 
-vec2 map(in vec3 pos)
+vec2 map_orig(in vec3 pos)
 {
     vec2 res = opU(vec2(sdPlane(    pos), 1.0),
 	                vec2(sdSphere(   pos-vec3(0.0,0.25, 0.0), 0.25), 46.9));
@@ -413,3 +409,5 @@ void main()
     gl_FragColor = vec4(tot, 1.0);
 }
 */
+
+#endif // ENABLE_SPHERE_TRACING
