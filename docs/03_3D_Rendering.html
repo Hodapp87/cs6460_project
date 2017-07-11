@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2017-07-09 Sun 19:06 -->
+<!-- 2017-07-11 Tue 15:34 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>3D Rendering</title>
@@ -13,16 +13,27 @@
 <link rel="stylesheet" href="css/code.css"/>
 <script type="text/javascript" charset="utf-8">if(!window.PolymerGestures) { var head = document.getElementsByTagName('head')[0]; var js = document.createElement("script"); js.type = "text/javascript"; js.src = "//cdn.jsdelivr.net/webcomponentsjs/0.7.20/webcomponents.min.js"; head.appendChild(js); } </script>
 <link rel='import' href='juicy-ace-editor.html'/>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 </head>
 <body>
 <div id="content">
 <h1 class="title">3D Rendering</h1>
 
-<div id="outline-container-orge6e6a71" class="outline-2">
-<h2 id="orge6e6a71"><span class="section-number-2"> 3</span> 3D Rendering</h2>
+<div id="outline-container-org537595e" class="outline-2">
+<h2 id="org537595e"><span class="section-number-2"> 3</span> 3D Rendering</h2>
 <div class="outline-text-2" id="text-1">
-</div><div id="outline-container-org87c84b5" class="outline-3">
-<h3 id="org87c84b5"><span class="section-number-3"> 3.1</span> Sphere example</h3>
+<p>
+If \(a^2=b\) and \( b=2 \), then the solution must be
+either \[ a=+\sqrt{2} \] or \[ a=-\sqrt{2} \].
+</p>
+
+\begin{equation}
+x=\sqrt{b}
+\end{equation}
+</div>
+
+<div id="outline-container-org8c5d820" class="outline-3">
+<h3 id="org8c5d820"><span class="section-number-3"> 3.1</span> Sphere example</h3>
 <div class="outline-text-3" id="text-1-1">
 <div class="org-src-container">
 <juicy-ace-editor id='webgl-juicy-ace-editor-1' mode="ace/mode/glsl" readonly="true">uniform vec2 resolution;
@@ -130,31 +141,75 @@ void main()
 </div>
 </div>
 
-<div id="outline-container-org3fd2527" class="outline-3">
-<h3 id="org3fd2527"><span class="section-number-3"> 3.2</span> Transformations</h3>
+<div id="outline-container-org275ea58" class="outline-3">
+<h3 id="org275ea58"><span class="section-number-3"> 3.2</span> Distance Bounds &amp; Distance Fields</h3>
 <div class="outline-text-3" id="text-1-2">
+</div><div id="outline-container-org1127134" class="outline-4">
+<h4 id="org1127134"><span class="section-number-4"> 3.2.1</span> Why a sphere tracer?</h4>
+</div>
 </div>
 
-<div id="outline-container-orgf05dca3" class="outline-4">
-<h4 id="orgf05dca3"><span class="section-number-4"> 3.2.1</span> Scaling</h4>
+<div id="outline-container-orgfa1c94d" class="outline-3">
+<h3 id="orgfa1c94d"><span class="section-number-3"> 3.3</span> Transformations</h3>
+<div class="outline-text-3" id="text-1-3">
 </div>
 
-<div id="outline-container-orgc66b728" class="outline-4">
-<h4 id="orgc66b728"><span class="section-number-4"> 3.2.2</span> Translation</h4>
+<div id="outline-container-orgc28a64e" class="outline-4">
+<h4 id="orgc28a64e"><span class="section-number-4"> 3.3.1</span> Scaling</h4>
 </div>
 
-<div id="outline-container-org378fe0e" class="outline-4">
-<h4 id="org378fe0e"><span class="section-number-4"> 3.2.3</span> Rotation</h4>
+<div id="outline-container-orge48c2e7" class="outline-4">
+<h4 id="orge48c2e7"><span class="section-number-4"> 3.3.2</span> Translation</h4>
 </div>
 
-<div id="outline-container-org7d87ecd" class="outline-4">
-<h4 id="org7d87ecd"><span class="section-number-4"> 3.2.4</span> Shearing</h4>
+<div id="outline-container-org51113a0" class="outline-4">
+<h4 id="org51113a0"><span class="section-number-4"> 3.3.3</span> Rotation</h4>
 </div>
 
-<div id="outline-container-org1e5f7c1" class="outline-4">
-<h4 id="org1e5f7c1"><span class="section-number-4"> 3.2.5</span> Vectors &amp; Matrices</h4>
-<div class="outline-text-4" id="text-1-2-5">
+<div id="outline-container-orgea72927" class="outline-4">
+<h4 id="orgea72927"><span class="section-number-4"> 3.3.4</span> Shearing</h4>
 </div>
+
+<div id="outline-container-org36bdf0e" class="outline-4">
+<h4 id="org36bdf0e"><span class="section-number-4"> 3.3.5</span> Vectors &amp; Matrices</h4>
+<div class="outline-text-4" id="text-1-3-5">
+</div>
+</div>
+</div>
+
+<div id="outline-container-orge818a90" class="outline-3">
+<h3 id="orge818a90"><span class="section-number-3"> 3.4</span> Constructive Solid Geometry</h3>
+</div>
+
+<div id="outline-container-org26b150d" class="outline-3">
+<h3 id="org26b150d"><span class="section-number-3"> 3.5</span> Domain Warping</h3>
+</div>
+
+<div id="outline-container-org3375525" class="outline-3">
+<h3 id="org3375525"><span class="section-number-3"> 3.6</span> Domain Repetition</h3>
+</div>
+
+<div id="outline-container-org88daac9" class="outline-3">
+<h3 id="org88daac9"><span class="section-number-3"> 3.7</span> Summary</h3>
+<div class="outline-text-3" id="text-1-7">
+<p>
+This concludes the tutorial - at least, until I write more.
+</p>
+
+<p>
+I mentioned that distance fields were a sort of extension of what we
+looked at in the last section - particularly, of what we can do with
+functions that map points in space to something (color, or a distance
+bound, for instance).  Another application of this same principle can
+be found in the <a target='_blank' href="https://www.cs.jhu.edu/~subodh/458/p253-perlin.pdf">Hypertexture</a> approach of Perlin and Hoffert - in which
+a function maps points in 3D space to <b>density</b> at that point.
+</p>
+
+<p>
+3D rendering is a subject both broad and deep, and this tutorial
+covers just a narrow part of one aspect of them.  The next section
+gives a handful of references that may be good starting points.
+</p>
 </div>
 </div>
 </div>

@@ -62,6 +62,10 @@ This tutorial is not:
   link to external resources of that sort where appropriate.
 - An introduction into programming for those who have no experience
   whatsoever.
+- Instructions for how to make a robust, high-quality and/or fast
+  renderer.  That is another area completely.  For nearly any code I
+  supply here, "real" renderers do it faster and better - but with
+  orders of magnitude more complication.
 
 ** Credits & Acknowledgements
 
@@ -71,3 +75,12 @@ paradigm of [[https://leanprover.github.io/introduction_to_lean/][An Introductio
 
 The WebGL and editor portions of this site are thanks to [[https://github.com/gportelli/pocket.gl][pocket.gl]], a
 modified version of which is embedded in the site.
+
+Fabrice Castel's [[https://fabricecastel.github.io/blog/2015-08-03/main.html][series]] on sphere tracing, [[http://www.iquilezles.org/][Íñigo Quílez's website]], [[https://thebookofshaders.com/][The
+Book of Shaders]], and Morgan McGuire's [[https://www.cs.williams.edu/~morgan/cs371-f14/reading/implicit.pdf][Numerical Methods for Ray
+Tracing Implicitly Defined Surfaces]] were very helpful references in
+the course of building the content of this site.  Particularly, the
+sphere tracing example in section 3 is based heavily around Íñigo
+Quílez's [[https://www.shadertoy.com/view/Xds3zN][Raymarching Primitives demo]].
+
+# TODO: Either put license text here or make note of where to find it.

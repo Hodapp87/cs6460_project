@@ -3,6 +3,4 @@ var lean_nav_data = [
 "02_2D_Coordinates.html",
 "03_3D_Rendering.html",
 "04_Final_Notes.html",
-"98_Example.html",
-"99_Second_Chapter.html",
 ];

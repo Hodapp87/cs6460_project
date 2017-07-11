@@ -793,8 +793,8 @@ myModule2.init();
 
 // $.ajaxPrefilter(undefined);
 // loadJSFile("https://cdn.rawgit.com/gportelli/pocket.gl/v1.2.3/dist/pocket.gl.min.js");
-loadJSFile("https://cdn.rawgit.com/Hodapp87/pocket.gl/2111d6ba/dist/pocket.gl.min.js");
-// loadJSFile("dist/pocket.gl.js");
+//loadJSFile("https://cdn.rawgit.com/Hodapp87/pocket.gl/2111d6ba/dist/pocket.gl.min.js");
+loadJSFile("dist/pocket.gl.js");
 //myModule2.append_console("-- Loading pocket.gl...            ");
 
 params = {
@@ -802,6 +802,7 @@ params = {
     editorTheme: "dark",
     fluidWidth: true,
     fragmentShaderFile: "./spiral.glsl",
+    fragmentShaderIncludeFiles: ["sphere_tracer.glsl", "lib.glsl"],
     uniforms: [
         {
             "type": "float",

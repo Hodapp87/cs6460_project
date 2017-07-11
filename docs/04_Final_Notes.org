@@ -13,6 +13,8 @@ Here are a few other references that may be relevant:
   - [[https://fabricecastel.github.io/blog/2016-08-17/main.html][Sphere Tracing 105 - Domain Repetition]]
 - Basically anything by [[http://www.iquilezles.org/][Íñigo Quílez]], e.g. [[http://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm][Modeling with Distance Functions]]
 - From John Hart: [[http://graphics.cs.williams.edu/courses/cs371/f14/reading/implicit.pdf][Numerical Methods for Ray Tracing Implicitly Defined Surfaces]]
+- From Gábor Liktor: [[http://old.cescg.org/CESCG-2008/papers/TUBudapest-Liktor-Gabor.pdf][Ray tracing implicit surfaces on the GPU]]
+- [[https://www.cs.williams.edu/~morgan/cs371-f14/reading/implicit.pdf][Numerical Methods for Ray Tracing Implicitly Defined Surfaces]] 
 - The [[http://blog.hvidtfeldts.net/][Syntopia]] blog from Mikael Hvidtfeldt Christensen
 - [[https://thebookofshaders.com/][The Book of Shaders]]
 

@@ -940,6 +940,6 @@ For the case particularly of creating 2D images from functions, look
 at [[http://conal.net/papers/functional-images/][Functional Images]] from Conal Elliott.  For using shaders over 3
 dimensions to create "solid textures", look at Ken Perlin's seminal
 paper, [[https://www.semanticscholar.org/paper/An-image-synthesizer-Perlin/e04d7772b91a83a901408eb0876bbb7814b1d4b5][An image synthesizer]]. Beyond this, there are countless
-references on shaders are used in 3D graphics - both in realtime
+references on how shaders are used in 3D graphics - both in realtime
 applications such as games, and in computer-generated imagery for
 movies and TV.
