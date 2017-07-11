@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2017-07-11 Tue 17:59 -->
+<!-- 2017-07-11 Tue 19:26 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>3D Rendering</title>
@@ -19,8 +19,8 @@
 <div id="content">
 <h1 class="title">3D Rendering</h1>
 
-<div id="outline-container-org610559e" class="outline-2">
-<h2 id="org610559e"><span class="section-number-2"> 3</span> 3D Rendering</h2>
+<div id="outline-container-org58aad84" class="outline-2">
+<h2 id="org58aad84"><span class="section-number-2"> 3</span> 3D Rendering</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 If \(a^2=b\) and \( b=2 \), then the solution must be
@@ -32,8 +32,8 @@ x=\sqrt{b}
 \end{equation}
 </div>
 
-<div id="outline-container-org0121708" class="outline-3">
-<h3 id="org0121708"><span class="section-number-3"> 3.1</span> Sphere example</h3>
+<div id="outline-container-org8737b5b" class="outline-3">
+<h3 id="org8737b5b"><span class="section-number-3"> 3.1</span> Sphere example</h3>
 <div class="outline-text-3" id="text-1-1">
 <div class="org-src-container">
 <juicy-ace-editor id='webgl-juicy-ace-editor-1' mode="ace/mode/glsl" readonly="true">#define ENABLE_SPHERE_TRACING
@@ -42,10 +42,18 @@ uniform vec2 resolution;
 uniform vec4 mouse;
 uniform float time;
 
+uniform float freq;
+
 vec2 map(in vec3 pos)
 {
+    float ca = cos(freq * pos.y);
+    float sa = sin(freq * pos.y);
+    vec3 pos2 = vec3(pos.x * ca - pos.z * sa, pos.y, pos.x * sa + pos.z * ca);
+    float ca2 = cos(freq2 * pos2.z);
+    float sa2 = sin(freq2 * pos2.z);
+    vec3 pos3 = vec3(pos2.x * ca2 - pos2.y * sa2, pos2.x * sa2 + pos2.y * ca2, pos2.z);
     vec2 res = opU(vec2(sdPlane(pos), 1.0),
-                   vec2(sdSphere(pos-vec3(0.0,0.5,0.0), 1.0), 46.9));
+                   vec2(udRoundBox(pos3-vec3(0.0,1.0, 0.0), vec3(1.0), 0.05), 3.0));
     return res;
 }
 
@@ -74,16 +82,44 @@ void main()
     col = pow(col, vec3(0.4545));
     gl_FragColor = vec4(col, 1.0);
 }
-</juicy-ace-editor><div id='webgl-full-code-1' style='display:none'>#define ENABLE_SPHERE_TRACING
+</juicy-ace-editor><div id='webgl-full-code-1' style='display:none'>/* PARAMETERS
+[
+   {
+       "type": "float",
+       "value": 0.1,
+       "min": -1,
+       "max": 1,
+       "name": "freq",
+       "GUIName": "Freq"
+   },
+   {
+       "type": "float",
+       "value": 0.1,
+       "min": -1,
+       "max": 1,
+       "name": "freq2",
+       "GUIName": "Freq2"
+   }   
+]
+END */
+#define ENABLE_SPHERE_TRACING
 
 uniform vec2 resolution;
 uniform vec4 mouse;
 uniform float time;
 
+uniform float freq;
+
 vec2 map(in vec3 pos)
 {
+    float ca = cos(freq * pos.y);
+    float sa = sin(freq * pos.y);
+    vec3 pos2 = vec3(pos.x * ca - pos.z * sa, pos.y, pos.x * sa + pos.z * ca);
+    float ca2 = cos(freq2 * pos2.z);
+    float sa2 = sin(freq2 * pos2.z);
+    vec3 pos3 = vec3(pos2.x * ca2 - pos2.y * sa2, pos2.x * sa2 + pos2.y * ca2, pos2.z);
     vec2 res = opU(vec2(sdPlane(pos), 1.0),
-                   vec2(sdSphere(pos-vec3(0.0,0.5,0.0), 1.0), 46.9));
+                   vec2(udRoundBox(pos3-vec3(0.0,1.0, 0.0), vec3(1.0), 0.05), 3.0));
     return res;
 }
 
@@ -117,56 +153,56 @@ void main()
 </div>
 </div>
 
-<div id="outline-container-orgb8de9ae" class="outline-3">
-<h3 id="orgb8de9ae"><span class="section-number-3"> 3.2</span> Distance Bounds &amp; Distance Fields</h3>
+<div id="outline-container-org5e48bb0" class="outline-3">
+<h3 id="org5e48bb0"><span class="section-number-3"> 3.2</span> Distance Bounds &amp; Distance Fields</h3>
 <div class="outline-text-3" id="text-1-2">
-</div><div id="outline-container-org0f1d988" class="outline-4">
-<h4 id="org0f1d988"><span class="section-number-4"> 3.2.1</span> Why a sphere tracer?</h4>
+</div><div id="outline-container-org1ae2086" class="outline-4">
+<h4 id="org1ae2086"><span class="section-number-4"> 3.2.1</span> Why a sphere tracer?</h4>
 </div>
 </div>
 
-<div id="outline-container-org514aac3" class="outline-3">
-<h3 id="org514aac3"><span class="section-number-3"> 3.3</span> Transformations</h3>
+<div id="outline-container-org89bebb0" class="outline-3">
+<h3 id="org89bebb0"><span class="section-number-3"> 3.3</span> Transformations</h3>
 <div class="outline-text-3" id="text-1-3">
 </div>
 
-<div id="outline-container-orgf5c4257" class="outline-4">
-<h4 id="orgf5c4257"><span class="section-number-4"> 3.3.1</span> Scaling</h4>
+<div id="outline-container-org7d10e9e" class="outline-4">
+<h4 id="org7d10e9e"><span class="section-number-4"> 3.3.1</span> Scaling</h4>
 </div>
 
-<div id="outline-container-org9461b74" class="outline-4">
-<h4 id="org9461b74"><span class="section-number-4"> 3.3.2</span> Translation</h4>
+<div id="outline-container-org7299228" class="outline-4">
+<h4 id="org7299228"><span class="section-number-4"> 3.3.2</span> Translation</h4>
 </div>
 
-<div id="outline-container-org5ce7440" class="outline-4">
-<h4 id="org5ce7440"><span class="section-number-4"> 3.3.3</span> Rotation</h4>
+<div id="outline-container-orgb60ae87" class="outline-4">
+<h4 id="orgb60ae87"><span class="section-number-4"> 3.3.3</span> Rotation</h4>
 </div>
 
-<div id="outline-container-org6103645" class="outline-4">
-<h4 id="org6103645"><span class="section-number-4"> 3.3.4</span> Shearing</h4>
+<div id="outline-container-org083598c" class="outline-4">
+<h4 id="org083598c"><span class="section-number-4"> 3.3.4</span> Shearing</h4>
 </div>
 
-<div id="outline-container-org8f01e3b" class="outline-4">
-<h4 id="org8f01e3b"><span class="section-number-4"> 3.3.5</span> Vectors &amp; Matrices</h4>
+<div id="outline-container-orgac09e98" class="outline-4">
+<h4 id="orgac09e98"><span class="section-number-4"> 3.3.5</span> Vectors &amp; Matrices</h4>
 <div class="outline-text-4" id="text-1-3-5">
 </div>
 </div>
 </div>
 
-<div id="outline-container-orgf50d7de" class="outline-3">
-<h3 id="orgf50d7de"><span class="section-number-3"> 3.4</span> Constructive Solid Geometry</h3>
+<div id="outline-container-org839af51" class="outline-3">
+<h3 id="org839af51"><span class="section-number-3"> 3.4</span> Constructive Solid Geometry</h3>
 </div>
 
-<div id="outline-container-org0e3ecbc" class="outline-3">
-<h3 id="org0e3ecbc"><span class="section-number-3"> 3.5</span> Domain Warping</h3>
+<div id="outline-container-org9d28b68" class="outline-3">
+<h3 id="org9d28b68"><span class="section-number-3"> 3.5</span> Domain Warping</h3>
 </div>
 
-<div id="outline-container-orge875516" class="outline-3">
-<h3 id="orge875516"><span class="section-number-3"> 3.6</span> Domain Repetition</h3>
+<div id="outline-container-orgd3a480f" class="outline-3">
+<h3 id="orgd3a480f"><span class="section-number-3"> 3.6</span> Domain Repetition</h3>
 </div>
 
-<div id="outline-container-orgb0ee722" class="outline-3">
-<h3 id="orgb0ee722"><span class="section-number-3"> 3.7</span> Summary</h3>
+<div id="outline-container-org1f132a5" class="outline-3">
+<h3 id="org1f132a5"><span class="section-number-3"> 3.7</span> Summary</h3>
 <div class="outline-text-3" id="text-1-7">
 <p>
 This concludes the tutorial - at least, until I write more.
