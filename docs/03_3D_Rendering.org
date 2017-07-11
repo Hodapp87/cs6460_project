@@ -40,6 +40,7 @@ uniform vec4 mouse;
 uniform float time;
 
 uniform float freq;
+uniform float freq2;
 
 vec2 map(in vec3 pos)
 {
