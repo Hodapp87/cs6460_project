@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2017-07-11 Tue 16:29 -->
+<!-- 2017-07-11 Tue 17:59 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>3D Rendering</title>
@@ -19,8 +19,8 @@
 <div id="content">
 <h1 class="title">3D Rendering</h1>
 
-<div id="outline-container-orga1a25b7" class="outline-2">
-<h2 id="orga1a25b7"><span class="section-number-2"> 3</span> 3D Rendering</h2>
+<div id="outline-container-org610559e" class="outline-2">
+<h2 id="org610559e"><span class="section-number-2"> 3</span> 3D Rendering</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 If \(a^2=b\) and \( b=2 \), then the solution must be
@@ -32,8 +32,8 @@ x=\sqrt{b}
 \end{equation}
 </div>
 
-<div id="outline-container-orgae422ad" class="outline-3">
-<h3 id="orgae422ad"><span class="section-number-3"> 3.1</span> Sphere example</h3>
+<div id="outline-container-org0121708" class="outline-3">
+<h3 id="org0121708"><span class="section-number-3"> 3.1</span> Sphere example</h3>
 <div class="outline-text-3" id="text-1-1">
 <div class="org-src-container">
 <juicy-ace-editor id='webgl-juicy-ace-editor-1' mode="ace/mode/glsl" readonly="true">#define ENABLE_SPHERE_TRACING
@@ -44,29 +44,8 @@ uniform float time;
 
 vec2 map(in vec3 pos)
 {
-    vec2 res = opU(vec2(sdPlane(    pos), 1.0),
-	                vec2(sdSphere(   pos-vec3(0.0,0.25, 0.0), 0.25), 46.9));
-    res = opU(res, vec2(sdBox(      pos-vec3(1.0,0.25, 0.0), vec3(0.25)), 3.0));
-    res = opU(res, vec2(udRoundBox( pos-vec3(1.0,0.25, 1.0), vec3(0.15), 0.1), 41.0));
-	res = opU(res, vec2(sdTorus(    pos-vec3(0.0,0.25, 1.0), vec2(0.20,0.05)), 25.0));
-    res = opU(res, vec2(sdCapsule(  pos,vec3(-1.3,0.10,-0.1), vec3(-0.8,0.50,0.2), 0.1 ), 31.9));
-	res = opU(res, vec2(sdTriPrism( pos-vec3(-1.0,0.25,-1.0), vec2(0.25,0.05)),43.5));
-	res = opU(res, vec2(sdCylinder( pos-vec3(1.0,0.30,-1.0), vec2(0.1,0.2)), 8.0));
-	res = opU(res, vec2(sdCone(     pos-vec3(0.0,0.50,-1.0), vec3(0.8,0.6,0.3)), 55.0));
-	res = opU(res, vec2(sdTorus82(  pos-vec3(0.0,0.25, 2.0), vec2(0.20,0.05)),50.0));
-	res = opU(res, vec2(sdTorus88(  pos-vec3(-1.0,0.25, 2.0), vec2(0.20,0.05)),43.0));
-	res = opU(res, vec2(sdCylinder6(pos-vec3(1.0,0.30, 2.0), vec2(0.1,0.2)), 12.0));
-	res = opU(res, vec2(sdHexPrism( pos-vec3(-1.0,0.20, 1.0), vec2(0.25,0.05)),17.0));
-	res = opU(res, vec2(sdPyramid4( pos-vec3(-1.0,0.15,-2.0), vec3(0.8,0.6,0.25)),37.0));
-    res = opU(res, vec2(opS(udRoundBox( pos-vec3(-2.0,0.2, 1.0), vec3(0.15),0.05),
-	                           sdSphere(   pos-vec3(-2.0,0.2, 1.0), 0.25)), 13.0));
-    res = opU(res, vec2(opS(sdTorus82( pos-vec3(-2.0,0.2, 0.0), vec2(0.20,0.1)),
-	                           sdCylinder( opRep(vec3(atan(pos.x+2.0,pos.z)/6.2831, pos.y, 0.02+0.5*length(pos-vec3(-2.0,0.2, 0.0))), vec3(0.05,1.0,0.05)), vec2(0.02,0.6))), 51.0));
-	res = opU(res, vec2(0.5*sdSphere(   pos-vec3(-2.0,0.25,-1.0), 0.2) + 0.01*sin(50.0*pos.x)*sin(50.0*pos.y)*sin(50.0*pos.z), 65.0));
-	res = opU(res, vec2(0.5*sdTorus(opTwist(pos-vec3(-2.0,0.25, 2.0)),vec2(0.20,0.05)), 46.7));
-    res = opU(res, vec2(sdConeSection(pos-vec3(0.0,0.35,-2.0), 0.15, 0.2, 0.1), 13.67));
-    res = opU(res, vec2(sdEllipsoid(pos-vec3(1.0,0.35,-2.0), vec3(0.15, 0.2, 0.05)), 43.17));
-        
+    vec2 res = opU(vec2(sdPlane(pos), 1.0),
+                   vec2(sdSphere(pos-vec3(0.0,0.5,0.0), 1.0), 46.9));
     return res;
 }
 
@@ -103,29 +82,8 @@ uniform float time;
 
 vec2 map(in vec3 pos)
 {
-    vec2 res = opU(vec2(sdPlane(    pos), 1.0),
-	                vec2(sdSphere(   pos-vec3(0.0,0.25, 0.0), 0.25), 46.9));
-    res = opU(res, vec2(sdBox(      pos-vec3(1.0,0.25, 0.0), vec3(0.25)), 3.0));
-    res = opU(res, vec2(udRoundBox( pos-vec3(1.0,0.25, 1.0), vec3(0.15), 0.1), 41.0));
-	res = opU(res, vec2(sdTorus(    pos-vec3(0.0,0.25, 1.0), vec2(0.20,0.05)), 25.0));
-    res = opU(res, vec2(sdCapsule(  pos,vec3(-1.3,0.10,-0.1), vec3(-0.8,0.50,0.2), 0.1 ), 31.9));
-	res = opU(res, vec2(sdTriPrism( pos-vec3(-1.0,0.25,-1.0), vec2(0.25,0.05)),43.5));
-	res = opU(res, vec2(sdCylinder( pos-vec3(1.0,0.30,-1.0), vec2(0.1,0.2)), 8.0));
-	res = opU(res, vec2(sdCone(     pos-vec3(0.0,0.50,-1.0), vec3(0.8,0.6,0.3)), 55.0));
-	res = opU(res, vec2(sdTorus82(  pos-vec3(0.0,0.25, 2.0), vec2(0.20,0.05)),50.0));
-	res = opU(res, vec2(sdTorus88(  pos-vec3(-1.0,0.25, 2.0), vec2(0.20,0.05)),43.0));
-	res = opU(res, vec2(sdCylinder6(pos-vec3(1.0,0.30, 2.0), vec2(0.1,0.2)), 12.0));
-	res = opU(res, vec2(sdHexPrism( pos-vec3(-1.0,0.20, 1.0), vec2(0.25,0.05)),17.0));
-	res = opU(res, vec2(sdPyramid4( pos-vec3(-1.0,0.15,-2.0), vec3(0.8,0.6,0.25)),37.0));
-    res = opU(res, vec2(opS(udRoundBox( pos-vec3(-2.0,0.2, 1.0), vec3(0.15),0.05),
-	                           sdSphere(   pos-vec3(-2.0,0.2, 1.0), 0.25)), 13.0));
-    res = opU(res, vec2(opS(sdTorus82( pos-vec3(-2.0,0.2, 0.0), vec2(0.20,0.1)),
-	                           sdCylinder( opRep(vec3(atan(pos.x+2.0,pos.z)/6.2831, pos.y, 0.02+0.5*length(pos-vec3(-2.0,0.2, 0.0))), vec3(0.05,1.0,0.05)), vec2(0.02,0.6))), 51.0));
-	res = opU(res, vec2(0.5*sdSphere(   pos-vec3(-2.0,0.25,-1.0), 0.2) + 0.01*sin(50.0*pos.x)*sin(50.0*pos.y)*sin(50.0*pos.z), 65.0));
-	res = opU(res, vec2(0.5*sdTorus(opTwist(pos-vec3(-2.0,0.25, 2.0)),vec2(0.20,0.05)), 46.7));
-    res = opU(res, vec2(sdConeSection(pos-vec3(0.0,0.35,-2.0), 0.15, 0.2, 0.1), 13.67));
-    res = opU(res, vec2(sdEllipsoid(pos-vec3(1.0,0.35,-2.0), vec3(0.15, 0.2, 0.05)), 43.17));
-        
+    vec2 res = opU(vec2(sdPlane(pos), 1.0),
+                   vec2(sdSphere(pos-vec3(0.0,0.5,0.0), 1.0), 46.9));
     return res;
 }
 
@@ -159,56 +117,56 @@ void main()
 </div>
 </div>
 
-<div id="outline-container-org39efe47" class="outline-3">
-<h3 id="org39efe47"><span class="section-number-3"> 3.2</span> Distance Bounds &amp; Distance Fields</h3>
+<div id="outline-container-orgb8de9ae" class="outline-3">
+<h3 id="orgb8de9ae"><span class="section-number-3"> 3.2</span> Distance Bounds &amp; Distance Fields</h3>
 <div class="outline-text-3" id="text-1-2">
-</div><div id="outline-container-org53fb88f" class="outline-4">
-<h4 id="org53fb88f"><span class="section-number-4"> 3.2.1</span> Why a sphere tracer?</h4>
+</div><div id="outline-container-org0f1d988" class="outline-4">
+<h4 id="org0f1d988"><span class="section-number-4"> 3.2.1</span> Why a sphere tracer?</h4>
 </div>
 </div>
 
-<div id="outline-container-orgc2e3ee1" class="outline-3">
-<h3 id="orgc2e3ee1"><span class="section-number-3"> 3.3</span> Transformations</h3>
+<div id="outline-container-org514aac3" class="outline-3">
+<h3 id="org514aac3"><span class="section-number-3"> 3.3</span> Transformations</h3>
 <div class="outline-text-3" id="text-1-3">
 </div>
 
-<div id="outline-container-org372ca98" class="outline-4">
-<h4 id="org372ca98"><span class="section-number-4"> 3.3.1</span> Scaling</h4>
+<div id="outline-container-orgf5c4257" class="outline-4">
+<h4 id="orgf5c4257"><span class="section-number-4"> 3.3.1</span> Scaling</h4>
 </div>
 
-<div id="outline-container-orgf11f5b5" class="outline-4">
-<h4 id="orgf11f5b5"><span class="section-number-4"> 3.3.2</span> Translation</h4>
+<div id="outline-container-org9461b74" class="outline-4">
+<h4 id="org9461b74"><span class="section-number-4"> 3.3.2</span> Translation</h4>
 </div>
 
-<div id="outline-container-orgdcc46f2" class="outline-4">
-<h4 id="orgdcc46f2"><span class="section-number-4"> 3.3.3</span> Rotation</h4>
+<div id="outline-container-org5ce7440" class="outline-4">
+<h4 id="org5ce7440"><span class="section-number-4"> 3.3.3</span> Rotation</h4>
 </div>
 
-<div id="outline-container-orgbe422ae" class="outline-4">
-<h4 id="orgbe422ae"><span class="section-number-4"> 3.3.4</span> Shearing</h4>
+<div id="outline-container-org6103645" class="outline-4">
+<h4 id="org6103645"><span class="section-number-4"> 3.3.4</span> Shearing</h4>
 </div>
 
-<div id="outline-container-org01dcc8e" class="outline-4">
-<h4 id="org01dcc8e"><span class="section-number-4"> 3.3.5</span> Vectors &amp; Matrices</h4>
+<div id="outline-container-org8f01e3b" class="outline-4">
+<h4 id="org8f01e3b"><span class="section-number-4"> 3.3.5</span> Vectors &amp; Matrices</h4>
 <div class="outline-text-4" id="text-1-3-5">
 </div>
 </div>
 </div>
 
-<div id="outline-container-org4f8861d" class="outline-3">
-<h3 id="org4f8861d"><span class="section-number-3"> 3.4</span> Constructive Solid Geometry</h3>
+<div id="outline-container-orgf50d7de" class="outline-3">
+<h3 id="orgf50d7de"><span class="section-number-3"> 3.4</span> Constructive Solid Geometry</h3>
 </div>
 
-<div id="outline-container-org360bf63" class="outline-3">
-<h3 id="org360bf63"><span class="section-number-3"> 3.5</span> Domain Warping</h3>
+<div id="outline-container-org0e3ecbc" class="outline-3">
+<h3 id="org0e3ecbc"><span class="section-number-3"> 3.5</span> Domain Warping</h3>
 </div>
 
-<div id="outline-container-org59dd22e" class="outline-3">
-<h3 id="org59dd22e"><span class="section-number-3"> 3.6</span> Domain Repetition</h3>
+<div id="outline-container-orge875516" class="outline-3">
+<h3 id="orge875516"><span class="section-number-3"> 3.6</span> Domain Repetition</h3>
 </div>
 
-<div id="outline-container-orgc2f82ba" class="outline-3">
-<h3 id="orgc2f82ba"><span class="section-number-3"> 3.7</span> Summary</h3>
+<div id="outline-container-orgb0ee722" class="outline-3">
+<h3 id="orgb0ee722"><span class="section-number-3"> 3.7</span> Summary</h3>
 <div class="outline-text-3" id="text-1-7">
 <p>
 This concludes the tutorial - at least, until I write more.
