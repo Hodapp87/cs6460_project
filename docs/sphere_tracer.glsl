@@ -222,7 +222,7 @@ vec2 map_orig(in vec3 pos)
 vec2 castRay(in vec3 ro, in vec3 rd)
 {
     float tmin = 1.0;
-    float tmax = 20.0;
+    float tmax = 50.0;
    
 #if 1
     // bounding volume
@@ -241,11 +241,11 @@ vec2 castRay(in vec3 ro, in vec3 rd)
     
     float t = tmin;
     float m = -1.0;
-    for(int i = 0; i < 64; i++)
+    for(int i = 0; i < 128; i++)
     {
 	    float precis = 0.0005*t;
 	    vec2 res = map(ro + rd*t);
-        if(res.x < precis || t > tmax) break;
+        if(abs(res.x) < precis || t > tmax) break;
         t += res.x;
 	    m = res.y;
     }
@@ -267,6 +267,14 @@ float softshadow(in vec3 ro, in vec3 rd, in float mint, in float tmax)
         if(h < 0.001 || t > tmax) break;
     }
     return clamp(res, 0.0, 1.0);
+}
+
+vec3 approx_normal(vec3 p, float dp) {
+    float d = map(p).x;
+    return normalize(
+        vec3(map(p + vec3(dp,0,0)).x-d,
+             map(p + vec3(0,dp,0)).x-d,
+             map(p + vec3(0,0,dp)).x-d));
 }
 
 vec3 calcNormal(in vec3 pos)
@@ -312,7 +320,7 @@ vec3 render(in vec3 ro, in vec3 rd)
         vec3 pos = ro + t*rd;
         vec3 nor = calcNormal(pos);
         vec3 ref = reflect(rd, nor);
-        
+
         if(m<1.5)
         {
             // Color floor:
@@ -345,7 +353,12 @@ vec3 render(in vec3 ro, in vec3 rd)
         lin += 0.25*fre*vec3(1.00,1.00,1.00)*occ;
 		col = col*lin;
 
-    	col = mix(col, vec3(0.8,0.9,1.0), 1.0-exp(-0.0002*t*t*t));
+        // fog
+    	// col = mix(col, vec3(0.8,0.9,1.0), 1.0-exp(-0.0002*t*t*t));
+
+        // col = vec3(dif + 0.3*amb);
+        //col = 0.5 * nor + 0.5;
+        //col = pos;
     }
 
 	return vec3(clamp(col,0.0,1.0));
