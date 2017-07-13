@@ -52,6 +52,11 @@ surface* that a *distance function* described implicitly. If this
 sounds like it's related to the mention of *isolines* in the last
 section, it's because it is.
 
+Interestingly enough, the above method still works if the GPS behaves
+a little more strangely: it doesn't need to tell you the exact
+distance; it could simply tell you some (non-zero) distance for which
+you're guaranteed *not* to hit the boundary in any direction.
+
 ** Blah blah blah
 
 https://en.wikipedia.org/wiki/Signed_distance_function
