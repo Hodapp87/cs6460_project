@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2017-07-12 Wed 16:01 -->
+<!-- 2017-07-12 Wed 22:36 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>3D Rendering</title>
@@ -19,9 +19,81 @@
 <div id="content">
 <h1 class="title">3D Rendering</h1>
 
-<div id="outline-container-org393e9ff" class="outline-2">
-<h2 id="org393e9ff"><span class="section-number-2"> 3</span> 3D Rendering</h2>
+<div id="outline-container-orgdecee42" class="outline-2">
+<h2 id="orgdecee42"><span class="section-number-2"> 3</span> 3D Rendering</h2>
 <div class="outline-text-2" id="text-1">
+<p>
+In the last section, we dealt with a class of functions which mapped
+2D space (i.e. a pixel location) to color values.  In this section, we
+generalize this a bit, and deal with functions that map 3D space to
+something.
+</p>
+
+<p>
+First, though, consider a (far-fetched) thought experiment.  Suppose
+you're outside and you need to trace out some strange geographical
+boundary - maybe an irregular, invisible property line.  For whatever
+reason, you don't even have a map.  What you do have is a precise but
+rather strange GPS device&#x2026; and all it can do is tell you, whenever
+you need, the shortest distance you could move in order to reach the
+nearest part of that boundary.  It doesn't tell you which direction.
+If it tells you "21 feet", all it means is that in some direction, the
+boundary is exactly 21 feet away, and it's not closer than that in any
+other direction.
+</p>
+
+<p>
+Assume you have some other basic implements, like a tape measure and a
+can of spray paint, and assume that you at least know you're starting
+somewhere inside this boundary.  Now, how could you go about finding
+and marking this boundary (or something fairly close to it)?
+</p>
+
+<p>
+There are probably many different answers, but here is one method to
+consider:
+</p>
+
+<ol class="org-ol">
+<li>Mark your starting point on the ground.</li>
+<li>Pick any direction.</li>
+<li>Get the nearest-distance measurement from the GPS.  Walk in a
+straight line in the chosen direction until you've covered the
+distance the GPS told you.</li>
+<li>Repeat step 3 using the same direction. Once the GPS gives distance
+measurements that are very small (e.g. one inch), stop.</li>
+<li>Wherever you are, make a marking on the ground.</li>
+<li>Return to your starting point.</li>
+<li>Pick a new direction, rotated very slightly from the last time
+(e.g. just 1/2 degree clockwise).</li>
+<li>Repeat step 3.  Once you've returned to your starting direction,
+stop.</li>
+</ol>
+
+<p>
+This is very pain-staking and tedious - but the end result is that
+you've marked off the entire boundary, at 1/2 degree increments, to
+within an inch. (It's possible you'll miss spots, particularly if it's
+a very weird boundary - but you can remedy this by taking more samples
+and repeating the process, sometimes from different spots.)
+</p>
+
+<p>
+To put it in more technical terms: You just traced out the <b>distance
+surface</b> that a <b>distance function</b> described implicitly. If this
+sounds like it's related to the mention of <b>isolines</b> in the last
+section, it's because it is.
+</p>
+</div>
+
+<div id="outline-container-orgbe5d0b4" class="outline-3">
+<h3 id="orgbe5d0b4"><span class="section-number-3"> 3.1</span> Blah blah blah</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+<a target='_blank' href="https://en.wikipedia.org/wiki/Signed_distance_function">https://en.wikipedia.org/wiki/Signed_distance_function</a>
+vs. signed distance bound.
+</p>
+
 <p>
 If \(a^2=b\) and \( b=2 \), then the solution must be
 either \[ a=+\sqrt{2} \] or \[ a=-\sqrt{2} \].
@@ -31,10 +103,11 @@ either \[ a=+\sqrt{2} \] or \[ a=-\sqrt{2} \].
 x=\sqrt{b}
 \end{equation}
 </div>
+</div>
 
-<div id="outline-container-orge2d74f9" class="outline-3">
-<h3 id="orge2d74f9"><span class="section-number-3"> 3.1</span> Sphere example</h3>
-<div class="outline-text-3" id="text-1-1">
+<div id="outline-container-orga27022e" class="outline-3">
+<h3 id="orga27022e"><span class="section-number-3"> 3.2</span> Sphere example</h3>
+<div class="outline-text-3" id="text-1-2">
 <div class="org-src-container">
 <juicy-ace-editor id='webgl-juicy-ace-editor-1' mode="ace/mode/glsl" readonly="true">#define ENABLE_SPHERE_TRACING
 
@@ -157,57 +230,57 @@ void main()
 </div>
 </div>
 
-<div id="outline-container-orgd379505" class="outline-3">
-<h3 id="orgd379505"><span class="section-number-3"> 3.2</span> Distance Bounds &amp; Distance Fields</h3>
-<div class="outline-text-3" id="text-1-2">
-</div><div id="outline-container-org98679a8" class="outline-4">
-<h4 id="org98679a8"><span class="section-number-4"> 3.2.1</span> Why a sphere tracer?</h4>
-</div>
-</div>
-
-<div id="outline-container-orgacf228d" class="outline-3">
-<h3 id="orgacf228d"><span class="section-number-3"> 3.3</span> Transformations</h3>
+<div id="outline-container-orgabc7451" class="outline-3">
+<h3 id="orgabc7451"><span class="section-number-3"> 3.3</span> Distance Bounds &amp; Distance Fields</h3>
 <div class="outline-text-3" id="text-1-3">
-</div>
-
-<div id="outline-container-orgf268861" class="outline-4">
-<h4 id="orgf268861"><span class="section-number-4"> 3.3.1</span> Scaling</h4>
-</div>
-
-<div id="outline-container-org6298868" class="outline-4">
-<h4 id="org6298868"><span class="section-number-4"> 3.3.2</span> Translation</h4>
-</div>
-
-<div id="outline-container-org2c97db2" class="outline-4">
-<h4 id="org2c97db2"><span class="section-number-4"> 3.3.3</span> Rotation</h4>
-</div>
-
-<div id="outline-container-orgf9cf3d0" class="outline-4">
-<h4 id="orgf9cf3d0"><span class="section-number-4"> 3.3.4</span> Shearing</h4>
-</div>
-
-<div id="outline-container-org865a9a3" class="outline-4">
-<h4 id="org865a9a3"><span class="section-number-4"> 3.3.5</span> Vectors &amp; Matrices</h4>
-<div class="outline-text-4" id="text-1-3-5">
-</div>
+</div><div id="outline-container-org8b1b773" class="outline-4">
+<h4 id="org8b1b773"><span class="section-number-4"> 3.3.1</span> Why a sphere tracer?</h4>
 </div>
 </div>
 
-<div id="outline-container-orgdd3a349" class="outline-3">
-<h3 id="orgdd3a349"><span class="section-number-3"> 3.4</span> Constructive Solid Geometry</h3>
+<div id="outline-container-org1dadacb" class="outline-3">
+<h3 id="org1dadacb"><span class="section-number-3"> 3.4</span> Transformations</h3>
+<div class="outline-text-3" id="text-1-4">
 </div>
 
-<div id="outline-container-org03e3db3" class="outline-3">
-<h3 id="org03e3db3"><span class="section-number-3"> 3.5</span> Domain Warping</h3>
+<div id="outline-container-orgec1d210" class="outline-4">
+<h4 id="orgec1d210"><span class="section-number-4"> 3.4.1</span> Scaling</h4>
 </div>
 
-<div id="outline-container-orgb8878ee" class="outline-3">
-<h3 id="orgb8878ee"><span class="section-number-3"> 3.6</span> Domain Repetition</h3>
+<div id="outline-container-orge0dff69" class="outline-4">
+<h4 id="orge0dff69"><span class="section-number-4"> 3.4.2</span> Translation</h4>
 </div>
 
-<div id="outline-container-org29dc2b1" class="outline-3">
-<h3 id="org29dc2b1"><span class="section-number-3"> 3.7</span> Summary</h3>
-<div class="outline-text-3" id="text-1-7">
+<div id="outline-container-org5e52b25" class="outline-4">
+<h4 id="org5e52b25"><span class="section-number-4"> 3.4.3</span> Rotation</h4>
+</div>
+
+<div id="outline-container-org6151139" class="outline-4">
+<h4 id="org6151139"><span class="section-number-4"> 3.4.4</span> Shearing</h4>
+</div>
+
+<div id="outline-container-org6fee025" class="outline-4">
+<h4 id="org6fee025"><span class="section-number-4"> 3.4.5</span> Vectors &amp; Matrices</h4>
+<div class="outline-text-4" id="text-1-4-5">
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgaec7d0f" class="outline-3">
+<h3 id="orgaec7d0f"><span class="section-number-3"> 3.5</span> Constructive Solid Geometry</h3>
+</div>
+
+<div id="outline-container-org32406f0" class="outline-3">
+<h3 id="org32406f0"><span class="section-number-3"> 3.6</span> Domain Warping</h3>
+</div>
+
+<div id="outline-container-org7f67437" class="outline-3">
+<h3 id="org7f67437"><span class="section-number-3"> 3.7</span> Domain Repetition</h3>
+</div>
+
+<div id="outline-container-org173e47c" class="outline-3">
+<h3 id="org173e47c"><span class="section-number-3"> 3.8</span> Summary</h3>
+<div class="outline-text-3" id="text-1-8">
 <p>
 This concludes the tutorial - at least, until I write more.
 </p>

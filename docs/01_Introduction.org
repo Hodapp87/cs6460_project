@@ -28,8 +28,8 @@ places (with a little adaptation) - it's simply fragment shaders
 written in GLSL ([[https://en.wikipedia.org/wiki/OpenGL_Shading_Language][OpenGL Shading Language]]).  That is, I didn't invent a
 toy programming language or API for this tutorial.  On top of that,
 nearly anything you write could be translated easily to many other
-shading languages (e.g. [[https://en.wikipedia.org/wiki/Cg_(programming_language)][Cg]], [[https://en.wikipedia.org/wiki/High-level_shader_language][HLSL]], [[https://en.wikipedia.org/wiki/RenderMan_Shading_Language][RSL]]) that work very similarly, or
-really to any other language.
+shading languages (e.g. [[https://en.wikipedia.org/wiki/Cg_(programming_language)][Cg]], [[https://en.wikipedia.org/wiki/High-level_shader_language][HLSL]], [[https://en.wikipedia.org/wiki/RenderMan_Shading_Language][RSL]], [[https://en.wikipedia.org/wiki/Open_Shading_Language][OSL]]) that work very similarly,
+or really to any other language.
 
 # TODO: Supply GitHub link above.
 

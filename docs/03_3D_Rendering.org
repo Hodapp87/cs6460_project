@@ -3,6 +3,60 @@
 
 * 3D Rendering
 
+In the last section, we dealt with a class of functions which mapped
+2D space (i.e. a pixel location) to color values.  In this section, we
+generalize this a bit, and deal with functions that map 3D space to
+something.
+
+First, though, consider a (far-fetched) thought experiment.  Suppose
+you're outside and you need to trace out some strange geographical
+boundary - maybe an irregular, invisible property line.  For whatever
+reason, you don't even have a map.  What you do have is a precise but
+rather strange GPS device... and all it can do is tell you, whenever
+you need, the shortest distance you could move in order to reach the
+nearest part of that boundary.  It doesn't tell you which direction.
+If it tells you "21 feet", all it means is that in some direction, the
+boundary is exactly 21 feet away, and it's not closer than that in any
+other direction.
+
+Assume you have some other basic implements, like a tape measure and a
+can of spray paint, and assume that you at least know you're starting
+somewhere inside this boundary.  Now, how could you go about finding
+and marking this boundary (or something fairly close to it)?
+
+There are probably many different answers, but here is one method to
+consider:
+
+1. Mark your starting point on the ground.
+2. Pick any direction.
+3. Get the nearest-distance measurement from the GPS.  Walk in a
+   straight line in the chosen direction until you've covered the
+   distance the GPS told you.
+4. Repeat step 3 using the same direction. Once the GPS gives distance
+   measurements that are very small (e.g. one inch), stop.
+5. Wherever you are, make a marking on the ground.
+6. Return to your starting point.
+7. Pick a new direction, rotated very slightly from the last time
+   (e.g. just 1/2 degree clockwise).
+8. Repeat step 3.  Once you've returned to your starting direction,
+   stop.
+
+This is very pain-staking and tedious - but the end result is that
+you've marked off the entire boundary, at 1/2 degree increments, to
+within an inch. (It's possible you'll miss spots, particularly if it's
+a very weird boundary - but you can remedy this by taking more samples
+and repeating the process, sometimes from different spots.)
+
+To put it in more technical terms: You just traced out the *distance
+surface* that a *distance function* described implicitly. If this
+sounds like it's related to the mention of *isolines* in the last
+section, it's because it is.
+
+** Blah blah blah
+
+https://en.wikipedia.org/wiki/Signed_distance_function
+vs. signed distance bound.
+
 If $a^2=b$ and \( b=2 \), then the solution must be
 either $$ a=+\sqrt{2} $$ or \[ a=-\sqrt{2} \].
 
