@@ -315,6 +315,63 @@ void main()
 }
 #+END_SRC
 
+** Repeated cubes 3
+
+#+BEGIN_SRC glsl
+/* PARAMETERS
+[
+   {
+       "type": "float",
+       "value": 2,
+       "min": 1,
+       "max": 10,
+       "name": "dist",
+       "GUIName": "Dist"
+   }   
+]
+END */
+
+#define ENABLE_SPHERE_TRACING
+
+uniform vec2 resolution;
+uniform vec4 mouse;
+uniform float time;
+
+uniform float dist;
+
+float distance(in vec3 pos)
+{
+    vec3 pos_ = mod(pos, dist) - dist/2.0;
+    float res = sdBox(pos_, vec3(0.5));
+    return res;
+}
+
+void main()
+{
+    vec2 mo = mouse.xy/resolution.xy;
+    
+    vec3 tot = vec3(0.0);
+    vec2 p = (-resolution.xy + 2.0*gl_FragCoord.xy)/resolution.y;
+    // Camera location:
+    vec3 ro = vec3(-0.5+3.5*cos(0.1*time + 6.0*mo.x), 1.0 + 2.0*mo.y, 0.5 + 4.0*sin(0.1*time + 6.0*mo.x));
+    // Camera target:
+    vec3 ta = vec3(-0.5, 0.4, 0.5);
+    
+    // Camera-to-world transformation
+    mat3 ca = setCamera(ro, ta, 0.0);
+    
+    // ray direction
+    vec3 rd = ca * normalize(vec3(p.xy, 2.0));
+
+    // render	
+    vec3 col = render(ro, rd);
+
+    // gamma
+    col = pow(col, vec3(0.4545));
+    gl_FragColor = vec4(col, 1.0);
+}
+#+END_SRC
+
 ** Distance Bounds & Distance Fields
 
 *** Why a sphere tracer?
