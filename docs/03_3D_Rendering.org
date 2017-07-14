@@ -48,19 +48,109 @@ a very weird boundary - but you can remedy this by taking more samples
 and repeating the process, sometimes from different spots.)
 
 To put it in more technical terms: You just traced out the *distance
-surface* that a *distance function* described implicitly. If this
-sounds like it's related to the mention of *isolines* in the last
-section, it's because it is.
+surface* that a *distance function* (or a distance field) described
+implicitly. If this sounds like it's related to the mention of
+*isolines* in the last section, it's because it is.
+
+** Distance Functions
+
+In that thought experiment, the hypothetical GPS was providing a
+*distance function* which maps every point in 2D space to a
+nearest-distance value.  Put another way, that distance function is
+providing, for any given point, the radius of the largest possible
+circle (centered at that point) which does *not* intersect that
+boundary.
+
+This works identically in 3 dimensions.  The only change is that it is
+giving the radius of the largest sphere, not the largest circle, and
+it is implicitly describing an entire 3D surface, not just a 2D
+boundary.
+
+# TODO: Where does the below go?
 
 Interestingly enough, the above method still works if the GPS behaves
 a little more strangely: it doesn't need to tell you the exact
 distance; it could simply tell you some (non-zero) distance for which
 you're guaranteed *not* to hit the boundary in any direction.
 
-** Blah blah blah
+** Sphere Tracing
 
-https://en.wikipedia.org/wiki/Signed_distance_function
-vs. signed distance bound.
+Using a very similar process as in the thought experiment above, this
+distance function can be used to trace out 3D surfaces seen from some
+point - in other words, to render them in 3D.  This can be done with
+*sphere tracing*, an algorithm that performs a very similar process
+pixel-by-pixel.  It is similar to [[https://en.wikipedia.org/wiki/Ray_tracing_(graphics)][ray tracing]]; it is technically a
+method of ray marching.
+
+Below is an example of rendering a sphere in 3D this way.  Don't worry
+too much about =main()=; this code is just there to set up the
+renderer, which is a little more complicated in 3D.  Focus on
+=distance()= - this is the distance function that is actually being
+rendered, and it's called indirectly via =render=.
+
+#+BEGIN_SRC glsl
+/* PARAMETERS
+[
+   {
+       "type": "float",
+       "value": 1,
+       "min": 0,
+       "max": 10,
+       "name": "radius",
+       "GUIName": "Radius"
+   }
+]
+END */
+#define ENABLE_SPHERE_TRACING
+
+uniform vec2 resolution;
+uniform vec4 mouse;
+uniform float radius;
+
+float distance(in vec3 pos)
+{
+    return length(pos) - radius;
+}
+
+void main()
+{
+    vec2 uv = 2.0 * gl_FragCoord.xy/resolution.xy - 1.0;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    // Normalize mouse position:
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
+    m.x = m.x * resolution.x / resolution.y;
+
+    // Camera location & target:
+    vec3 camera_loc = vec3(-0.5+3.5*cos(6.0*m.x), 1.0 + 2.0*m.y, 0.5 + 4.0*sin(6.0*m.x));
+    vec3 camera_target = vec3(-0.5, 0.4, 0.5);
+    
+    // Camera-to-world transformation and rendering:
+    mat3 ca = setCamera(camera_loc, camera_target, 0.0);
+    vec3 rd = ca * normalize(vec3(uv, 2.0));
+    vec3 col = render(camera_loc, rd);
+
+    gl_FragColor = vec4(col, 1.0);
+}
+#+END_SRC
+
+You can drag the view around with the mouse, and adjust the sphere's
+radius with the slider.  You're now looking at a 3D coordinate system,
+not a 2D one; the X and Z axes are the ground (so to speak), and the Y
+axis is up.
+
+If you look more closely at =distance= you might note that the
+distance function will return negative values *inside* the sphere.
+This is intentional; we now have a [[https://en.wikipedia.org/wiki/Signed_distance_function][signed distance function]].  It's a
+fairly small change: The 3D surface must have a clear inside and
+outside, and the signed distance function returns a positive number
+for any point *outside* that surface and a negative number for any
+point *inside* that surface.  It's otherwise the same.
+
+Try to make sense of why this produces a sphere.
+
+** Blah blah blah
 
 If $a^2=b$ and \( b=2 \), then the solution must be
 either $$ a=+\sqrt{2} $$ or \[ a=-\sqrt{2} \].
@@ -69,7 +159,7 @@ either $$ a=+\sqrt{2} $$ or \[ a=-\sqrt{2} \].
 x=\sqrt{b}
 \end{equation}
 
-** Sphere example
+** Repeated cubes 1
 
 #+BEGIN_SRC glsl
 /* PARAMETERS
@@ -101,7 +191,7 @@ uniform float time;
 uniform float freq;
 uniform float freq2;
 
-vec2 map(in vec3 pos)
+float distance(in vec3 pos)
 {
     vec3 pos_ = vec3(mod(pos.x, 2.0) - 1.0, pos.y, mod(pos.z, 2.0) - 1.0);
     float ca = cos(freq * pos_.y);
@@ -110,8 +200,8 @@ vec2 map(in vec3 pos)
     float ca2 = cos(freq2 * pos2.z);
     float sa2 = sin(freq2 * pos2.z);
     vec3 pos3 = vec3(pos2.x * ca2 - pos2.y * sa2, pos2.x * sa2 + pos2.y * ca2, pos2.z);
-    vec2 res = opU(vec2(sdPlane(pos), 1.0),
-                   vec2(udRoundBox(pos3-vec3(0.0, 0.5, 0.0), vec3(0.5), 0.05), 7.0));
+    float res = min(sdPlane(pos),
+                    udRoundBox(pos3-vec3(0.0, 0.5, 0.0), vec3(0.5), 0.05));
     return res;
 }
 
@@ -143,7 +233,7 @@ void main()
 #+END_SRC
 
 
-** More spheres
+** Repeated cubes 2
 
 #+BEGIN_SRC glsl
 /* PARAMETERS
@@ -176,7 +266,7 @@ uniform float time;
 uniform float dx;
 uniform float dz;
 
-vec2 map(in vec3 pos)
+float distance(in vec3 pos)
 {
     float ca_d = cos(0.05 * length(pos) + time*0.1);
     float sa_d = sin(0.05 * length(pos) + time*0.1);
@@ -195,14 +285,13 @@ vec2 map(in vec3 pos)
     float ca2 = cos(freq2 * pos2.z);
     float sa2 = sin(freq2 * pos2.z);
     vec3 pos3 = vec3(pos2.x * ca2 - pos2.y * sa2, pos2.x * sa2 + pos2.y * ca2, pos2.z);*/
-    vec2 res = vec2(udRoundBox(pos_-vec3(0.0, 0.5, 0.0), vec3(0.5), 0.05), 50.0);
+    float res = udRoundBox(pos_-vec3(0.0, 0.5, 0.0), vec3(0.5), 0.05);
     return res;
 }
 
 void main()
 {
     vec2 mo = mouse.xy/resolution.xy;
-	float time = 15.0 + time;
     
     vec3 tot = vec3(0.0);
     vec2 p = (-resolution.xy + 2.0*gl_FragCoord.xy)/resolution.y;

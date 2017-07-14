@@ -26,7 +26,7 @@ float opS(float d1, float d2);
 vec2 opU(vec2 d1, vec2 d2);
 vec3 opRep(vec3 p, vec3 c);
 vec3 opTwist(vec3 p);
-vec2 castRay(in vec3 ro, in vec3 rd);
+float castRay(in vec3 ro, in vec3 rd);
 float softshadow(in vec3 ro, in vec3 rd, in float mint, in float tmax);
 vec3 calcNormal(in vec3 pos);
 float calcAO(in vec3 pos, in vec3 nor);

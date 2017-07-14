@@ -219,7 +219,7 @@ vec2 map_orig(in vec3 pos)
     return res;
 }
 
-vec2 castRay(in vec3 ro, in vec3 rd)
+float castRay(in vec3 ro, in vec3 rd)
 {
     float tmin = 1.0;
     float tmax = 500.0;
@@ -244,14 +244,12 @@ vec2 castRay(in vec3 ro, in vec3 rd)
     for(int i = 0; i < 512; i++)
     {
 	    float precis = 0.0001*t;
-	    vec2 res = map(ro + rd*t);
-        if(abs(res.x) < precis || t > tmax) break;
-        t += res.x;
-	    m = res.y;
+	    float res = distance(ro + rd*t);
+        if(abs(res) < precis || t > tmax) break;
+        t += res;
     }
 
-    if(t > tmax) m=-1.0;
-    return vec2(t, m);
+    return t;
 }
 
 
@@ -261,7 +259,7 @@ float softshadow(in vec3 ro, in vec3 rd, in float mint, in float tmax)
     float t = mint;
     for(int i = 0; i < 16; i++)
     {
-		float h = map(ro + rd*t).x;
+		float h = distance(ro + rd*t);
         res = min(res, 8.0*h/t);
         t += clamp(h, 0.02, 0.10);
         if(h < 0.001 || t > tmax) break;
@@ -270,26 +268,26 @@ float softshadow(in vec3 ro, in vec3 rd, in float mint, in float tmax)
 }
 
 vec3 approx_normal(vec3 p, float dp) {
-    float d = map(p).x;
+    float d = distance(p);
     return normalize(
-        vec3(map(p + vec3(dp,0,0)).x-d,
-             map(p + vec3(0,dp,0)).x-d,
-             map(p + vec3(0,0,dp)).x-d));
+        vec3(distance(p + vec3(dp,0,0))-d,
+             distance(p + vec3(0,dp,0))-d,
+             distance(p + vec3(0,0,dp))-d));
 }
 
 vec3 calcNormal(in vec3 pos)
 {
     vec2 e = vec2(1.0, -1.0)*0.5773*0.0005;
-    return normalize(e.xyy*map(pos + e.xyy).x + 
-					 e.yyx*map(pos + e.yyx).x + 
-					 e.yxy*map(pos + e.yxy).x + 
-					 e.xxx*map(pos + e.xxx).x);
+    return normalize(e.xyy*distance(pos + e.xyy) + 
+					 e.yyx*distance(pos + e.yyx) + 
+					 e.yxy*distance(pos + e.yxy) + 
+					 e.xxx*distance(pos + e.xxx));
     /*
 	vec3 eps = vec3(0.0005, 0.0, 0.0);
 	vec3 nor = vec3(
-	    map(pos+eps.xyy).x - map(pos-eps.xyy).x,
-	    map(pos+eps.yxy).x - map(pos-eps.yxy).x,
-	    map(pos+eps.yyx).x - map(pos-eps.yyx).x);
+	    distance(pos+eps.xyy).x - distance(pos-eps.xyy).x,
+	    distance(pos+eps.yxy).x - distance(pos-eps.yxy).x,
+	    distance(pos+eps.yyx).x - distance(pos-eps.yyx).x);
 	return normalize(nor);
 	*/
 }
@@ -302,7 +300,7 @@ float calcAO(in vec3 pos, in vec3 nor)
     {
         float hr = 0.01 + 0.12*float(i)/4.0;
         vec3 aopos =  nor * hr + pos;
-        float dd = map(aopos).x;
+        float dd = distance(aopos);
         occ += -(dd-hr)*sca;
         sca *= 0.95;
     }
@@ -312,56 +310,50 @@ float calcAO(in vec3 pos, in vec3 nor)
 vec3 render(in vec3 ro, in vec3 rd)
 { 
     vec3 col = vec3(0.7, 0.9, 1.0) +rd.y*0.8;
-    vec2 res = castRay(ro,rd);
-    float t = res.x;
-	float m = res.y;
-    if(m>-0.5)
+    float t = castRay(ro,rd);
+    vec3 pos = ro + t*rd;
+    vec3 nor = calcNormal(pos);
+    vec3 ref = reflect(rd, nor);
+    /*
+      if(m<1.5)
+      {
+      // Color floor:
+      float f = mod(floor(5.0*pos.z) + floor(5.0*pos.x), 2.0);
+      col = 0.3 + 0.1*f*vec3(1.0);
+      } else */
     {
-        vec3 pos = ro + t*rd;
-        vec3 nor = calcNormal(pos);
-        vec3 ref = reflect(rd, nor);
-
-        /*
-        if(m<1.5)
-        {
-            // Color floor:
-            float f = mod(floor(5.0*pos.z) + floor(5.0*pos.x), 2.0);
-            col = 0.3 + 0.1*f*vec3(1.0);
-            } else */
-        {
-            // Color objects:
-            col = 0.45 + 0.35*sin(vec3(0.05,0.08,0.10)*(m-1.0));
-        }
-
-        // lighting        
-        float occ = calcAO(pos, nor);
-		vec3  lig = normalize(vec3(-0.4, 0.7, -0.6));
-		float amb = clamp(0.5+0.5*nor.y, 0.0, 1.0);
-        float dif = clamp(dot(nor, lig), 0.0, 1.0);
-        float bac = clamp(dot(nor, normalize(vec3(-lig.x,0.0,-lig.z))), 0.0, 1.0)*clamp(1.0-pos.y,0.0,1.0);
-        float dom = smoothstep(-0.1, 0.1, ref.y);
-        float fre = pow(clamp(1.0+dot(nor,rd),0.0,1.0), 2.0);
-		float spe = pow(clamp(dot(ref, lig), 0.0, 1.0),16.0);
-        
-        dif *= softshadow(pos, lig, 0.02, 2.5);
-        dom *= softshadow(pos, ref, 0.02, 2.5);
-
-		vec3 lin = vec3(0.0);
-        lin += 1.30*dif*vec3(1.00,0.80,0.55);
-		lin += 2.00*spe*vec3(1.00,0.90,0.70)*dif;
-        lin += 0.40*amb*vec3(0.40,0.60,1.00)*occ;
-        lin += 0.50*dom*vec3(0.40,0.60,1.00)*occ;
-        lin += 0.50*bac*vec3(0.25,0.25,0.25)*occ;
-        lin += 0.25*fre*vec3(1.00,1.00,1.00)*occ;
-		col = col*lin;
-
-        // fog
-    	col = mix(col, vec3(0.8,0.9,1.0), 1.0-exp(-0.00005*t*t*t));
-
-        // col = vec3(dif + 0.3*amb);
-        //col = 0.5 * nor + 0.5;
-        //col = pos;
+        // Color objects:
+        col = 0.45 + 0.35*sin(vec3(0.05,0.08,0.10));
     }
+
+    // lighting        
+    float occ = calcAO(pos, nor);
+    vec3  lig = normalize(vec3(-0.4, 0.7, -0.6));
+    float amb = clamp(0.5+0.5*nor.y, 0.0, 1.0);
+    float dif = clamp(dot(nor, lig), 0.0, 1.0);
+    float bac = clamp(dot(nor, normalize(vec3(-lig.x,0.0,-lig.z))), 0.0, 1.0)*clamp(1.0-pos.y,0.0,1.0);
+    float dom = smoothstep(-0.1, 0.1, ref.y);
+    float fre = pow(clamp(1.0+dot(nor,rd),0.0,1.0), 2.0);
+    float spe = pow(clamp(dot(ref, lig), 0.0, 1.0),16.0);
+        
+    dif *= softshadow(pos, lig, 0.02, 2.5);
+    dom *= softshadow(pos, ref, 0.02, 2.5);
+
+    vec3 lin = vec3(0.0);
+    lin += 1.30*dif*vec3(1.00,0.80,0.55);
+    lin += 2.00*spe*vec3(1.00,0.90,0.70)*dif;
+    lin += 0.40*amb*vec3(0.40,0.60,1.00)*occ;
+    lin += 0.50*dom*vec3(0.40,0.60,1.00)*occ;
+    lin += 0.50*bac*vec3(0.25,0.25,0.25)*occ;
+    lin += 0.25*fre*vec3(1.00,1.00,1.00)*occ;
+    col = col*lin;
+
+    // fog
+    col = mix(col, vec3(0.8,0.9,1.0), 1.0-exp(-0.00005*t*t*t));
+
+    // col = vec3(dif + 0.3*amb);
+    //col = 0.5 * nor + 0.5;
+    //col = pos;
 
 	return vec3(clamp(col,0.0,1.0));
 }
@@ -378,12 +370,11 @@ mat3 setCamera(in vec3 ro, in vec3 ta, float cr)
     return mat3(cu, cv, cw);
 }
 
-/*
+#ifdef SPHERE_TRACING_MAIN
 void main()
 {
     vec2 mo = mouse.xy/resolution.xy;
 	float time = 15.0 + time;
-
     
     vec3 tot = vec3(0.0);
 #if AA>1
@@ -423,6 +414,6 @@ void main()
     
     gl_FragColor = vec4(tot, 1.0);
 }
-*/
+#endif // SPHERE_TRACING_MAIN
 
 #endif // ENABLE_SPHERE_TRACING
