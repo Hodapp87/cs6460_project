@@ -29,16 +29,16 @@ consider:
 
 1. Mark your starting point on the ground.
 2. Pick any direction.
-3. Get the nearest-distance measurement from the GPS.  Walk in a
-   straight line in the chosen direction until you've covered the
-   distance the GPS told you.
-4. Repeat step 3 using the same direction. Once the GPS gives distance
-   measurements that are very small (e.g. one inch), stop.
-5. Wherever you are, make a marking on the ground.
-6. Return to your starting point.
-7. Pick a new direction, rotated very slightly from the last time
+3. Get the nearest-distance measurement from the GPS.
+4. Walk in a straight line in the chosen direction until you've
+   covered the distance the GPS told you.
+5. Go back to step 3, using the same direction. Once the GPS gives
+   distance measurements that are very small (e.g. one inch), stop.
+6. Wherever you are, make a marking on the ground.
+7. Return to your starting point.
+8. Pick a new direction, rotated very slightly from the last time
    (e.g. just 1/2 degree clockwise).
-8. Repeat step 3.  Once you've returned to your starting direction,
+9. Repeat step 3.  Once you've returned to your starting direction,
    stop.
 
 This is very pain-staking and tedious - but the end result is that
@@ -112,6 +112,90 @@ vec2 map(in vec3 pos)
     vec3 pos3 = vec3(pos2.x * ca2 - pos2.y * sa2, pos2.x * sa2 + pos2.y * ca2, pos2.z);
     vec2 res = opU(vec2(sdPlane(pos), 1.0),
                    vec2(udRoundBox(pos3-vec3(0.0, 0.5, 0.0), vec3(0.5), 0.05), 7.0));
+    return res;
+}
+
+void main()
+{
+    vec2 mo = mouse.xy/resolution.xy;
+	float time = 15.0 + time;
+    
+    vec3 tot = vec3(0.0);
+    vec2 p = (-resolution.xy + 2.0*gl_FragCoord.xy)/resolution.y;
+    // Camera location:
+    vec3 ro = vec3(-0.5+3.5*cos(0.1*time + 6.0*mo.x), 1.0 + 2.0*mo.y, 0.5 + 4.0*sin(0.1*time + 6.0*mo.x));
+    // Camera target:
+    vec3 ta = vec3(-0.5, 0.4, 0.5);
+    
+    // Camera-to-world transformation
+    mat3 ca = setCamera(ro, ta, 0.0);
+    
+    // ray direction
+    vec3 rd = ca * normalize(vec3(p.xy, 2.0));
+
+    // render	
+    vec3 col = render(ro, rd);
+
+    // gamma
+    col = pow(col, vec3(0.4545));
+    gl_FragColor = vec4(col, 1.0);
+}
+#+END_SRC
+
+
+** More spheres
+
+#+BEGIN_SRC glsl
+/* PARAMETERS
+[
+   {
+       "type": "float",
+       "value": 2,
+       "min": 1,
+       "max": 10,
+       "name": "dx",
+       "GUIName": "dx"
+   },
+   {
+       "type": "float",
+       "value": 2,
+       "min": 1,
+       "max": 10,
+       "name": "dz",
+       "GUIName": "dz"
+   }   
+]
+END */
+
+#define ENABLE_SPHERE_TRACING
+
+uniform vec2 resolution;
+uniform vec4 mouse;
+uniform float time;
+
+uniform float dx;
+uniform float dz;
+
+vec2 map(in vec3 pos)
+{
+    float ca_d = cos(0.05 * length(pos) + time*0.1);
+    float sa_d = sin(0.05 * length(pos) + time*0.1);
+    vec3 pos_ = pos;
+    pos_ = vec3(pos_.x * ca_d - pos_.y * sa_d, pos_.x * sa_d + pos_.y * ca_d, pos_.z);
+    
+    float ca_d2 = cos(0.05 * length(pos) + time*0.2);
+    float sa_d2 = sin(0.05 * length(pos) + time*0.2);
+    //pos_ = vec3(pos_.x, pos_.y * ca_d2 - pos_.z * sa_d2, pos_.y * sa_d2 + pos_.z * ca_d2);
+
+    pos_ = vec3(mod(pos_.x, dx) - dx/2.0, pos_.y, mod(pos_.z, dz) - dz/2.0);
+    /*
+    float ca = cos(freq * pos_.y);
+    float sa = sin(freq * pos_.y);
+    vec3 pos2 = vec3(pos_.x * ca - pos_.z * sa, pos_.y, pos_.x * sa + pos_.z * ca);
+    float ca2 = cos(freq2 * pos2.z);
+    float sa2 = sin(freq2 * pos2.z);
+    vec3 pos3 = vec3(pos2.x * ca2 - pos2.y * sa2, pos2.x * sa2 + pos2.y * ca2, pos2.z);*/
+    vec2 res = vec2(udRoundBox(pos_-vec3(0.0, 0.5, 0.0), vec3(0.5), 0.05), 50.0);
     return res;
 }
 

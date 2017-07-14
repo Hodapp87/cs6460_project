@@ -222,9 +222,9 @@ vec2 map_orig(in vec3 pos)
 vec2 castRay(in vec3 ro, in vec3 rd)
 {
     float tmin = 1.0;
-    float tmax = 50.0;
+    float tmax = 500.0;
    
-#if 1
+#if 0
     // bounding volume
     float tp1 = (0.0-ro.y)/rd.y;
     if(tp1 > 0.0) tmax = min(tmax, tp1);
@@ -241,9 +241,9 @@ vec2 castRay(in vec3 ro, in vec3 rd)
     
     float t = tmin;
     float m = -1.0;
-    for(int i = 0; i < 128; i++)
+    for(int i = 0; i < 512; i++)
     {
-	    float precis = 0.0005*t;
+	    float precis = 0.0001*t;
 	    vec2 res = map(ro + rd*t);
         if(abs(res.x) < precis || t > tmax) break;
         t += res.x;
@@ -321,12 +321,14 @@ vec3 render(in vec3 ro, in vec3 rd)
         vec3 nor = calcNormal(pos);
         vec3 ref = reflect(rd, nor);
 
+        /*
         if(m<1.5)
         {
             // Color floor:
             float f = mod(floor(5.0*pos.z) + floor(5.0*pos.x), 2.0);
             col = 0.3 + 0.1*f*vec3(1.0);
-        } else {
+            } else */
+        {
             // Color objects:
             col = 0.45 + 0.35*sin(vec3(0.05,0.08,0.10)*(m-1.0));
         }
@@ -354,7 +356,7 @@ vec3 render(in vec3 ro, in vec3 rd)
 		col = col*lin;
 
         // fog
-    	// col = mix(col, vec3(0.8,0.9,1.0), 1.0-exp(-0.0002*t*t*t));
+    	col = mix(col, vec3(0.8,0.9,1.0), 1.0-exp(-0.00005*t*t*t));
 
         // col = vec3(dif + 0.3*amb);
         //col = 0.5 * nor + 0.5;
