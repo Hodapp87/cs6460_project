@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2017-07-14 Fri 19:29 -->
+<!-- 2017-07-17 Mon 13:06 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Textures, Colors, &amp; Noise</title>
@@ -18,15 +18,54 @@
 <div id="content">
 <h1 class="title">Textures, Colors, &amp; Noise</h1>
 
-<div id="outline-container-org20bd89e" class="outline-2">
-<h2 id="org20bd89e"><span class="section-number-2"> 4</span> Final Notes</h2>
+<div id="outline-container-org4dfa638" class="outline-2">
+<h2 id="org4dfa638"><span class="section-number-2"> 4</span> Final Notes &amp; Other References</h2>
 <div class="outline-text-2" id="text-1">
 <p>
-Here are a few other references that may be relevant:
+<a href="#" onclick="myModule.loadTutorial('./02_2D_Coordinates.html', null)">Section 2</a> touched on creating 2D images from functions.  For this as a
+method unto itself, look at <a target='_blank' href="http://conal.net/papers/functional-images/">Functional Images</a> from Conal Elliott.
+More commonly, though, this method is used as a way of creating "solid
+textures" which are used in conjunctions with 3D models. See Ken
+Perlin's seminal paper, <a target='_blank' href="https://www.semanticscholar.org/paper/An-image-synthesizer-Perlin/e04d7772b91a83a901408eb0876bbb7814b1d4b5">An image synthesizer</a>, for a starting point on
+this. Beyond this, there are countless references on how shaders are
+used in 3D graphics - both in realtime applications such as games (for
+which OpenGL's shaders are used extensively), and in
+computer-generated imagery for movies (such as <a target='_blank' href="https://en.wikipedia.org/wiki/RenderMan_ShadingL_anguage">RenderMan Shading
+Language</a>).
+</p>
+
+<p>
+I mentioned that the distance functions in <a href="#" onclick="myModule.loadTutorial('./03_3D_Rendering.html', null)">section 3</a> were a sort of
+extension of this - particularly, of what we can do with functions
+that map points in space to something (color, or a distance bound, for
+instance).  Another application of this same principle can be found in
+the <a target='_blank' href="https://www.cs.jhu.edu/~subodh/458/p253-perlin.pdf">Hypertexture</a> approach of Perlin and Hoffert - in which a function
+maps points in 3D space to <b>density</b> at that point, rather than
+minimum-distance.
+</p>
+
+<p>
+<a target='_blank' href="http://www.iquilezles.org/">Íñigo Quílez</a> is one of the leading figures on sphere tracing over the
+past 10 years or so, and has done extensive work in implementing,
+explaining, and popularizing them.  His website is full of articles on
+the mathematics and implementation (for instance, <a target='_blank' href="http://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm">Modeling with
+Distance Functions</a>) and his <a target='_blank' href="https://www.shadertoy.com/user/iq">Shadertoy profile</a> is full of excellent
+examples (and this web application's sphere tracer is based on one
+such example).
+</p>
+
+<p>
+The standard paper giving the mathematics behind sphere tracers is
+<a target='_blank' href="http://graphics.cs.williams.edu/courses/cs371/f14/reading/implicit.pdf">Numerical Methods for Ray Tracing Implicitly Defined Surfaces</a> by John
+C. Hart.  Many other optimizations have been done on top of this basic
+framework; e.g. see the paper <a target='_blank' href="http://erleuchtet.org/~cupe/permanent/enhanced_sphere_tracing.pdf">Enhanced Sphere Tracing</a>. I also made use
+of:
 </p>
 
 <ul class="org-ul">
-<li>From Fabrice Castel's blog:
+<li>From Gábor Liktor: <a target='_blank' href="http://old.cescg.org/CESCG-2008/papers/TUBudapest-Liktor-Gabor.pdf">Ray tracing implicit surfaces on the GPU</a></li>
+<li>From Morgan McGuire: <a target='_blank' href="https://www.cs.williams.edu/~morgan/cs371-f14/reading/implicit.pdf">Numerical Methods for Ray Tracing Implicitly Defined Surfaces</a></li>
+<li>Fabrice Castel's blog:
 <ul class="org-ul">
 <li><a target='_blank' href="https://fabricecastel.github.io/blog/2015-08-03/main.html">Sphere Tracing 101 - Hello Sphere!</a></li>
 <li><a target='_blank' href="https://fabricecastel.github.io/blog/2015-09-06/main.html">Sphere Tracing 102 - Simple Lighting</a></li>
@@ -34,22 +73,20 @@ Here are a few other references that may be relevant:
 <li><a target='_blank' href="https://fabricecastel.github.io/blog/2016-06-17/main.html">Sphere Tracing 104 - CSG</a></li>
 <li><a target='_blank' href="https://fabricecastel.github.io/blog/2016-08-17/main.html">Sphere Tracing 105 - Domain Repetition</a></li>
 </ul></li>
-<li>Basically anything by <a target='_blank' href="http://www.iquilezles.org/">Íñigo Quílez</a>, e.g. <a target='_blank' href="http://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm">Modeling with Distance Functions</a></li>
-<li>From John Hart: <a target='_blank' href="http://graphics.cs.williams.edu/courses/cs371/f14/reading/implicit.pdf">Numerical Methods for Ray Tracing Implicitly Defined Surfaces</a></li>
-<li>From Gábor Liktor: <a target='_blank' href="http://old.cescg.org/CESCG-2008/papers/TUBudapest-Liktor-Gabor.pdf">Ray tracing implicit surfaces on the GPU</a></li>
-<li><a target='_blank' href="https://www.cs.williams.edu/~morgan/cs371-f14/reading/implicit.pdf">Numerical Methods for Ray Tracing Implicitly Defined Surfaces</a></li>
-<li>The <a target='_blank' href="http://blog.hvidtfeldts.net/">Syntopia</a> blog from Mikael Hvidtfeldt Christensen</li>
 <li><a target='_blank' href="https://thebookofshaders.com/">The Book of Shaders</a></li>
 </ul>
 
 <p>
-These tools may also be useful in further explorations:
+The nature of fractals makes them difficult to handle in many other
+rendering techniques, and sphere tracing is often used here.  See the
+<a target='_blank' href="http://blog.hvidtfeldts.net/">Syntopia</a> blog from Mikael Hvidtfeldt Christensen and the older paper
+<a target='_blank' href="https://graphics.cs.illinois.edu/papers/rtqjs">Ray Tracing Deterministic 3-D Fractals</a>.
 </p>
 
-<ul class="org-ul">
-<li><a target='_blank' href="https://syntopia.github.io/Fragmentarium/">Fragmentarium</a></li>
-<li><a target='_blank' href="https://www.shadertoy.com/">Shadertoy</a></li>
-</ul>
+<p>
+<a target='_blank' href="https://syntopia.github.io/Fragmentarium/">Fragmentarium</a> and <a target='_blank' href="https://www.shadertoy.com/">Shadertoy</a> provide similar a framework to the WebGL
+environment of this web application, but many more features.
+</p>
 </div>
 </div>
 </div>

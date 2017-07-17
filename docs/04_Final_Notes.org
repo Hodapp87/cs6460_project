@@ -1,24 +1,55 @@
 #+Title: Textures, Colors, & Noise
 #+Author: Chris Hodapp
 
-* Final Notes
+* Final Notes & Other References
 
-Here are a few other references that may be relevant:
+[[./02_2D_Coordinates.org][Section 2]] touched on creating 2D images from functions.  For this as a
+method unto itself, look at [[http://conal.net/papers/functional-images/][Functional Images]] from Conal Elliott.
+More commonly, though, this method is used as a way of creating "solid
+textures" which are used in conjunctions with 3D models. See Ken
+Perlin's seminal paper, [[https://www.semanticscholar.org/paper/An-image-synthesizer-Perlin/e04d7772b91a83a901408eb0876bbb7814b1d4b5][An image synthesizer]], for a starting point on
+this. Beyond this, there are countless references on how shaders are
+used in 3D graphics - both in realtime applications such as games (for
+which OpenGL's shaders are used extensively), and in
+computer-generated imagery for movies (such as [[https://en.wikipedia.org/wiki/RenderMan_ShadingL_anguage][RenderMan Shading
+Language]]).
 
-- From Fabrice Castel's blog:
+I mentioned that the distance functions in [[./03_3D_Rendering.org][section 3]] were a sort of
+extension of this - particularly, of what we can do with functions
+that map points in space to something (color, or a distance bound, for
+instance).  Another application of this same principle can be found in
+the [[https://www.cs.jhu.edu/~subodh/458/p253-perlin.pdf][Hypertexture]] approach of Perlin and Hoffert - in which a function
+maps points in 3D space to *density* at that point, rather than
+minimum-distance.
+
+[[http://www.iquilezles.org/][Íñigo Quílez]] is one of the leading figures on sphere tracing over the
+past 10 years or so, and has done extensive work in implementing,
+explaining, and popularizing them.  His website is full of articles on
+the mathematics and implementation (for instance, [[http://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm][Modeling with
+Distance Functions]]) and his [[https://www.shadertoy.com/user/iq][Shadertoy profile]] is full of excellent
+examples (and this web application's sphere tracer is based on one
+such example).
+
+The standard paper giving the mathematics behind sphere tracers is
+[[http://graphics.cs.williams.edu/courses/cs371/f14/reading/implicit.pdf][Numerical Methods for Ray Tracing Implicitly Defined Surfaces]] by John
+C. Hart.  Many other optimizations have been done on top of this basic
+framework; e.g. see the paper [[http://erleuchtet.org/~cupe/permanent/enhanced_sphere_tracing.pdf][Enhanced Sphere Tracing]]. I also made use
+of:
+
+- From Gábor Liktor: [[http://old.cescg.org/CESCG-2008/papers/TUBudapest-Liktor-Gabor.pdf][Ray tracing implicit surfaces on the GPU]]
+- From Morgan McGuire: [[https://www.cs.williams.edu/~morgan/cs371-f14/reading/implicit.pdf][Numerical Methods for Ray Tracing Implicitly Defined Surfaces]] 
+- Fabrice Castel's blog:
   - [[https://fabricecastel.github.io/blog/2015-08-03/main.html][Sphere Tracing 101 - Hello Sphere!]]
   - [[https://fabricecastel.github.io/blog/2015-09-06/main.html][Sphere Tracing 102 - Simple Lighting]]
   - [[https://fabricecastel.github.io/blog/2016-02-11/main.html][Sphere Tracing 103 - Generating a Cube]]
   - [[https://fabricecastel.github.io/blog/2016-06-17/main.html][Sphere Tracing 104 - CSG]]
   - [[https://fabricecastel.github.io/blog/2016-08-17/main.html][Sphere Tracing 105 - Domain Repetition]]
-- Basically anything by [[http://www.iquilezles.org/][Íñigo Quílez]], e.g. [[http://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm][Modeling with Distance Functions]]
-- From John Hart: [[http://graphics.cs.williams.edu/courses/cs371/f14/reading/implicit.pdf][Numerical Methods for Ray Tracing Implicitly Defined Surfaces]]
-- From Gábor Liktor: [[http://old.cescg.org/CESCG-2008/papers/TUBudapest-Liktor-Gabor.pdf][Ray tracing implicit surfaces on the GPU]]
-- [[https://www.cs.williams.edu/~morgan/cs371-f14/reading/implicit.pdf][Numerical Methods for Ray Tracing Implicitly Defined Surfaces]] 
-- The [[http://blog.hvidtfeldts.net/][Syntopia]] blog from Mikael Hvidtfeldt Christensen
 - [[https://thebookofshaders.com/][The Book of Shaders]]
 
-These tools may also be useful in further explorations:
+The nature of fractals makes them difficult to handle in many other
+rendering techniques, and sphere tracing is often used here.  See the
+[[http://blog.hvidtfeldts.net/][Syntopia]] blog from Mikael Hvidtfeldt Christensen and the older paper
+[[https://graphics.cs.illinois.edu/papers/rtqjs][Ray Tracing Deterministic 3-D Fractals]].
 
-- [[https://syntopia.github.io/Fragmentarium/][Fragmentarium]]
-- [[https://www.shadertoy.com/][Shadertoy]]
+[[https://syntopia.github.io/Fragmentarium/][Fragmentarium]] and [[https://www.shadertoy.com/][Shadertoy]] provide similar a framework to the WebGL
+environment of this web application, but many more features.

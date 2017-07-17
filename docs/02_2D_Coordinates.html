@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2017-07-14 Fri 19:29 -->
+<!-- 2017-07-17 Mon 13:06 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Coordinates &amp; Transforms in 2D</title>
@@ -19,11 +19,11 @@
 <div id="content">
 <h1 class="title">Coordinates &amp; Transforms in 2D</h1>
 
-<div id="outline-container-org57c5b07" class="outline-2">
-<h2 id="org57c5b07"><span class="section-number-2"> 2</span> Coordinates &amp; Transforms in 2D</h2>
+<div id="outline-container-orgb8c3161" class="outline-2">
+<h2 id="orgb8c3161"><span class="section-number-2"> 2</span> Coordinates &amp; Transforms in 2D</h2>
 <div class="outline-text-2" id="text-1">
-</div><div id="outline-container-orgec17a14" class="outline-3">
-<h3 id="orgec17a14"><span class="section-number-3"> 2.1</span> A slightly boring, laborious example</h3>
+</div><div id="outline-container-org39fcf67" class="outline-3">
+<h3 id="org39fcf67"><span class="section-number-3"> 2.1</span> A slightly boring, laborious example</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
 The Introduction mentioned that all the code this tutorial deals with
@@ -158,8 +158,8 @@ and green are both at their maximum of 1).
 </div>
 </div>
 
-<div id="outline-container-org31f7f61" class="outline-3">
-<h3 id="org31f7f61"><span class="section-number-3"> 2.2</span> What can this actually do?</h3>
+<div id="outline-container-org7ba5ecd" class="outline-3">
+<h3 id="org7ba5ecd"><span class="section-number-3"> 2.2</span> What can this actually do?</h3>
 <div class="outline-text-3" id="text-1-2">
 <p>
 You may be complaining that a colored gradient is a rather
@@ -322,8 +322,8 @@ void main()
 </div>
 </div>
 
-<div id="outline-container-org573e592" class="outline-3">
-<h3 id="org573e592"><span class="section-number-3"> 2.3</span> Implicit functions</h3>
+<div id="outline-container-orgbb148c3" class="outline-3">
+<h3 id="orgbb148c3"><span class="section-number-3"> 2.3</span> Implicit functions</h3>
 <div class="outline-text-3" id="text-1-3">
 <p>
 Perhaps it wasn't obvious why this is significant, but to try to
@@ -483,8 +483,8 @@ differently-sized sections of a circle.
 </div>
 </div>
 
-<div id="outline-container-org98f95a6" class="outline-3">
-<h3 id="org98f95a6"><span class="section-number-3"> 2.4</span> Animation &amp; Mouse Input</h3>
+<div id="outline-container-org54f2302" class="outline-3">
+<h3 id="org54f2302"><span class="section-number-3"> 2.4</span> Animation &amp; Mouse Input</h3>
 <div class="outline-text-3" id="text-1-4">
 <p>
 Up to this point, we've just been rendering images that don't change
@@ -613,8 +613,8 @@ this works.
 </div>
 </div>
 
-<div id="outline-container-org6380dbe" class="outline-3">
-<h3 id="org6380dbe"><span class="section-number-3"> 2.5</span> Control Inputs</h3>
+<div id="outline-container-org48c5bfb" class="outline-3">
+<h3 id="org48c5bfb"><span class="section-number-3"> 2.5</span> Control Inputs</h3>
 <div class="outline-text-3" id="text-1-5">
 <p>
 I mentioned <i>uniform</i> variables earlier, and we've dealt with a couple
@@ -764,8 +764,8 @@ documentation</a>.
 </div>
 </div>
 
-<div id="outline-container-org682dbf8" class="outline-3">
-<h3 id="org682dbf8"><span class="section-number-3"> 2.6</span> Function composition</h3>
+<div id="outline-container-orgb2d676f" class="outline-3">
+<h3 id="orgb2d676f"><span class="section-number-3"> 2.6</span> Function composition</h3>
 <div class="outline-text-3" id="text-1-6">
 <p>
 In the prior examples, we achieved some simple transformations on
@@ -1475,8 +1475,8 @@ void main()
 </div>
 </div>
 
-<div id="outline-container-org3e7e52a" class="outline-3">
-<h3 id="org3e7e52a"><span class="section-number-3"> 2.7</span> Summary</h3>
+<div id="outline-container-org87eb884" class="outline-3">
+<h3 id="org87eb884"><span class="section-number-3"> 2.7</span> Summary</h3>
 <div class="outline-text-3" id="text-1-7">
 <p>
 The intention of this section was to give a crash course in how
@@ -1489,21 +1489,6 @@ domain can be visualized as warping space.
 This whole section was focused on the use of shaders to create 2D
 graphics.  The next section extends this to their use in creating a 3D
 renderer.
-</p>
-</div>
-</div>
-
-<div id="outline-container-org31fbe4a" class="outline-3">
-<h3 id="org31fbe4a"><span class="section-number-3"> 2.8</span> Further References</h3>
-<div class="outline-text-3" id="text-1-8">
-<p>
-For the case particularly of creating 2D images from functions, look
-at <a target='_blank' href="http://conal.net/papers/functional-images/">Functional Images</a> from Conal Elliott.  For using shaders over 3
-dimensions to create "solid textures", look at Ken Perlin's seminal
-paper, <a target='_blank' href="https://www.semanticscholar.org/paper/An-image-synthesizer-Perlin/e04d7772b91a83a901408eb0876bbb7814b1d4b5">An image synthesizer</a>. Beyond this, there are countless
-references on how shaders are used in 3D graphics - both in realtime
-applications such as games, and in computer-generated imagery for
-movies and TV.
 </p>
 </div>
 </div>

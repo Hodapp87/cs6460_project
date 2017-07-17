@@ -83,4 +83,6 @@ the course of building the content of this site.  Particularly, the
 sphere tracing example in section 3 is based heavily around Íñigo
 Quílez's [[https://www.shadertoy.com/view/Xds3zN][Raymarching Primitives demo]].
 
+[[./04_Final_Notes.org][Section 4]] contains some other references as well.
+
 # TODO: Either put license text here or make note of where to find it.

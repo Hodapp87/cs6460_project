@@ -933,13 +933,3 @@ domain can be visualized as warping space.
 This whole section was focused on the use of shaders to create 2D
 graphics.  The next section extends this to their use in creating a 3D
 renderer.
-
-** Further References
-
-For the case particularly of creating 2D images from functions, look
-at [[http://conal.net/papers/functional-images/][Functional Images]] from Conal Elliott.  For using shaders over 3
-dimensions to create "solid textures", look at Ken Perlin's seminal
-paper, [[https://www.semanticscholar.org/paper/An-image-synthesizer-Perlin/e04d7772b91a83a901408eb0876bbb7814b1d4b5][An image synthesizer]]. Beyond this, there are countless
-references on how shaders are used in 3D graphics - both in realtime
-applications such as games, and in computer-generated imagery for
-movies and TV.

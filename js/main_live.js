@@ -38,7 +38,7 @@ function elapsed_time_string(startTime) {
     return ((currentTime - startTime) / 1000.0) + "sec"
 }
 
-var myModule2 = (function() {
+var myModule = (function() {
     // var lang = ace.require("ace/lib/lang");
     // var util = ace.require("ace/autocomplete/util")
     // var langTools = ace.require("ace/ext/language_tools");
@@ -89,9 +89,9 @@ var myModule2 = (function() {
             this.syncDelay = lang.delayedCall(this.sync.bind(this), 200);
             editor_main.on('change',
                            function() {
-                               myModule2.save_file(default_filename, editor_main.getValue());
-                               if (myModule2.initialized && myModule2.options.auto_compile) {
-                                   myModule2.syncDelay.delay();
+                               myModule.save_file(default_filename, editor_main.getValue());
+                               if (myModule.initialized && myModule.options.auto_compile) {
+                                   myModule.syncDelay.delay();
                                }
                            });
             new TokenTooltip(editor_main);
@@ -303,7 +303,7 @@ var myModule2 = (function() {
                     sender: 'editor|cli'
                 },
                 exec: function(env, args, request) {
-                    myModule2.process_main_buffer();
+                    myModule.process_main_buffer();
                 }
             };
             // editor_main.commands.addCommand(process_main_buffer_command);
@@ -330,7 +330,7 @@ var myModule2 = (function() {
                         var y_pos = Math.max(menu_height, Math.min(event.clientY, h));
                         tutorial_main_ratio = (y_pos - menu_height) / (h - menu_height);
                     }
-                    myModule2.resize_editors();
+                    myModule.resize_editors();
                 });
             });
             /*
@@ -356,7 +356,7 @@ var myModule2 = (function() {
                             main_console_ratio = x_pos / w;
                         }
                     }
-                    myModule2.resize_editors();
+                    myModule.resize_editors();
                 });
             });
             */
@@ -373,13 +373,13 @@ var myModule2 = (function() {
                     // TODO(soonhok): adjust the width automatically
                     if (popup)
                         popup.container.style.width=window.innerWidth * 0.8;
-                    myModule2.sync();
-                    myModule2.send({
+                    myModule.sync();
+                    myModule.send({
                         command: "complete",
                         line: pos.row + 1,
                         column: pos.column
                     });
-                    callback(null, myModule2.completions);
+                    callback(null, myModule.completions);
                 },
                 getDocTooltip: function(selected) {
                     if (!selected.docHTML)
@@ -426,7 +426,7 @@ var myModule2 = (function() {
         // Called in init
         load_from_url: function() {
             if (url.match(/\.hlean$/)) {
-                myModule2.useHoTT = true;
+                myModule.useHoTT = true;
             }
             if (url.indexOf("://github.com/") > -1) {
                 url = url.replace("://github.com", "://raw.githubusercontent.com");
@@ -445,23 +445,23 @@ var myModule2 = (function() {
                 }
             });
             $.get(url, function(data) {
-                // myModule2.editor_main.setValue(data, 1);
+                // myModule.editor_main.setValue(data, 1);
             });
         },
         // Called in editor_main's change callback
         save_file: function(filename, text) {
-            //$.cookie("leanjs", myModule2.editor_main.getValue());
+            //$.cookie("leanjs", myModule.editor_main.getValue());
         },
         // Called in init
         init_ace: function() {
-            //myModule2.init_editor_main();
-            //myModule2.init_editor_console();
-            // myModule2.init_editor_keybindings();
-            myModule2.init_resizable();
-            //myModule2.init_input_method();
-            //myModule2.init_autocomplete();
-            myModule2.resize_editors();
-            window.onresize = function(event) { myModule2.resize_editors(); };
+            //myModule.init_editor_main();
+            //myModule.init_editor_console();
+            // myModule.init_editor_keybindings();
+            myModule.init_resizable();
+            //myModule.init_input_method();
+            //myModule.init_autocomplete();
+            myModule.resize_editors();
+            window.onresize = function(event) { myModule.resize_editors(); };
         },
         // Called in loadTutorial
         scrollTutorialTo: function(anchor) {
@@ -484,14 +484,14 @@ var myModule2 = (function() {
             // Load File
             $("#tutorial_contents").load(filename, function() {
                 if (anchor) {
-                    myModule2.scrollTutorialTo(anchor);
+                    myModule.scrollTutorialTo(anchor);
                 }
                 // save the file in hash & cookie
                 location.hash = "#" + encodeURIComponent(filename);
                 $.cookie("leanjs_tutorial_chapter_filename", filename);
             });
             // Set the right value for tutorialNav
-            $('#tutorialNav').val(myModule2.file2title(filename));
+            $('#tutorialNav').val(myModule.file2title(filename));
             // Hide Setting
             $("#setting_window").hide();
         },
@@ -505,20 +505,20 @@ var myModule2 = (function() {
                 $.getScript("js/nav_data.js", function(){
                     $.each(lean_nav_data, function(key, value) {
                         // e.g. "02_Dependent_Type_Theory.html" => "02 Dependent Type Theory"
-                        var title = myModule2.file2title(value);
+                        var title = myModule.file2title(value);
                         $('#tutorialNav').append("<option>" + title + "</option>");
                     });
                     $('#tutorialNav').on('change', function (e) {
-                        var fileName = myModule2.title2file(this.value);
-                        myModule2.loadTutorial(fileName, null);
+                        var fileName = myModule.title2file(this.value);
+                        myModule.loadTutorial(fileName, null);
                     });
                     $('#tutorialNav').show();
                     // Load chapter (hash, cookie or default)
                     var saved_file = decodeURIComponent(location.hash.substr(1)) || $.cookie("leanjs_tutorial_chapter_filename");
                     if (saved_file && saved_file != "" && $.inArray(saved_file, lean_nav_data)) {
-                        myModule2.loadTutorial(saved_file, null);
+                        myModule.loadTutorial(saved_file, null);
                     } else {
-                        myModule2.loadTutorial(lean_nav_data[0], null);
+                        myModule.loadTutorial(lean_nav_data[0], null);
                     }
                 });
             }
@@ -530,23 +530,23 @@ var myModule2 = (function() {
             $("#close_setting_window").click(function(e) { $("#setting_window").hide(); });
             $("#setting_window").css({background: "white", opacity: 0.98});
             $("#setting_contents").css({ padding: 40});
-            $('#print_output_to_console').prop("checked", myModule2.options.print_output_to_console);
+            $('#print_output_to_console').prop("checked", myModule.options.print_output_to_console);
             $('#print_output_to_console').on('change', function (e) {
-                myModule2.options.print_output_to_console = this.checked;
-                $.cookie("leanjs_options", JSON.stringify(myModule2.options));
+                myModule.options.print_output_to_console = this.checked;
+                $.cookie("leanjs_options", JSON.stringify(myModule.options));
             });
             $('#auto_compile').on('change', function (e) {
-                myModule2.options.auto_compile = this.checked;
+                myModule.options.auto_compile = this.checked;
                 $("#run-button").css("display", this.checked ? "none" : "block");
-                $.cookie("leanjs_options", JSON.stringify(myModule2.options));
+                $.cookie("leanjs_options", JSON.stringify(myModule.options));
             });
-            $('#auto_compile').prop("checked", myModule2.options.auto_compile).trigger("change");
+            $('#auto_compile').prop("checked", myModule.options.auto_compile).trigger("change");
             $('#keyboard_mode').on('change', function (e) {
-                myModule2.options.keyboard_mode = this.value;
+                myModule.options.keyboard_mode = this.value;
                 //editor_main.setKeyboardHandler("ace/keyboard/" + this.value);
-                $.cookie("leanjs_options", JSON.stringify(myModule2.options));
+                $.cookie("leanjs_options", JSON.stringify(myModule.options));
             });
-            $('#keyboard_mode').val(myModule2.options.keyboard_mode).trigger("change");
+            $('#keyboard_mode').val(myModule.options.keyboard_mode).trigger("change");
             $(function () {
                 var settingButton = document.querySelector("#setting-button");
                 settingButton.addEventListener("click", function() {
@@ -556,23 +556,23 @@ var myModule2 = (function() {
         },
         // Called at toplevel
         init: function() {
-            myModule2.init_nav();
-            myModule2.init_settings();
+            myModule.init_nav();
+            myModule.init_settings();
             this.append_console_nl("Lean.JS: running the Lean Theorem Prover in your browser");
             this.append_console("-- Initializing Ace Editor...     ");
             var start_time = new Date().getTime();
-            myModule2.init_ace();
-            myModule2.append_console("Done");
-            myModule2.append_console_nl("(" + elapsed_time_string(start_time) + ")");
+            myModule.init_ace();
+            myModule.append_console("Done");
+            myModule.append_console_nl("(" + elapsed_time_string(start_time) + ")");
             if (codeText != "") {
-                myModule2.load_from_code();
+                myModule.load_from_code();
             } else if (url != "") {
-                myModule2.load_from_url();
+                myModule.load_from_url();
             } else {
                 var cookie_contents = $.cookie("leanjs");
                 if (cookie_contents && cookie_contents != "") {
-                    //myModule2.editor_main.setValue(cookie_contents, 1);
-                    myModule2.append_console_nl("-- Text loaded from cookie.");
+                    //myModule.editor_main.setValue(cookie_contents, 1);
+                    myModule.append_console_nl("-- Text loaded from cookie.");
                 }
             }
         },
@@ -592,23 +592,23 @@ var myModule2 = (function() {
         // Called in Module's postRun
         init_lean: function() {
             var start_time = new Date().getTime();
-            myModule2.append_console("-- Initializing Lean...           ");
+            myModule.append_console("-- Initializing Lean...           ");
             setTimeout(function() {
                 //Module.lean_init();
-                myModule2.append_console("Done");
-                myModule2.append_console_nl("(" + elapsed_time_string(start_time) + ")");
+                myModule.append_console("Done");
+                myModule.append_console_nl("(" + elapsed_time_string(start_time) + ")");
             }, 5);
         },
         // Called from runButton (#run-button),
         // process_main_buffer_command keybinding
         process_main_buffer: function() {
             this.clear_console();
-            myModule2.append_console_nl("-- Processing...");
+            myModule.append_console_nl("-- Processing...");
             var start_time = new Date().getTime();
             setTimeout(function() {
-                myModule2.sync();
-                myModule2.append_console("-- Done");
-                myModule2.append_console_nl("(" + elapsed_time_string(start_time) + ")");
+                myModule.sync();
+                myModule.append_console("-- Done");
+                myModule.append_console_nl("(" + elapsed_time_string(start_time) + ")");
             }, 1);
         },
         // Called in sync?
@@ -629,18 +629,18 @@ var myModule2 = (function() {
         // Called in Module postRun, possibly by Ace editor?
         sync: function() {
             var need_to_resize = false
-            if (myModule2.get_main_console_ratio() == 1.0) {
-                myModule2.set_main_console_ratio(0.8);
+            if (myModule.get_main_console_ratio() == 1.0) {
+                myModule.set_main_console_ratio(0.8);
                 need_to_resize = true;
             }
-            if (myModule2.get_tutorial_main_ratio() == 1.0) {
-                myModule2.set_tutorial_main_ratio(0.5);
+            if (myModule.get_tutorial_main_ratio() == 1.0) {
+                myModule.set_tutorial_main_ratio(0.5);
                 need_to_resize = true;
             }
             if (need_to_resize) {
                 next_image = "square.svg";
                 $("#layout-button>img")[0].src = "./images/" + next_image;
-                myModule2.resize_editors();
+                myModule.resize_editors();
             }
             var start_time = new Date().getTime();
             this.send({
@@ -649,8 +649,8 @@ var myModule2 = (function() {
             });
             if (this.initialized) {
                 this.presentErrorMessages();
-                myModule2.append_console("Done");
-                myModule2.append_console_nl("(" + elapsed_time_string(start_time) + ")");
+                myModule.append_console("Done");
+                myModule.append_console_nl("(" + elapsed_time_string(start_time) + ")");
             }
         },
         // Called in processResponse
@@ -725,14 +725,14 @@ var myModule2 = (function() {
 $(function () {
     var newButton = document.querySelector("#new-button");
     newButton.addEventListener("click", function() {
-        //myModule2.editor_main.setValue("", 1);
+        //myModule.editor_main.setValue("", 1);
     });
 });
 // Run Button
 $(function () {
     var runButton = document.querySelector("#run-button");
     runButton.addEventListener("click", function() {
-        myModule2.process_main_buffer();
+        myModule.process_main_buffer();
     });
 });
 // Console Button
@@ -747,55 +747,55 @@ $(function () {
         var livemode = location.search.match("(\\?|&)live") ? true : false;
         if (w >= h) {
             if (current_image == "square.svg") {
-                myModule2.set_tutorial_main_ratio(1.0);
-                myModule2.set_main_console_ratio(1.0);
+                myModule.set_tutorial_main_ratio(1.0);
+                myModule.set_main_console_ratio(1.0);
                 next_image = "square-landscape-main-code.svg";
             } else if (current_image == "square-landscape-main-code.svg") {
                 if (livemode) {
-                    myModule2.set_main_console_ratio(0.5);
+                    myModule.set_main_console_ratio(0.5);
                     next_image = "square.svg";
                 } else {
-                    myModule2.set_tutorial_main_ratio(0.5);
-                    myModule2.set_main_console_ratio(1.0);
+                    myModule.set_tutorial_main_ratio(0.5);
+                    myModule.set_main_console_ratio(1.0);
                     next_image = "square-landscape-main-code-console.svg";
                 }
             } else if (current_image == "square-landscape-main-code-console.svg") {
-                myModule2.set_tutorial_main_ratio(0.5);
-                myModule2.set_main_console_ratio(0.8);
+                myModule.set_tutorial_main_ratio(0.5);
+                myModule.set_main_console_ratio(0.8);
                 next_image = "square.svg";
             }
         } else {
             if (current_image == "square.svg") {
-                myModule2.set_tutorial_main_ratio(1.0);
-                myModule2.set_main_console_ratio(1.0);
+                myModule.set_tutorial_main_ratio(1.0);
+                myModule.set_main_console_ratio(1.0);
                 next_image = "square-portrait-main-code.svg";
             } else if (current_image == "square-portrait-main-code.svg") {
                 if (livemode) {
-                    myModule2.set_main_console_ratio(0.5);
+                    myModule.set_main_console_ratio(0.5);
                     next_image = "square.svg";
                 } else {
-                    myModule2.set_tutorial_main_ratio(0.5);
-                    myModule2.set_main_console_ratio(1.0);
+                    myModule.set_tutorial_main_ratio(0.5);
+                    myModule.set_main_console_ratio(1.0);
                     next_image = "square-portrait-main-code-console.svg";
                 }
             } else if (current_image == "square-portrait-main-code-console.svg") {
-                myModule2.set_tutorial_main_ratio(0.5);
-                myModule2.set_main_console_ratio(0.8);
+                myModule.set_tutorial_main_ratio(0.5);
+                myModule.set_main_console_ratio(0.8);
                 next_image = "square.svg";
             }
         }
         $("#layout-button>img")[0].src = "./images/" + next_image;
-        myModule2.resize_editors();
+        myModule.resize_editors();
     });
 });
 
-myModule2.init();
+myModule.init();
 
 // $.ajaxPrefilter(undefined);
 // loadJSFile("https://cdn.rawgit.com/gportelli/pocket.gl/v1.2.3/dist/pocket.gl.min.js");
 loadJSFile("https://cdn.rawgit.com/Hodapp87/pocket.gl/ab3fc6ee/dist/pocket.gl.min.js");
 //loadJSFile("dist/pocket.gl.js");
-//myModule2.append_console("-- Loading pocket.gl...            ");
+//myModule.append_console("-- Loading pocket.gl...            ");
 
 params = {
     copyright: "CS6460 Draft",
@@ -873,5 +873,5 @@ params = {
 }
 
 window.addEventListener("load", function () { 
-    myModule2.set_pocketgl(new PocketGL("editor_main", params));
+    myModule.set_pocketgl(new PocketGL("editor_main", params));
 });

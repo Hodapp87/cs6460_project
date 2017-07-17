@@ -401,17 +401,7 @@ void main()
 
 ** Summary
 
-This concludes the tutorial - at least, until I write more.
-
-I mentioned that distance fields were a sort of extension of what we
-looked at in the last section - particularly, of what we can do with
-functions that map points in space to something (color, or a distance
-bound, for instance).  Another application of this same principle can
-be found in the [[https://www.cs.jhu.edu/~subodh/458/p253-perlin.pdf][Hypertexture]] approach of Perlin and Hoffert - in which
-a function maps points in 3D space to *density* at that point.
-
-3D rendering is a subject both broad and deep, and this tutorial
-covers just a narrow part of one aspect of them.  The next section
-gives a handful of references that may be good starting points.
+This concludes the tutorial - at least, until I write more.  The [[./04_Final_Notes.org][next
+section]] contains some other references that you may wish to read.
 
 # TODO: Mind the goal of this, which is not graphics but math.
