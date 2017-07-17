@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2017-07-17 Mon 13:06 -->
+<!-- 2017-07-17 Mon 13:29 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>3D Rendering</title>
@@ -19,8 +19,8 @@
 <div id="content">
 <h1 class="title">3D Rendering</h1>
 
-<div id="outline-container-org313ef4b" class="outline-2">
-<h2 id="org313ef4b"><span class="section-number-2"> 3</span> 3D Rendering</h2>
+<div id="outline-container-orga51dc42" class="outline-2">
+<h2 id="orga51dc42"><span class="section-number-2"> 3</span> 3D Rendering</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 In the last section, we dealt with a class of functions which mapped
@@ -86,8 +86,8 @@ implicitly. If this sounds like it's related to the mention of
 </p>
 </div>
 
-<div id="outline-container-org6ad56ed" class="outline-3">
-<h3 id="org6ad56ed"><span class="section-number-3"> 3.1</span> Distance Functions</h3>
+<div id="outline-container-orgb7d955c" class="outline-3">
+<h3 id="orgb7d955c"><span class="section-number-3"> 3.1</span> Distance Functions</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
 In that thought experiment, the hypothetical GPS was providing a
@@ -114,8 +114,8 @@ you're guaranteed <b>not</b> to hit the boundary in any direction.
 </div>
 </div>
 
-<div id="outline-container-orgda431e5" class="outline-3">
-<h3 id="orgda431e5"><span class="section-number-3"> 3.2</span> Sphere Tracing</h3>
+<div id="outline-container-org0ffdd75" class="outline-3">
+<h3 id="org0ffdd75"><span class="section-number-3"> 3.2</span> Sphere Tracing</h3>
 <div class="outline-text-3" id="text-1-2">
 <p>
 Using a very similar process as in the thought experiment above, this
@@ -127,7 +127,7 @@ method of ray marching.
 </p>
 
 <p>
-Below is an example of rendering a sphere in 3D this way.  Don't worry
+Below is an example of rendering a cube in 3D this way.  Don't worry
 too much about <code>main()</code>; this code is just there to set up the
 renderer, which is a little more complicated in 3D.  Focus on
 <code>distance()</code> - this is the distance function that is actually being
@@ -136,6 +136,122 @@ rendered, and it's called indirectly via <code>render</code>.
 
 <div class="org-src-container">
 <juicy-ace-editor id='webgl-juicy-ace-editor-1' mode="ace/mode/glsl" readonly="true">#define ENABLE_SPHERE_TRACING
+
+uniform vec2 resolution;
+uniform vec4 mouse;
+
+float distance(in vec3 pos)
+{
+    return length(max(abs(pos) - 1.0, 0.0));
+}
+
+void main()
+{
+    vec2 uv = 2.0 * gl_FragCoord.xy/resolution.xy - 1.0;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    // Normalize mouse position:
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
+    m.x = m.x * resolution.x / resolution.y;
+
+    // Camera location &amp; target:
+    vec3 camera_loc = vec3(-0.5+3.5*cos(6.0*m.x), 1.0 + 2.0*m.y, 0.5 + 4.0*sin(6.0*m.x));
+    vec3 camera_target = vec3(0.0, 0.0, 0.0);
+    
+    // Camera-to-world transformation and rendering:
+    mat3 ca = setCamera(camera_loc, camera_target, 0.0);
+    vec3 rd = ca * normalize(vec3(uv, 2.0));
+    vec3 col = render(camera_loc, rd);
+
+    gl_FragColor = vec4(col, 1.0);
+}
+</juicy-ace-editor><div id='webgl-full-code-1' style='display:none'>/* PARAMETERS
+[
+]
+END */
+#define ENABLE_SPHERE_TRACING
+
+uniform vec2 resolution;
+uniform vec4 mouse;
+
+float distance(in vec3 pos)
+{
+    return length(max(abs(pos) - 1.0, 0.0));
+}
+
+void main()
+{
+    vec2 uv = 2.0 * gl_FragCoord.xy/resolution.xy - 1.0;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    // Normalize mouse position:
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
+    m.x = m.x * resolution.x / resolution.y;
+
+    // Camera location &amp; target:
+    vec3 camera_loc = vec3(-0.5+3.5*cos(6.0*m.x), 1.0 + 2.0*m.y, 0.5 + 4.0*sin(6.0*m.x));
+    vec3 camera_target = vec3(0.0, 0.0, 0.0);
+    
+    // Camera-to-world transformation and rendering:
+    mat3 ca = setCamera(camera_loc, camera_target, 0.0);
+    vec3 rd = ca * normalize(vec3(uv, 2.0));
+    vec3 col = render(camera_loc, rd);
+
+    gl_FragColor = vec4(col, 1.0);
+}
+</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-1').text());">Use code &raquo;</button></div>
+</div>
+
+<p>
+You can drag the view around with the mouse.  You're now looking at a
+3D coordinate system, not a 2D one; the X and Z axes are the ground
+(so to speak), and the Y axis is up.
+</p>
+
+<p>
+To explain why <code>distance</code> works, it may help to expand the rather
+terse equation a little; <code>max</code> and <code>abs</code> are both element-wise, while
+<code>length</code> is over the entire vector.  If \(d(p)\) stands for
+<code>distance(pos)</code>:
+</p>
+
+\begin{equation}
+d(p)=\sqrt{\max(|p_x|-1,0)^2+\max(|p_y|-1,0)^2+\max(|p_z|-1,0)^2}
+\end{equation}
+</div>
+</div>
+
+<div id="outline-container-org0cf8ed3" class="outline-3">
+<h3 id="org0cf8ed3"><span class="section-number-3"> 3.3</span> Blah blah blah</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+If \(a^2=b\) and \( b=2 \), then the solution must be
+either \[ a=+\sqrt{2} \] or \[ a=-\sqrt{2} \].
+</p>
+
+\begin{equation}
+x=\sqrt{b}
+\end{equation}
+</div>
+</div>
+
+<div id="outline-container-orgc4d731d" class="outline-3">
+<h3 id="orgc4d731d"><span class="section-number-3"> 3.4</span> Single sphere</h3>
+<div class="outline-text-3" id="text-1-4">
+<p>
+If you look more closely at <code>distance</code> you might note that the
+distance function will return negative values <b>inside</b> the sphere.
+This is intentional; we now have a <a target='_blank' href="https://en.wikipedia.org/wiki/Signed_distance_function">signed distance function</a>.  It's a
+fairly small change: The 3D surface must have a clear inside and
+outside, and the signed distance function returns a positive number
+for any point <b>outside</b> that surface and a negative number for any
+point <b>inside</b> that surface.  It's otherwise the same.
+</p>
+
+<div class="org-src-container">
+<juicy-ace-editor id='webgl-juicy-ace-editor-2' mode="ace/mode/glsl" readonly="true">#define ENABLE_SPHERE_TRACING
 
 uniform vec2 resolution;
 uniform vec4 mouse;
@@ -167,7 +283,7 @@ void main()
 
     gl_FragColor = vec4(col, 1.0);
 }
-</juicy-ace-editor><div id='webgl-full-code-1' style='display:none'>/* PARAMETERS
+</juicy-ace-editor><div id='webgl-full-code-2' style='display:none'>/* PARAMETERS
 [
    {
        "type": "float",
@@ -211,51 +327,16 @@ void main()
 
     gl_FragColor = vec4(col, 1.0);
 }
-</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-1').text());">Use code &raquo;</button></div>
+</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-2').text());">Use code &raquo;</button></div>
 </div>
-
-<p>
-You can drag the view around with the mouse, and adjust the sphere's
-radius with the slider.  You're now looking at a 3D coordinate system,
-not a 2D one; the X and Z axes are the ground (so to speak), and the Y
-axis is up.
-</p>
-
-<p>
-If you look more closely at <code>distance</code> you might note that the
-distance function will return negative values <b>inside</b> the sphere.
-This is intentional; we now have a <a target='_blank' href="https://en.wikipedia.org/wiki/Signed_distance_function">signed distance function</a>.  It's a
-fairly small change: The 3D surface must have a clear inside and
-outside, and the signed distance function returns a positive number
-for any point <b>outside</b> that surface and a negative number for any
-point <b>inside</b> that surface.  It's otherwise the same.
-</p>
-
-<p>
-Try to make sense of why this produces a sphere.
-</p>
 </div>
 </div>
 
-<div id="outline-container-orgd8aedad" class="outline-3">
-<h3 id="orgd8aedad"><span class="section-number-3"> 3.3</span> Blah blah blah</h3>
-<div class="outline-text-3" id="text-1-3">
-<p>
-If \(a^2=b\) and \( b=2 \), then the solution must be
-either \[ a=+\sqrt{2} \] or \[ a=-\sqrt{2} \].
-</p>
-
-\begin{equation}
-x=\sqrt{b}
-\end{equation}
-</div>
-</div>
-
-<div id="outline-container-org0a0eeed" class="outline-3">
-<h3 id="org0a0eeed"><span class="section-number-3"> 3.4</span> Repeated cubes 1</h3>
-<div class="outline-text-3" id="text-1-4">
+<div id="outline-container-org0b40af9" class="outline-3">
+<h3 id="org0b40af9"><span class="section-number-3"> 3.5</span> Repeated cubes 1</h3>
+<div class="outline-text-3" id="text-1-5">
 <div class="org-src-container">
-<juicy-ace-editor id='webgl-juicy-ace-editor-2' mode="ace/mode/glsl" readonly="true">#define ENABLE_SPHERE_TRACING
+<juicy-ace-editor id='webgl-juicy-ace-editor-3' mode="ace/mode/glsl" readonly="true">#define ENABLE_SPHERE_TRACING
 
 uniform vec2 resolution;
 uniform vec4 mouse;
@@ -303,7 +384,7 @@ void main()
     col = pow(col, vec3(0.4545));
     gl_FragColor = vec4(col, 1.0);
 }
-</juicy-ace-editor><div id='webgl-full-code-2' style='display:none'>/* PARAMETERS
+</juicy-ace-editor><div id='webgl-full-code-3' style='display:none'>/* PARAMETERS
 [
    {
        "type": "float",
@@ -371,17 +452,17 @@ void main()
     col = pow(col, vec3(0.4545));
     gl_FragColor = vec4(col, 1.0);
 }
-</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-2').text());">Use code &raquo;</button></div>
+</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-3').text());">Use code &raquo;</button></div>
 </div>
 </div>
 </div>
 
 
-<div id="outline-container-org7029f83" class="outline-3">
-<h3 id="org7029f83"><span class="section-number-3"> 3.5</span> Repeated cubes 2</h3>
-<div class="outline-text-3" id="text-1-5">
+<div id="outline-container-org7b8b23a" class="outline-3">
+<h3 id="org7b8b23a"><span class="section-number-3"> 3.6</span> Repeated cubes 2</h3>
+<div class="outline-text-3" id="text-1-6">
 <div class="org-src-container">
-<juicy-ace-editor id='webgl-juicy-ace-editor-3' mode="ace/mode/glsl" readonly="true">
+<juicy-ace-editor id='webgl-juicy-ace-editor-4' mode="ace/mode/glsl" readonly="true">
 #define ENABLE_SPHERE_TRACING
 
 uniform vec2 resolution;
@@ -438,7 +519,7 @@ void main()
     col = pow(col, vec3(0.4545));
     gl_FragColor = vec4(col, 1.0);
 }
-</juicy-ace-editor><div id='webgl-full-code-3' style='display:none'>/* PARAMETERS
+</juicy-ace-editor><div id='webgl-full-code-4' style='display:none'>/* PARAMETERS
 [
    {
        "type": "float",
@@ -515,16 +596,16 @@ void main()
     col = pow(col, vec3(0.4545));
     gl_FragColor = vec4(col, 1.0);
 }
-</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-3').text());">Use code &raquo;</button></div>
+</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-4').text());">Use code &raquo;</button></div>
 </div>
 </div>
 </div>
 
-<div id="outline-container-org0afe6a4" class="outline-3">
-<h3 id="org0afe6a4"><span class="section-number-3"> 3.6</span> Repeated cubes 3</h3>
-<div class="outline-text-3" id="text-1-6">
+<div id="outline-container-orgf8134c5" class="outline-3">
+<h3 id="orgf8134c5"><span class="section-number-3"> 3.7</span> Repeated cubes 3</h3>
+<div class="outline-text-3" id="text-1-7">
 <div class="org-src-container">
-<juicy-ace-editor id='webgl-juicy-ace-editor-4' mode="ace/mode/glsl" readonly="true">
+<juicy-ace-editor id='webgl-juicy-ace-editor-5' mode="ace/mode/glsl" readonly="true">
 #define ENABLE_SPHERE_TRACING
 
 uniform vec2 resolution;
@@ -564,7 +645,7 @@ void main()
     col = pow(col, vec3(0.4545));
     gl_FragColor = vec4(col, 1.0);
 }
-</juicy-ace-editor><div id='webgl-full-code-4' style='display:none'>/* PARAMETERS
+</juicy-ace-editor><div id='webgl-full-code-5' style='display:none'>/* PARAMETERS
 [
    {
        "type": "float",
@@ -616,62 +697,62 @@ void main()
     col = pow(col, vec3(0.4545));
     gl_FragColor = vec4(col, 1.0);
 }
-</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-4').text());">Use code &raquo;</button></div>
+</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-5').text());">Use code &raquo;</button></div>
 </div>
 </div>
 </div>
 
-<div id="outline-container-orgf2affe4" class="outline-3">
-<h3 id="orgf2affe4"><span class="section-number-3"> 3.7</span> Distance Bounds &amp; Distance Fields</h3>
-<div class="outline-text-3" id="text-1-7">
-</div><div id="outline-container-orgd253bf2" class="outline-4">
-<h4 id="orgd253bf2"><span class="section-number-4"> 3.7.1</span> Why a sphere tracer?</h4>
-</div>
-</div>
-
-<div id="outline-container-orge3563bc" class="outline-3">
-<h3 id="orge3563bc"><span class="section-number-3"> 3.8</span> Transformations</h3>
+<div id="outline-container-orgfbbe343" class="outline-3">
+<h3 id="orgfbbe343"><span class="section-number-3"> 3.8</span> Distance Bounds &amp; Distance Fields</h3>
 <div class="outline-text-3" id="text-1-8">
-</div>
-
-<div id="outline-container-org5a9e192" class="outline-4">
-<h4 id="org5a9e192"><span class="section-number-4"> 3.8.1</span> Scaling</h4>
-</div>
-
-<div id="outline-container-orgd19c088" class="outline-4">
-<h4 id="orgd19c088"><span class="section-number-4"> 3.8.2</span> Translation</h4>
-</div>
-
-<div id="outline-container-orgd71892e" class="outline-4">
-<h4 id="orgd71892e"><span class="section-number-4"> 3.8.3</span> Rotation</h4>
-</div>
-
-<div id="outline-container-org7417059" class="outline-4">
-<h4 id="org7417059"><span class="section-number-4"> 3.8.4</span> Shearing</h4>
-</div>
-
-<div id="outline-container-orgc27cf31" class="outline-4">
-<h4 id="orgc27cf31"><span class="section-number-4"> 3.8.5</span> Vectors &amp; Matrices</h4>
-<div class="outline-text-4" id="text-1-8-5">
-</div>
+</div><div id="outline-container-org14bf530" class="outline-4">
+<h4 id="org14bf530"><span class="section-number-4"> 3.8.1</span> Why a sphere tracer?</h4>
 </div>
 </div>
 
-<div id="outline-container-org78c4ea1" class="outline-3">
-<h3 id="org78c4ea1"><span class="section-number-3"> 3.9</span> Constructive Solid Geometry</h3>
+<div id="outline-container-orgc65c4d6" class="outline-3">
+<h3 id="orgc65c4d6"><span class="section-number-3"> 3.9</span> Transformations</h3>
+<div class="outline-text-3" id="text-1-9">
 </div>
 
-<div id="outline-container-orgdbc06a4" class="outline-3">
-<h3 id="orgdbc06a4"><span class="section-number-3"> 3.10</span> Domain Warping</h3>
+<div id="outline-container-org72d6042" class="outline-4">
+<h4 id="org72d6042"><span class="section-number-4"> 3.9.1</span> Scaling</h4>
 </div>
 
-<div id="outline-container-org814c373" class="outline-3">
-<h3 id="org814c373"><span class="section-number-3"> 3.11</span> Domain Repetition</h3>
+<div id="outline-container-org984ed90" class="outline-4">
+<h4 id="org984ed90"><span class="section-number-4"> 3.9.2</span> Translation</h4>
 </div>
 
-<div id="outline-container-org341a340" class="outline-3">
-<h3 id="org341a340"><span class="section-number-3"> 3.12</span> Summary</h3>
-<div class="outline-text-3" id="text-1-12">
+<div id="outline-container-org1333a2e" class="outline-4">
+<h4 id="org1333a2e"><span class="section-number-4"> 3.9.3</span> Rotation</h4>
+</div>
+
+<div id="outline-container-org1928133" class="outline-4">
+<h4 id="org1928133"><span class="section-number-4"> 3.9.4</span> Shearing</h4>
+</div>
+
+<div id="outline-container-org63bacd2" class="outline-4">
+<h4 id="org63bacd2"><span class="section-number-4"> 3.9.5</span> Vectors &amp; Matrices</h4>
+<div class="outline-text-4" id="text-1-9-5">
+</div>
+</div>
+</div>
+
+<div id="outline-container-org70be815" class="outline-3">
+<h3 id="org70be815"><span class="section-number-3"> 3.10</span> Constructive Solid Geometry</h3>
+</div>
+
+<div id="outline-container-orgf8aa129" class="outline-3">
+<h3 id="orgf8aa129"><span class="section-number-3"> 3.11</span> Domain Warping</h3>
+</div>
+
+<div id="outline-container-org4356911" class="outline-3">
+<h3 id="org4356911"><span class="section-number-3"> 3.12</span> Domain Repetition</h3>
+</div>
+
+<div id="outline-container-orge705879" class="outline-3">
+<h3 id="orge705879"><span class="section-number-3"> 3.13</span> Summary</h3>
+<div class="outline-text-3" id="text-1-13">
 <p>
 This concludes the tutorial - at least, until I write more.  The <a href="#" onclick="myModule.loadTutorial('./04_Final_Notes.html', null)">next
 section</a> contains some other references that you may wish to read.

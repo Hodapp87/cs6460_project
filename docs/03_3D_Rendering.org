@@ -82,11 +82,83 @@ point - in other words, to render them in 3D.  This can be done with
 pixel-by-pixel.  It is similar to [[https://en.wikipedia.org/wiki/Ray_tracing_(graphics)][ray tracing]]; it is technically a
 method of ray marching.
 
-Below is an example of rendering a sphere in 3D this way.  Don't worry
+Below is an example of rendering a cube in 3D this way.  Don't worry
 too much about =main()=; this code is just there to set up the
 renderer, which is a little more complicated in 3D.  Focus on
 =distance()= - this is the distance function that is actually being
 rendered, and it's called indirectly via =render=.
+
+#+BEGIN_SRC glsl
+/* PARAMETERS
+[
+]
+END */
+#define ENABLE_SPHERE_TRACING
+
+uniform vec2 resolution;
+uniform vec4 mouse;
+
+float distance(in vec3 pos)
+{
+    return length(max(abs(pos) - 1.0, 0.0));
+}
+
+void main()
+{
+    vec2 uv = 2.0 * gl_FragCoord.xy/resolution.xy - 1.0;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    // Normalize mouse position:
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
+    m.x = m.x * resolution.x / resolution.y;
+
+    // Camera location & target:
+    vec3 camera_loc = vec3(-0.5+3.5*cos(6.0*m.x), 1.0 + 2.0*m.y, 0.5 + 4.0*sin(6.0*m.x));
+    vec3 camera_target = vec3(0.0, 0.0, 0.0);
+    
+    // Camera-to-world transformation and rendering:
+    mat3 ca = setCamera(camera_loc, camera_target, 0.0);
+    vec3 rd = ca * normalize(vec3(uv, 2.0));
+    vec3 col = render(camera_loc, rd);
+
+    gl_FragColor = vec4(col, 1.0);
+}
+#+END_SRC
+
+You can drag the view around with the mouse.  You're now looking at a
+3D coordinate system, not a 2D one; the X and Z axes are the ground
+(so to speak), and the Y axis is up.
+
+To explain why =distance= works, it may help to expand the rather
+terse equation a little; =max= and =abs= are both element-wise, while
+=length= is over the entire vector.  If $d(p)$ stands for
+=distance(pos)=:
+
+\begin{equation}
+d(p)=\sqrt{\max(|p_x|-1,0)^2+\max(|p_y|-1,0)^2+\max(|p_z|-1,0)^2}
+\end{equation}
+
+** Blah blah blah
+
+If $a^2=b$ and \( b=2 \), then the solution must be
+either $$ a=+\sqrt{2} $$ or \[ a=-\sqrt{2} \].
+
+\begin{equation}
+x=\sqrt{b}
+\end{equation}
+
+** Single sphere
+
+# TODO: Get rid of the below perhaps
+
+If you look more closely at =distance= you might note that the
+distance function will return negative values *inside* the sphere.
+This is intentional; we now have a [[https://en.wikipedia.org/wiki/Signed_distance_function][signed distance function]].  It's a
+fairly small change: The 3D surface must have a clear inside and
+outside, and the signed distance function returns a positive number
+for any point *outside* that surface and a negative number for any
+point *inside* that surface.  It's otherwise the same.
 
 #+BEGIN_SRC glsl
 /* PARAMETERS
@@ -134,30 +206,6 @@ void main()
     gl_FragColor = vec4(col, 1.0);
 }
 #+END_SRC
-
-You can drag the view around with the mouse, and adjust the sphere's
-radius with the slider.  You're now looking at a 3D coordinate system,
-not a 2D one; the X and Z axes are the ground (so to speak), and the Y
-axis is up.
-
-If you look more closely at =distance= you might note that the
-distance function will return negative values *inside* the sphere.
-This is intentional; we now have a [[https://en.wikipedia.org/wiki/Signed_distance_function][signed distance function]].  It's a
-fairly small change: The 3D surface must have a clear inside and
-outside, and the signed distance function returns a positive number
-for any point *outside* that surface and a negative number for any
-point *inside* that surface.  It's otherwise the same.
-
-Try to make sense of why this produces a sphere.
-
-** Blah blah blah
-
-If $a^2=b$ and \( b=2 \), then the solution must be
-either $$ a=+\sqrt{2} $$ or \[ a=-\sqrt{2} \].
-
-\begin{equation}
-x=\sqrt{b}
-\end{equation}
 
 ** Repeated cubes 1
 

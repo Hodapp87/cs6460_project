@@ -25,10 +25,9 @@ minimum-distance.
 [[http://www.iquilezles.org/][Íñigo Quílez]] is one of the leading figures on sphere tracing over the
 past 10 years or so, and has done extensive work in implementing,
 explaining, and popularizing them.  His website is full of articles on
-the mathematics and implementation (for instance, [[http://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm][Modeling with
-Distance Functions]]) and his [[https://www.shadertoy.com/user/iq][Shadertoy profile]] is full of excellent
-examples (and this web application's sphere tracer is based on one
-such example).
+the mathematics and implementation (start at [[http://www.iquilezles.org/www/articles/raymarchingdf/raymarchingdf.htm][Raymarching Distance
+Fields]]) and his [[https://www.shadertoy.com/user/iq][Shadertoy profile]] is full of excellent examples (and
+this web application's sphere tracer is based on one such example).
 
 The standard paper giving the mathematics behind sphere tracers is
 [[http://graphics.cs.williams.edu/courses/cs371/f14/reading/implicit.pdf][Numerical Methods for Ray Tracing Implicitly Defined Surfaces]] by John

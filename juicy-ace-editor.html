@@ -164,8 +164,8 @@ function separate_parts(code) {
 // values into the fragment shader editors and parameter JSON editor
 // in pocket.gl.
 function copy_code(code) {
-    if (typeof myModule2 !== 'undefined') {
-        var pocketgl = myModule2.get_pocketgl();
+    if (typeof myModule !== 'undefined') {
+        var pocketgl = myModule.get_pocketgl();
         if (pocketgl !== null) {
             var parts = separate_parts(code);
             // No, I don't want to talk about it.
