@@ -37,8 +37,11 @@ or really to any other language.
 
 To make full use of this, you'll require:
 
-- A browser that [[https://en.wikipedia.org/wiki/WebGL#Support][supports WebGL]], and has enabled it
-- A graphics card that is fast enough for the demos here
+- A browser that [[https://en.wikipedia.org/wiki/WebGL#Support][supports WebGL]], and has enabled it.  I have tested it
+  in Chrome and Firefox.  I have seen issues reported on Safari.
+  Android tablets appear to be able to render acceptably, but the
+  website layout is annoying.
+- A graphics card that is fast enough for the demos here.
 
 This assumes some background:
 

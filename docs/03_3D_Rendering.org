@@ -128,7 +128,9 @@ void main()
 
 You can drag the view around with the mouse.  You're now looking at a
 3D coordinate system, not a 2D one; the X and Z axes are the ground
-(so to speak), and the Y axis is up.
+(so to speak), and the Y axis is up.  In this case the mouse is
+dragging around the camera's position, not the coordinate system
+itself.
 
 To explain why =distance= works, it may help to expand the rather
 terse equation a little; =max= and =abs= are both element-wise, while
@@ -139,14 +141,163 @@ terse equation a little; =max= and =abs= are both element-wise, while
 d(p)=\sqrt{\max(|p_x|-1,0)^2+\max(|p_y|-1,0)^2+\max(|p_z|-1,0)^2}
 \end{equation}
 
-** Blah blah blah
+Mentally try a few values of $p_x$ in $\max(|p_x|-1,0)$.  Note that
+for $-1 \leq p_x \leq 1$, it is zero, while picking a value of
+$p_x<-1$ gives the distance in the $x$ axis to -1 and picking a value
+of $p_x>1$ gives the distance in the $x$ axis to 1.  It behaves
+identically for $p_y$ and the $y$ axis, and $p_z$ and the $z$ axis.
+The final result is just applying the distance formula to these three
+values, thus giving the total distance from the region $-1 \leq p_x
+\leq 1$, $-1 \leq p_y \leq 1$, and $-1 \leq p_z \leq 1$ - which is a
+cube of sidelength 2, centered at $(0,0,0)$.
 
-If $a^2=b$ and \( b=2 \), then the solution must be
-either $$ a=+\sqrt{2} $$ or \[ a=-\sqrt{2} \].
+** Transformations
 
-\begin{equation}
-x=\sqrt{b}
-\end{equation}
+[[./02_2D_Coordinates.org][Section 2]] discussed how we could change something by transforming the
+2D coordinate space it's in.  We can do that identically with the 3D
+coordinate space here.  See the example below, and note that the only
+thing we've done is replace $d(p)$ with $\frac{d(sp){s}$, where $s$ is
+a new parameter just added.
+
+#+BEGIN_SRC glsl
+/* PARAMETERS
+[
+   {
+       "type": "float",
+       "value": 1,
+       "min": 0,
+       "max": 5,
+       "name": "s",
+       "GUIName": "s"
+   }
+]
+END */
+#define ENABLE_SPHERE_TRACING
+
+uniform vec2 resolution;
+uniform vec4 mouse;
+uniform float s;
+
+float distance(in vec3 pos)
+{
+    return length(max(abs(pos * s) - 1.0, 0.0)) / s;
+}
+
+void main()
+{
+    vec2 uv = 2.0 * gl_FragCoord.xy/resolution.xy - 1.0;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    // Normalize mouse position:
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
+    m.x = m.x * resolution.x / resolution.y;
+
+    // Camera location & target:
+    vec3 camera_loc = vec3(-0.5+3.5*cos(6.0*m.x), 1.0 + 2.0*m.y, 0.5 + 4.0*sin(6.0*m.x));
+    vec3 camera_target = vec3(0.0, 0.0, 0.0);
+    
+    // Camera-to-world transformation and rendering:
+    mat3 ca = setCamera(camera_loc, camera_target, 0.0);
+    vec3 rd = ca * normalize(vec3(uv, 2.0));
+    vec3 col = render(camera_loc, rd);
+
+    gl_FragColor = vec4(col, 1.0);
+}
+#+END_SRC
+
+Adjust the parameter's value, and the effect may be the inverse of
+what you would expect.  To make sense of this, consider that by
+multiplying =pos= by a value > 1, you are scaling up the entire
+space - but the cube still has a constant sidelength of 2.  (Dividing
+the length by $s$ is a correction that is only needed because
+=distance()= returns a length that must be in our "original" space,
+not our new scaled space - but scaling changes this length.)
+
+Predictably, some other basic motions are easy too.  The code below
+adds 3 parameters, $tx$, $ty$, and $tz$, and subtracts these from the
+location before applying the scaling of the last step:
+
+#+BEGIN_SRC glsl
+/* PARAMETERS
+[
+   {
+       "type": "float",
+       "value": 1,
+       "min": 0,
+       "max": 5,
+       "name": "s",
+       "GUIName": "s"
+   },
+   {
+       "type": "float",
+       "value": 0,
+       "min": -5,
+       "max": 5,
+       "name": "tx",
+       "GUIName": "tx"
+   },
+   {
+       "type": "float",
+       "value": 0,
+       "min": -5,
+       "max": 5,
+       "name": "ty",
+       "GUIName": "ty"
+   },
+   {
+       "type": "float",
+       "value": 0,
+       "min": -5,
+       "max": 5,
+       "name": "tz",
+       "GUIName": "tz"
+   }
+]
+END */
+#define ENABLE_SPHERE_TRACING
+
+uniform vec2 resolution;
+uniform vec4 mouse;
+uniform float s;
+uniform float tx;
+uniform float ty;
+uniform float tz;
+
+float distance(in vec3 pos)
+{
+    vec3 pos2 = pos - vec3(tx, ty, tz);
+    return length(max(abs(pos2 * s) - 1.0, 0.0)) / s;
+}
+
+void main()
+{
+    vec2 uv = 2.0 * gl_FragCoord.xy/resolution.xy - 1.0;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    // Normalize mouse position:
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
+    m.x = m.x * resolution.x / resolution.y;
+
+    // Camera location & target:
+    vec3 camera_loc = vec3(-0.5+3.5*cos(6.0*m.x), 1.0 + 2.0*m.y, 0.5 + 4.0*sin(6.0*m.x));
+    vec3 camera_target = vec3(0.0, 0.0, 0.0);
+    
+    // Camera-to-world transformation and rendering:
+    mat3 ca = setCamera(camera_loc, camera_target, 0.0);
+    vec3 rd = ca * normalize(vec3(uv, 2.0));
+    vec3 col = render(camera_loc, rd);
+
+    gl_FragColor = vec4(col, 1.0);
+}
+#+END_SRC
+
+Similar intuition applies here: In subtracting $(t_x, t_y, t_z)$ we
+are shifting (or translating) the entire space so that the coordinates
+$(t_x, t_y, t_z)$ are the new origin of the space.  Note that the
+scaling is done *after* the translation; the order matters here.
+Scale and translate in the opposite order to see why.
 
 ** Single sphere
 

@@ -397,7 +397,7 @@ void main()
         mat3 ca = setCamera(ro, ta, 0.0);
         
         // ray direction
-        vec3 rd = ca * normalize(vec3(p.xy, 2.0));
+        vec3 rd = ca * normalize(vec3(p.xy, 1.0));
 
         // render	
         vec3 col = render(ro, rd);
