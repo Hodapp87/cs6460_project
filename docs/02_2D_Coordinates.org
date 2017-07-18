@@ -925,11 +925,11 @@ void main()
 
 ** Summary
 
-The intention of this section was to give a crash course in how
+The intention of this chapter was to give a crash course in how
 shaders work in this context, how functions are a meaningful
 representation for graphics, and how transformations on the function's
 domain can be visualized as warping space.
 
-This whole section was focused on the use of shaders to create 2D
-graphics.  The next section extends this to their use in creating a 3D
+This whole chapter was focused on the use of shaders to create 2D
+graphics.  The next chapter extends this to their use in creating a 3D
 renderer.

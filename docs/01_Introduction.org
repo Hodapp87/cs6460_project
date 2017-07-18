@@ -29,7 +29,7 @@ written in GLSL ([[https://en.wikipedia.org/wiki/OpenGL_Shading_Language][OpenGL
 toy programming language or API for this tutorial.  On top of that,
 nearly anything you write could be translated easily to many other
 shading languages (e.g. [[https://en.wikipedia.org/wiki/Cg_(programming_language)][Cg]], [[https://en.wikipedia.org/wiki/High-level_shader_language][HLSL]], [[https://en.wikipedia.org/wiki/RenderMan_Shading_Language][RSL]], [[https://en.wikipedia.org/wiki/Open_Shading_Language][OSL]]) that work very similarly,
-or really to any other language.
+or really to any other language with a little more effort.
 
 # TODO: Supply GitHub link above.
 
@@ -83,9 +83,9 @@ Fabrice Castel's [[https://fabricecastel.github.io/blog/2015-08-03/main.html][se
 Book of Shaders]], and Morgan McGuire's [[https://www.cs.williams.edu/~morgan/cs371-f14/reading/implicit.pdf][Numerical Methods for Ray
 Tracing Implicitly Defined Surfaces]] were very helpful references in
 the course of building the content of this site.  Particularly, the
-sphere tracing example in section 3 is based heavily around Íñigo
+sphere tracing example in chapter 3 is based heavily around Íñigo
 Quílez's [[https://www.shadertoy.com/view/Xds3zN][Raymarching Primitives demo]].
 
-[[./04_Final_Notes.org][Section 4]] contains some other references as well.
+[[./04_Final_Notes.org][Chapter 4]] contains some other references as well.
 
 # TODO: Either put license text here or make note of where to find it.

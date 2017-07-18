@@ -3,8 +3,8 @@
 
 * 3D Rendering
 
-In the last section, we dealt with a class of functions which mapped
-2D space (i.e. a pixel location) to color values.  In this section, we
+In the last chapter, we dealt with a class of functions which mapped
+2D space (i.e. a pixel location) to color values.  In this chapter, we
 generalize this a bit, and deal with functions that map 3D space to
 something.
 
@@ -50,7 +50,7 @@ and repeating the process, sometimes from different spots.)
 To put it in more technical terms: You just traced out the *distance
 surface* that a *distance function* (or a distance field) described
 implicitly. If this sounds like it's related to the mention of
-*isolines* in the last section, it's because it is.
+*isolines* in the last chapter, it's because it is.
 
 ** Distance Functions
 
@@ -153,7 +153,7 @@ cube of sidelength 2, centered at $(0,0,0)$.
 
 ** Transformations
 
-[[./02_2D_Coordinates.org][Section 2]] discussed how we could change something by transforming the
+[[./02_2D_Coordinates.org][Chapter 2]] discussed how we could change something by transforming the
 2D coordinate space it's in.  We can do that identically with the 3D
 coordinate space here.  See the example below, and note that the only
 thing we've done is replace $d(p)$ with $\frac{d(sp)}{s}$, where $s$ is
@@ -617,6 +617,12 @@ void main()
 }
 #+END_SRC
 
+If you recall the part in chapter 2 on composition of functions, we
+are doing exactly the same thing here.  It just happens that the
+functions we're composing are mostly matrix multiplications, and
+matrix multiplications behave in some helpful ways (e.g. they are
+[[https://en.wikipedia.org/wiki/Matrix_multiplication#Properties_of_the_matrix_product_.28any_number_of_matrices_in_the_product.29][associative]]).
+
 ** Homogeneous coordinates
 
 It may seem a bit strange that we are working with a 3-element vector,
@@ -665,34 +671,31 @@ let us express translations in matrix form (and [[https://en.wikipedia.org/wiki/
 in general - including the all-important projective transformation
 used anytime a 3D render includes perspective).
 
-** Other linear transformations
+The transformations given above are rather uninteresting, but
+well-studied, well-behaved, efficient to compute, and essential to 3D
+graphics in general.
 
-** Single sphere
+** More on distance functions
 
-# TODO: Get rid of the below perhaps
+*** Primitives
+
+Cubes are likewise rather boring by themselves, even if we can use
+matrices to move them around.  However, distance functions can
+represent a variety of other shapes.  One very simple one is a sphere:
 
 #+BEGIN_SRC glsl
 /* PARAMETERS
 [
-   {
-       "type": "float",
-       "value": 1,
-       "min": 0,
-       "max": 10,
-       "name": "radius",
-       "GUIName": "Radius"
-   }
 ]
 END */
 #define ENABLE_SPHERE_TRACING
 
 uniform vec2 resolution;
 uniform vec4 mouse;
-uniform float radius;
 
 float distance(in vec3 pos)
 {
-    return length(pos) - radius;
+    return length(pos) - 1.0;
 }
 
 void main()
@@ -717,6 +720,315 @@ void main()
     gl_FragColor = vec4(col, 1.0);
 }
 #+END_SRC
+
+See Íñigo Quílez's page [[http://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm][Modeling with Distance Functions]] for a list of
+many others.
+
+*** Constructive Solid Geometry
+
+Distance functions are also rather easy to combine in the methods of
+[[https://en.wikipedia.org/wiki/Constructive_solid_geometry][constructive solid geometry]].  The minimum of two distance functions is
+the *union* and the maximum of two is their *intersection*.  Thinking
+back to the thought experiment at the start of this chapter, and
+considering several different boundaries and several respective GPS
+devices, should make it obvious why.
+
+The below code shows the intersection of two spheres; replace =max=
+with =min= to instead see their union:
+
+#+BEGIN_SRC glsl
+/* PARAMETERS
+[
+   {
+       "type": "float",
+       "value": 0.1,
+       "min": 0,
+       "max": 2,
+       "name": "offset",
+       "GUIName": "Offset"
+   }
+]
+END */
+#define ENABLE_SPHERE_TRACING
+
+uniform vec2 resolution;
+uniform vec4 mouse;
+uniform float offset;
+
+float distance(in vec3 pos)
+{
+    return max(length(pos + vec3(offset/2.0, 0, 0)) - 1.0,
+               length(pos - vec3(offset/2.0, 0, 0)) - 1.0);
+}
+
+void main()
+{
+    vec2 uv = 2.0 * gl_FragCoord.xy/resolution.xy - 1.0;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    // Normalize mouse position:
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
+    m.x = m.x * resolution.x / resolution.y;
+
+    // Camera location & target:
+    vec3 camera_loc = vec3(-0.5+3.5*cos(6.0*m.x), 1.0 + 2.0*m.y, 0.5 + 4.0*sin(6.0*m.x));
+    vec3 camera_target = vec3(-0.5, 0.4, 0.5);
+    
+    // Camera-to-world transformation and rendering:
+    mat3 ca = setCamera(camera_loc, camera_target, 0.0);
+    vec3 rd = ca * normalize(vec3(uv, 2.0));
+    vec3 col = render(camera_loc, rd);
+
+    gl_FragColor = vec4(col, 1.0);
+}
+#+END_SRC
+
+Negating one of the shapes in a union can also subtract one shape from
+another:
+
+#+BEGIN_SRC glsl
+/* PARAMETERS
+[
+   {
+       "type": "float",
+       "value": 1.3,
+       "min": 0,
+       "max": 2,
+       "name": "radius",
+       "GUIName": "radius"
+   }
+]
+END */
+#define ENABLE_SPHERE_TRACING
+
+uniform vec2 resolution;
+uniform vec4 mouse;
+uniform float radius;
+
+float distance(in vec3 pos)
+{
+
+    return max(-(length(pos) - radius),
+               length(max(abs(pos).xyz - 1.0, 0.0)));
+}
+
+void main()
+{
+    vec2 uv = 2.0 * gl_FragCoord.xy/resolution.xy - 1.0;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    // Normalize mouse position:
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
+    m.x = m.x * resolution.x / resolution.y;
+
+    // Camera location & target:
+    vec3 camera_loc = vec3(-0.5+3.5*cos(6.0*m.x), 1.0 + 2.0*m.y, 0.5 + 4.0*sin(6.0*m.x));
+    vec3 camera_target = vec3(-0.5, 0.4, 0.5);
+    
+    // Camera-to-world transformation and rendering:
+    mat3 ca = setCamera(camera_loc, camera_target, 0.0);
+    vec3 rd = ca * normalize(vec3(uv, 2.0));
+    vec3 col = render(camera_loc, rd);
+
+    gl_FragColor = vec4(col, 1.0);
+}
+#+END_SRC
+
+*** Domain warping
+
+The last chapter used modulo in order to warp a function's domain into
+an infinitely-repeating space in order to create a grid.  This works
+identically here in 3 dimensions, due to the fact that we're working
+with a function that maps 3D space to something:
+
+#+BEGIN_SRC glsl
+/* PARAMETERS
+[
+   {
+       "type": "float",
+       "value": 1.3,
+       "min": 0,
+       "max": 2,
+       "name": "radius",
+       "GUIName": "radius"
+   },
+   {
+       "type": "float",
+       "value": 3,
+       "min": 0,
+       "max": 6,
+       "name": "offset",
+       "GUIName": "offset"
+   }
+]
+END */
+#define ENABLE_SPHERE_TRACING
+
+uniform vec2 resolution;
+uniform vec4 mouse;
+uniform float radius;
+uniform float offset;
+
+float distance(in vec3 pos)
+{
+    vec3 pos2 = mod(pos, offset) - offset/2.0;
+    return max(-(length(pos2) - radius),
+               length(max(abs(pos2).xyz - 1.0, 0.0)));
+}
+
+void main()
+{
+    vec2 uv = 2.0 * gl_FragCoord.xy/resolution.xy - 1.0;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    // Normalize mouse position:
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
+    m.x = m.x * resolution.x / resolution.y;
+
+    // Camera location & target:
+    vec3 camera_loc = vec3(-0.5+3.5*cos(6.0*m.x), 1.0 + 2.0*m.y, 0.5 + 4.0*sin(6.0*m.x));
+    vec3 camera_target = vec3(-0.5, 0.4, 0.5);
+    
+    // Camera-to-world transformation and rendering:
+    mat3 ca = setCamera(camera_loc, camera_target, 0.0);
+    vec3 rd = ca * normalize(vec3(uv, 2.0));
+    vec3 col = render(camera_loc, rd);
+
+    gl_FragColor = vec4(col, 1.0);
+}
+#+END_SRC
+
+This shows one interesting aspect of a sphere tracer: It lets us
+represent an infinite amount of geometry without any additional
+resource requirements.  Nowhere in here did we have to turn this
+geometry into triangles.
+
+We could take this further, and combine it with a rotation.  We could
+make this rotation vary by distance from the origin as well.
+
+#+BEGIN_SRC glsl
+/* PARAMETERS
+[
+   {
+       "type": "float",
+       "value": 1.3,
+       "min": 0,
+       "max": 2,
+       "name": "radius",
+       "GUIName": "radius"
+   },
+   {
+       "type": "float",
+       "value": 3,
+       "min": 0,
+       "max": 6,
+       "name": "offset",
+       "GUIName": "offset"
+   }
+]
+END */
+#define ENABLE_SPHERE_TRACING
+
+uniform vec2 resolution;
+uniform vec4 mouse;
+uniform float radius;
+uniform float offset;
+
+float distance(in vec3 pos)
+{
+    float r = length(pos) / 20.0;
+    mat3 rot = mat3(cos(r),  0,  sin(r),
+                    0,       1,  0,
+                    -sin(r), 0,  cos(r));
+
+    vec3 pos2 = mod(pos * rot, offset) - offset/2.0;
+    return max(-(length(pos2) - radius),
+               length(max(abs(pos2).xyz - 1.0, 0.0)));
+}
+
+void main()
+{
+    vec2 uv = 2.0 * gl_FragCoord.xy/resolution.xy - 1.0;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    // Normalize mouse position:
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
+    m.x = m.x * resolution.x / resolution.y;
+
+    // Camera location & target:
+    vec3 camera_loc = vec3(-0.5+3.5*cos(6.0*m.x), 1.0 + 2.0*m.y, 0.5 + 4.0*sin(6.0*m.x));
+    vec3 camera_target = vec3(-0.5, 0.4, 0.5);
+    
+    // Camera-to-world transformation and rendering:
+    mat3 ca = setCamera(camera_loc, camera_target, 0.0);
+    vec3 rd = ca * normalize(vec3(uv, 2.0));
+    vec3 col = render(camera_loc, rd);
+
+    gl_FragColor = vec4(col, 1.0);
+}
+#+END_SRC
+
+Or, we could add a variable amount of rotation to a cube... that is,
+basically twist it like it's flexible:
+
+#+BEGIN_SRC glsl
+/* PARAMETERS
+[
+   {
+       "type": "float",
+       "value": 0.1,
+       "min": -5,
+       "max": 5,
+       "name": "freq",
+       "GUIName": "Freq"
+   }   
+]
+END */
+#define ENABLE_SPHERE_TRACING
+
+uniform vec2 resolution;
+uniform vec4 mouse;
+uniform float time;
+
+uniform float freq;
+uniform float freq2;
+
+float distance(in vec3 pos)
+{
+    float r = freq * pos.y;
+    mat3 rot_y = mat3(cos(r),  0,  sin(r),
+                      0,       1,  0,
+                      -sin(r), 0,  cos(r));
+    return length(max(abs(pos * rot_y).xyz - 1.0, 0.0));
+}
+
+void main()
+{
+    vec2 uv = 2.0 * gl_FragCoord.xy/resolution.xy - 1.0;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    // Normalize mouse position:
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
+    m.x = m.x * resolution.x / resolution.y;
+
+    // Camera location & target:
+    vec3 camera_loc = vec3(-0.5+3.5*cos(6.0*m.x), 1.0 + 2.0*m.y, 0.5 + 4.0*sin(6.0*m.x));
+    vec3 camera_target = vec3(-0.5, 0.4, 0.5);
+    
+    // Camera-to-world transformation and rendering:
+    mat3 ca = setCamera(camera_loc, camera_target, 0.0);
+    vec3 rd = ca * normalize(vec3(uv, 2.0));
+    vec3 col = render(camera_loc, rd);
+
+    gl_FragColor = vec4(col, 1.0);
+}
+#+END_SRC
+
 
 ** Repeated cubes 1
 
@@ -931,28 +1243,6 @@ void main()
 }
 #+END_SRC
 
-** Distance Bounds & Distance Fields
-
-*** Why a sphere tracer?
-
-** Transformations
-
-# See "Programming in 3 Dimensions"
-
-*** Scaling
-
-*** Translation
-
-*** Rotation
-
-*** Shearing
-
-*** Vectors & Matrices
-# Homogeneous coordinates?
-# Composition
-# Inverses
-
-** Constructive Solid Geometry
 
 ** Domain Warping
 
@@ -961,6 +1251,6 @@ void main()
 ** Summary
 
 This concludes the tutorial - at least, until I write more.  The [[./04_Final_Notes.org][next
-section]] contains some other references that you may wish to read.
+chapter]] contains some other references that you may wish to read.
 
 # TODO: Mind the goal of this, which is not graphics but math.
