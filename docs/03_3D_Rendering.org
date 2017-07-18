@@ -675,6 +675,200 @@ The transformations given above are rather uninteresting, but
 well-studied, well-behaved, efficient to compute, and essential to 3D
 graphics in general.
 
+** Rotations
+
+So far we've only shown rotation in the $x$ axis.  It appears
+straightforward to extend this rotation in $x$, in $y$, and $z$
+(i.e. [[https://en.wikipedia.org/wiki/Euler_angles][Euler angles]]).  The below tries this, illustrating the three
+axes with thin rectangles:
+
+#+BEGIN_SRC glsl
+/* PARAMETERS
+[
+   {
+       "type": "float",
+       "value": 0,
+       "min": -3.14,
+       "max": 3.14,
+       "name": "rx",
+       "GUIName": "rx"
+   },
+   {
+       "type": "float",
+       "value": 0,
+       "min": -3.14,
+       "max": 3.14,
+       "name": "ry",
+       "GUIName": "ry"
+   },
+   {
+       "type": "float",
+       "value": 0,
+       "min": -3.14,
+       "max": 3.14,
+       "name": "rz",
+       "GUIName": "rz"
+   }
+]
+END */
+#define ENABLE_SPHERE_TRACING
+
+uniform vec2 resolution;
+uniform vec4 mouse;
+uniform float rx;
+uniform float ry;
+uniform float rz;
+
+float distance(in vec3 pos)
+{
+    mat3 rotx = mat3(1, 0,        0,      
+                     0, cos(rx), -sin(rx),
+                     0, sin(rx),  cos(rx));
+    mat3 roty = mat3(cos(ry), 0, -sin(ry),
+                     0,       1, 0,      
+                     sin(ry), 0, cos(ry));
+    mat3 rotz = mat3(cos(rz), -sin(rz), 0,
+                     sin(rz),  cos(rz), 0,
+                     0,       0,        1);
+    mat3 t = rotx * roty * rotz;
+
+    vec3 offset = vec3(5.0, 0.1, 0.1);
+    float x_axis = length(max(abs((pos * t - offset.xyz)) - offset.xyz, 0.0));
+    float y_axis = length(max(abs((pos * t - offset.yxz)) - offset.yxz, 0.0));
+    float z_axis = length(max(abs((pos * t - offset.yzx)) - offset.yzx, 0.0));
+    return min(x_axis, min(y_axis, z_axis));
+}
+
+void main()
+{
+    vec2 uv = 2.0 * gl_FragCoord.xy/resolution.xy - 1.0;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    // Normalize mouse position:
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
+    m.x = m.x * resolution.x / resolution.y;
+
+    // Camera location & target:
+    vec3 camera_loc = vec3(-0.5+3.5*cos(6.0*m.x), 1.0 + 2.0*m.y, 0.5 + 4.0*sin(6.0*m.x));
+    vec3 camera_target = vec3(0.0, 0.0, 0.0);
+    
+    // Camera-to-world transformation and rendering:
+    mat3 ca = setCamera(camera_loc, camera_target, 0.0);
+    vec3 rd = ca * normalize(vec3(uv, 2.0));
+    vec3 col = render(camera_loc, rd);
+
+    gl_FragColor = vec4(col, 1.0);
+}
+#+END_SRC
+
+(This also demonstrates a WebGL feature called *swizzling*: We may
+access a vector's elements in any order, and this is why =y_axis= and
+=z_axis= access =offset= as =offset.yxz= and =offset.yzx=,
+respectively - it rearranges the coordinates in =offset=.)
+
+However, to see some problems with this, try adjusting the slider for
+=ry= to about 1.57 or -1.57 (that is, $\pm\frac{\pi}{2}$), and then
+adjust =rx= and =rz=.  No matter how you move the other two, you will
+see that they are now moving in the same axis; in effect, you have
+lost an axis until you move =ry= to something else.  This is an
+illustration of [[https://en.wikipedia.org/wiki/Gimbal_lock][gimbal lock]], and any representation of rotation in 3D
+that relies on three angles is susceptible to it.
+
+One alternative to this is [[https://en.wikipedia.org/wiki/Quaternion][quaternions]]:
+
+#+BEGIN_SRC glsl
+/* PARAMETERS
+[
+   {
+       "type": "float",
+       "value": 1,
+       "min": -1,
+       "max": 1,
+       "name": "a_",
+       "GUIName": "a"
+   },
+   {
+       "type": "float",
+       "value": 0,
+       "min": -1,
+       "max": 1,
+       "name": "b_",
+       "GUIName": "b"
+   },
+   {
+       "type": "float",
+       "value": 0,
+       "min": -1,
+       "max": 1,
+       "name": "c_",
+       "GUIName": "c"
+   },
+   {
+       "type": "float",
+       "value": 0,
+       "min": -1,
+       "max": 1,
+       "name": "d_",
+       "GUIName": "d"
+   }
+]
+END */
+#define ENABLE_SPHERE_TRACING
+
+uniform vec2 resolution;
+uniform vec4 mouse;
+uniform float time;
+uniform float a_, b_, c_, d_;
+
+float distance(in vec3 pos)
+{
+    vec4 q = vec4(a_, b_, c_, d_);
+    q = q / length(q);
+
+    // Interpolation:
+    // q = mix(vec4(1.0, 0.0, 0.0, 0.0), q, sin(time * 0.01) * 0.5 + 0.5);
+
+    float a = q.x, b = q.y, c = q.z, d = q.w;
+    mat3 t = mat3(a*a + b*b - c*c - d*d, 2.0*b*c - 2.0*a*d,     2.0*b*d + 2.0*a*c,
+                  2.0*b*c + 2.0*a*d,     a*a - b*b + c*c - d*d, 2.0*c*d - 2.0*a*b,
+                  2.0*b*d - 2.0*a*c,     2.0*c*d + 2.0*a*b,     a*a - b*b - c*c + d*d);
+
+    vec3 offset = vec3(5.0, 0.1, 0.1);
+    float x_axis = length(max(abs((pos * t - offset.xyz)) - offset.xyz, 0.0));
+    float y_axis = length(max(abs((pos * t - offset.yxz)) - offset.yxz, 0.0));
+    float z_axis = length(max(abs((pos * t - offset.yzx)) - offset.yzx, 0.0));
+    return min(x_axis, min(y_axis, z_axis));
+}
+
+void main()
+{
+    vec2 uv = 2.0 * gl_FragCoord.xy/resolution.xy - 1.0;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    // Normalize mouse position:
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
+    m.x = m.x * resolution.x / resolution.y;
+
+    // Camera location & target:
+    vec3 camera_loc = vec3(-0.5+3.5*cos(6.0*m.x), 1.0 + 2.0*m.y, 0.5 + 4.0*sin(6.0*m.x));
+    vec3 camera_target = vec3(0.0, 0.0, 0.0);
+    
+    // Camera-to-world transformation and rendering:
+    mat3 ca = setCamera(camera_loc, camera_target, 0.0);
+    vec3 rd = ca * normalize(vec3(uv, 2.0));
+    vec3 col = render(camera_loc, rd);
+
+    gl_FragColor = vec4(col, 1.0);
+}
+#+END_SRC
+
+It is less intuitive than Euler angles, but retains some benefits.  To
+see one, uncomment the line below the =// Interpolation= comment in
+the =distance()= function, and enable animation; this shows the
+ability to linearly interpolate between rotations in two quaternions.
+
 ** More on distance functions
 
 *** Primitives
