@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2017-07-17 Mon 16:32 -->
+<!-- 2017-07-17 Mon 21:01 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>3D Rendering</title>
@@ -19,8 +19,8 @@
 <div id="content">
 <h1 class="title">3D Rendering</h1>
 
-<div id="outline-container-org9510661" class="outline-2">
-<h2 id="org9510661"><span class="section-number-2"> 3</span> 3D Rendering</h2>
+<div id="outline-container-orga2e4348" class="outline-2">
+<h2 id="orga2e4348"><span class="section-number-2"> 3</span> 3D Rendering</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 In the last section, we dealt with a class of functions which mapped
@@ -86,8 +86,8 @@ implicitly. If this sounds like it's related to the mention of
 </p>
 </div>
 
-<div id="outline-container-org1b2d51c" class="outline-3">
-<h3 id="org1b2d51c"><span class="section-number-3"> 3.1</span> Distance Functions</h3>
+<div id="outline-container-org8f7cd00" class="outline-3">
+<h3 id="org8f7cd00"><span class="section-number-3"> 3.1</span> Distance Functions</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
 In that thought experiment, the hypothetical GPS was providing a
@@ -114,8 +114,8 @@ you're guaranteed <b>not</b> to hit the boundary in any direction.
 </div>
 </div>
 
-<div id="outline-container-orgbc30427" class="outline-3">
-<h3 id="orgbc30427"><span class="section-number-3"> 3.2</span> Sphere Tracing</h3>
+<div id="outline-container-orgee4653a" class="outline-3">
+<h3 id="orgee4653a"><span class="section-number-3"> 3.2</span> Sphere Tracing</h3>
 <div class="outline-text-3" id="text-1-2">
 <p>
 Using a very similar process as in the thought experiment above, this
@@ -237,14 +237,14 @@ cube of sidelength 2, centered at \((0,0,0)\).
 </div>
 </div>
 
-<div id="outline-container-orgdd3a063" class="outline-3">
-<h3 id="orgdd3a063"><span class="section-number-3"> 3.3</span> Transformations</h3>
+<div id="outline-container-org4f009cf" class="outline-3">
+<h3 id="org4f009cf"><span class="section-number-3"> 3.3</span> Transformations</h3>
 <div class="outline-text-3" id="text-1-3">
 <p>
 <a href="#" onclick="myModule.loadTutorial('./02_2D_Coordinates.html', null)">Section 2</a> discussed how we could change something by transforming the
 2D coordinate space it's in.  We can do that identically with the 3D
 coordinate space here.  See the example below, and note that the only
-thing we've done is replace \(d(p)\) with \(\frac{d(sp){s}\), where \(s\) is
+thing we've done is replace \(d(p)\) with \(\frac{d(sp)}{s}\), where \(s\) is
 a new parameter just added.
 </p>
 
@@ -357,7 +357,7 @@ uniform float tz;
 float distance(in vec3 pos)
 {
     vec3 pos2 = pos - vec3(tx, ty, tz);
-    return length(max(abs(pos2 * s) - 1.0, 0.0)) / s;
+    return length(max(abs(pos2 * s).xyz - 1.0, 0.0)) / s;
 }
 
 void main()
@@ -429,7 +429,7 @@ uniform float tz;
 float distance(in vec3 pos)
 {
     vec3 pos2 = pos - vec3(tx, ty, tz);
-    return length(max(abs(pos2 * s) - 1.0, 0.0)) / s;
+    return length(max(abs(pos2 * s).xyz - 1.0, 0.0)) / s;
 }
 
 void main()
@@ -466,21 +466,552 @@ Scale and translate in the opposite order to see why.
 </div>
 </div>
 
-<div id="outline-container-org00043ff" class="outline-3">
-<h3 id="org00043ff"><span class="section-number-3"> 3.4</span> Single sphere</h3>
+<div id="outline-container-org6854984" class="outline-3">
+<h3 id="org6854984"><span class="section-number-3"> 3.4</span> Matrices</h3>
 <div class="outline-text-3" id="text-1-4">
 <p>
-If you look more closely at <code>distance</code> you might note that the
-distance function will return negative values <b>inside</b> the sphere.
-This is intentional; we now have a <a target='_blank' href="https://en.wikipedia.org/wiki/Signed_distance_function">signed distance function</a>.  It's a
-fairly small change: The 3D surface must have a clear inside and
-outside, and the signed distance function returns a positive number
-for any point <b>outside</b> that surface and a negative number for any
-point <b>inside</b> that surface.  It's otherwise the same.
+While scaling and translating are simple enough operations to do
+manually with multiplications and subtractions, other transformations
+can become unruly when expressed this way.
+</p>
+
+<p>
+Fortunately, WebGL and GLSL provide support for matrices.  The
+following matrix will rotate around the \(x\) axis, for instance:
+</p>
+
+\begin{bmatrix}
+  1 & 0 & 0 & 0 \\
+  0 & \cos\theta & -\sin\theta & 0 \\
+  0 & \sin\theta & \cos\theta & 0 \\
+  0 & 0 & 0 & 1
+\end{bmatrix}
+
+<p>
+WebGL treats the <code>vec4</code> like a 4x1 matrix (i.e. a column vector), and
+so the <code>pos_h * rot</code> in the below code is computed as:
+</p>
+
+\begin{equation}
+\begin{bmatrix}
+  p_x \\ p_y \\ p_z \\ 1
+\end{bmatrix}
+\begin{bmatrix}
+  1 & 0 & 0 & 0 \\
+  0 & \cos\theta & -\sin\theta & 0 \\
+  0 & \sin\theta & \cos\theta & 0 \\
+  0 & 0 & 0 & 1
+\end{bmatrix} = 
+\begin{bmatrix}
+  p_x \\ p_y\cos\theta - p_z\sin\theta \\ p_y\sin\theta + p_z\cos\theta \\ 1
+\end{bmatrix}
+\end{equation}
+
+<p>
+The below code uses this (note that we multiply the position by the
+matrix). 
 </p>
 
 <div class="org-src-container">
 <juicy-ace-editor id='webgl-juicy-ace-editor-4' mode="ace/mode/glsl" readonly="true">#define ENABLE_SPHERE_TRACING
+
+uniform vec2 resolution;
+uniform vec4 mouse;
+uniform float rx;
+
+float distance(in vec3 pos)
+{
+    vec4 pos_h = vec4(pos, 1.0);
+    mat4 rot = mat4(1, 0,        0,       0,
+                    0, cos(rx), -sin(rx), 0,
+                    0, sin(rx),  cos(rx), 0,
+                    0, 0,        0,       1);
+    return length(max(abs(pos_h * rot) - 1.0, 0.0));
+}
+
+void main()
+{
+    vec2 uv = 2.0 * gl_FragCoord.xy/resolution.xy - 1.0;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    // Normalize mouse position:
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
+    m.x = m.x * resolution.x / resolution.y;
+
+    // Camera location &amp; target:
+    vec3 camera_loc = vec3(-0.5+3.5*cos(6.0*m.x), 1.0 + 2.0*m.y, 0.5 + 4.0*sin(6.0*m.x));
+    vec3 camera_target = vec3(0.0, 0.0, 0.0);
+    
+    // Camera-to-world transformation and rendering:
+    mat3 ca = setCamera(camera_loc, camera_target, 0.0);
+    vec3 rd = ca * normalize(vec3(uv, 2.0));
+    vec3 col = render(camera_loc, rd);
+
+    gl_FragColor = vec4(col, 1.0);
+}
+</juicy-ace-editor><div id='webgl-full-code-4' style='display:none'>/* PARAMETERS
+[
+   {
+       "type": "float",
+       "value": 0,
+       "min": -3.14,
+       "max": 3.14,
+       "name": "rx",
+       "GUIName": "rx"
+   }
+]
+END */
+#define ENABLE_SPHERE_TRACING
+
+uniform vec2 resolution;
+uniform vec4 mouse;
+uniform float rx;
+
+float distance(in vec3 pos)
+{
+    vec4 pos_h = vec4(pos, 1.0);
+    mat4 rot = mat4(1, 0,        0,       0,
+                    0, cos(rx), -sin(rx), 0,
+                    0, sin(rx),  cos(rx), 0,
+                    0, 0,        0,       1);
+    return length(max(abs(pos_h * rot) - 1.0, 0.0));
+}
+
+void main()
+{
+    vec2 uv = 2.0 * gl_FragCoord.xy/resolution.xy - 1.0;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    // Normalize mouse position:
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
+    m.x = m.x * resolution.x / resolution.y;
+
+    // Camera location &amp; target:
+    vec3 camera_loc = vec3(-0.5+3.5*cos(6.0*m.x), 1.0 + 2.0*m.y, 0.5 + 4.0*sin(6.0*m.x));
+    vec3 camera_target = vec3(0.0, 0.0, 0.0);
+    
+    // Camera-to-world transformation and rendering:
+    mat3 ca = setCamera(camera_loc, camera_target, 0.0);
+    vec3 rd = ca * normalize(vec3(uv, 2.0));
+    vec3 col = render(camera_loc, rd);
+
+    gl_FragColor = vec4(col, 1.0);
+}
+</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-4').text());">Use code &raquo;</button></div>
+</div>
+
+<p>
+We have to turn the <code>vec3</code> position into a <code>vec4</code> and then use <code>.xyz</code>
+to return it to a <code>vec3</code> for reasons that will be explained shortly.
+</p>
+
+<p>
+Of course, we can express the scale as a transformation matrix as
+well:
+</p>
+
+\begin{bmatrix}
+  s & 0 & 0 & 0 \\
+  0 & s & 0 & 0 \\
+  0 & 0 & s & 0 \\
+  0 & 0 & 0 & 1
+\end{bmatrix}
+
+<p>
+And the translation:
+</p>
+
+\begin{bmatrix}
+  1 & 0 & 0 & -t_x \\
+  0 & 1 & 0 & -t_y \\
+  0 & 0 & 1 & -t_z \\
+  0 & 0 & 0 & 1
+\end{bmatrix}
+
+<p>
+This is used below. They're purposely chained in a particular order:
+the position is first translated (translation is done in the
+"original" space), then everything is scaled (scaling is relative to
+the new, translated origin), then everything is rotated (again,
+relative to the new, translated origin).
+</p>
+
+<div class="org-src-container">
+<juicy-ace-editor id='webgl-juicy-ace-editor-5' mode="ace/mode/glsl" readonly="true">#define ENABLE_SPHERE_TRACING
+
+uniform vec2 resolution;
+uniform vec4 mouse;
+uniform float s;
+uniform float tx;
+uniform float ty;
+uniform float tz;
+uniform float rx;
+
+float distance(in vec3 pos)
+{
+    vec4 pos_h = vec4(pos, 1.0);
+    mat4 rot = mat4(1, 0,        0,       0,
+                    0, cos(rx), -sin(rx), 0,
+                    0, sin(rx),  cos(rx), 0,
+                    0, 0,        0,       1);
+    mat4 trans = mat4(1, 0, 0, -tx,
+                      0, 1, 0, -ty,
+                      0, 0, 1, -tz,
+                      0, 0, 0, 1);
+    mat4 scale = mat4(s, 0, 0, 0,
+                      0, s, 0, 0,
+                      0, 0, s, 0,
+                      0, 0, 0, 1);
+    return length(max(abs(pos_h * trans * scale * rot).xyz - 1.0, 0.0)) / s;
+}
+
+void main()
+{
+    vec2 uv = 2.0 * gl_FragCoord.xy/resolution.xy - 1.0;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    // Normalize mouse position:
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
+    m.x = m.x * resolution.x / resolution.y;
+
+    // Camera location &amp; target:
+    vec3 camera_loc = vec3(-0.5+3.5*cos(6.0*m.x), 1.0 + 2.0*m.y, 0.5 + 4.0*sin(6.0*m.x));
+    vec3 camera_target = vec3(0.0, 0.0, 0.0);
+    
+    // Camera-to-world transformation and rendering:
+    mat3 ca = setCamera(camera_loc, camera_target, 0.0);
+    vec3 rd = ca * normalize(vec3(uv, 2.0));
+    vec3 col = render(camera_loc, rd);
+
+    gl_FragColor = vec4(col, 1.0);
+}
+</juicy-ace-editor><div id='webgl-full-code-5' style='display:none'>/* PARAMETERS
+[
+   {
+       "type": "float",
+       "value": 1,
+       "min": 0,
+       "max": 5,
+       "name": "s",
+       "GUIName": "s"
+   },
+   {
+       "type": "float",
+       "value": 0,
+       "min": -5,
+       "max": 5,
+       "name": "tx",
+       "GUIName": "tx"
+   },
+   {
+       "type": "float",
+       "value": 0,
+       "min": -5,
+       "max": 5,
+       "name": "ty",
+       "GUIName": "ty"
+   },
+   {
+       "type": "float",
+       "value": 0,
+       "min": -5,
+       "max": 5,
+       "name": "tz",
+       "GUIName": "tz"
+   },
+   {
+       "type": "float",
+       "value": 0,
+       "min": -3.14,
+       "max": 3.14,
+       "name": "rx",
+       "GUIName": "rx"
+   }
+]
+END */
+#define ENABLE_SPHERE_TRACING
+
+uniform vec2 resolution;
+uniform vec4 mouse;
+uniform float s;
+uniform float tx;
+uniform float ty;
+uniform float tz;
+uniform float rx;
+
+float distance(in vec3 pos)
+{
+    vec4 pos_h = vec4(pos, 1.0);
+    mat4 rot = mat4(1, 0,        0,       0,
+                    0, cos(rx), -sin(rx), 0,
+                    0, sin(rx),  cos(rx), 0,
+                    0, 0,        0,       1);
+    mat4 trans = mat4(1, 0, 0, -tx,
+                      0, 1, 0, -ty,
+                      0, 0, 1, -tz,
+                      0, 0, 0, 1);
+    mat4 scale = mat4(s, 0, 0, 0,
+                      0, s, 0, 0,
+                      0, 0, s, 0,
+                      0, 0, 0, 1);
+    return length(max(abs(pos_h * trans * scale * rot).xyz - 1.0, 0.0)) / s;
+}
+
+void main()
+{
+    vec2 uv = 2.0 * gl_FragCoord.xy/resolution.xy - 1.0;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    // Normalize mouse position:
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
+    m.x = m.x * resolution.x / resolution.y;
+
+    // Camera location &amp; target:
+    vec3 camera_loc = vec3(-0.5+3.5*cos(6.0*m.x), 1.0 + 2.0*m.y, 0.5 + 4.0*sin(6.0*m.x));
+    vec3 camera_target = vec3(0.0, 0.0, 0.0);
+    
+    // Camera-to-world transformation and rendering:
+    mat3 ca = setCamera(camera_loc, camera_target, 0.0);
+    vec3 rd = ca * normalize(vec3(uv, 2.0));
+    vec3 col = render(camera_loc, rd);
+
+    gl_FragColor = vec4(col, 1.0);
+}
+</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-5').text());">Use code &raquo;</button></div>
+</div>
+
+<p>
+This looks like a lot of extra notation, but part of the point comes
+about because a series of matrix multiplications like \(pTSR_x\) - like
+we are doing above for position \(p\), translation matrix \(T\), scaling
+matrix \(S\), and rotation matrix \(R_x\) - can be rewritten like
+\(p(TSR_x)\), that is, the three transformation matrices can be
+multiplied into a single 4x4 matrix.  This is trivial to do in the
+code (and the below should render completely identically):
+</p>
+
+<div class="org-src-container">
+<juicy-ace-editor id='webgl-juicy-ace-editor-6' mode="ace/mode/glsl" readonly="true">#define ENABLE_SPHERE_TRACING
+
+uniform vec2 resolution;
+uniform vec4 mouse;
+uniform float s;
+uniform float tx;
+uniform float ty;
+uniform float tz;
+uniform float rx;
+
+float distance(in vec3 pos)
+{
+    vec4 pos_h = vec4(pos, 1.0);
+    mat4 rot = mat4(1, 0,        0,       0,
+                    0, cos(rx), -sin(rx), 0,
+                    0, sin(rx),  cos(rx), 0,
+                    0, 0,        0,       1);
+    mat4 trans = mat4(1, 0, 0, -tx,
+                      0, 1, 0, -ty,
+                      0, 0, 1, -tz,
+                      0, 0, 0, 1);
+    mat4 scale = mat4(s, 0, 0, 0,
+                      0, s, 0, 0,
+                      0, 0, s, 0,
+                      0, 0, 0, 1);
+    mat4 t = trans * scale * rot;
+    return length(max(abs(pos_h * t).xyz - 1.0, 0.0)) / s;
+}
+
+void main()
+{
+    vec2 uv = 2.0 * gl_FragCoord.xy/resolution.xy - 1.0;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    // Normalize mouse position:
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
+    m.x = m.x * resolution.x / resolution.y;
+
+    // Camera location &amp; target:
+    vec3 camera_loc = vec3(-0.5+3.5*cos(6.0*m.x), 1.0 + 2.0*m.y, 0.5 + 4.0*sin(6.0*m.x));
+    vec3 camera_target = vec3(0.0, 0.0, 0.0);
+    
+    // Camera-to-world transformation and rendering:
+    mat3 ca = setCamera(camera_loc, camera_target, 0.0);
+    vec3 rd = ca * normalize(vec3(uv, 2.0));
+    vec3 col = render(camera_loc, rd);
+
+    gl_FragColor = vec4(col, 1.0);
+}
+</juicy-ace-editor><div id='webgl-full-code-6' style='display:none'>/* PARAMETERS
+[
+   {
+       "type": "float",
+       "value": 1,
+       "min": 0,
+       "max": 5,
+       "name": "s",
+       "GUIName": "s"
+   },
+   {
+       "type": "float",
+       "value": 0,
+       "min": -5,
+       "max": 5,
+       "name": "tx",
+       "GUIName": "tx"
+   },
+   {
+       "type": "float",
+       "value": 0,
+       "min": -5,
+       "max": 5,
+       "name": "ty",
+       "GUIName": "ty"
+   },
+   {
+       "type": "float",
+       "value": 0,
+       "min": -5,
+       "max": 5,
+       "name": "tz",
+       "GUIName": "tz"
+   },
+   {
+       "type": "float",
+       "value": 0,
+       "min": -3.14,
+       "max": 3.14,
+       "name": "rx",
+       "GUIName": "rx"
+   }
+]
+END */
+#define ENABLE_SPHERE_TRACING
+
+uniform vec2 resolution;
+uniform vec4 mouse;
+uniform float s;
+uniform float tx;
+uniform float ty;
+uniform float tz;
+uniform float rx;
+
+float distance(in vec3 pos)
+{
+    vec4 pos_h = vec4(pos, 1.0);
+    mat4 rot = mat4(1, 0,        0,       0,
+                    0, cos(rx), -sin(rx), 0,
+                    0, sin(rx),  cos(rx), 0,
+                    0, 0,        0,       1);
+    mat4 trans = mat4(1, 0, 0, -tx,
+                      0, 1, 0, -ty,
+                      0, 0, 1, -tz,
+                      0, 0, 0, 1);
+    mat4 scale = mat4(s, 0, 0, 0,
+                      0, s, 0, 0,
+                      0, 0, s, 0,
+                      0, 0, 0, 1);
+    mat4 t = trans * scale * rot;
+    return length(max(abs(pos_h * t).xyz - 1.0, 0.0)) / s;
+}
+
+void main()
+{
+    vec2 uv = 2.0 * gl_FragCoord.xy/resolution.xy - 1.0;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    // Normalize mouse position:
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
+    m.x = m.x * resolution.x / resolution.y;
+
+    // Camera location &amp; target:
+    vec3 camera_loc = vec3(-0.5+3.5*cos(6.0*m.x), 1.0 + 2.0*m.y, 0.5 + 4.0*sin(6.0*m.x));
+    vec3 camera_target = vec3(0.0, 0.0, 0.0);
+    
+    // Camera-to-world transformation and rendering:
+    mat3 ca = setCamera(camera_loc, camera_target, 0.0);
+    vec3 rd = ca * normalize(vec3(uv, 2.0));
+    vec3 col = render(camera_loc, rd);
+
+    gl_FragColor = vec4(col, 1.0);
+}
+</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-6').text());">Use code &raquo;</button></div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orge93c784" class="outline-3">
+<h3 id="orge93c784"><span class="section-number-3"> 3.5</span> Homogeneous coordinates</h3>
+<div class="outline-text-3" id="text-1-5">
+<p>
+It may seem a bit strange that we are working with a 3-element vector,
+adding in a 4th element (which is always 1), multiplying this by a 4x4
+matrix, and then discarding the 4th element.  With scaling and
+rotating (and a few other things), this isn't actually necessary.  We
+have used this 3x3 matrix for rotating, and multiplied a <code>vec3</code> by it:
+</p>
+
+\begin{bmatrix}
+  1 & 0 & 0 \\
+  0 & \cos\theta & -\sin\theta \\
+  0 & \sin\theta & \cos\theta \\
+\end{bmatrix}
+
+<p>
+One benefit of this form is that we can interpret it as a <a target='_blank' href="https://en.wikipedia.org/wiki/Change_of_basis">change of
+basis</a> matrix.  If our <b>basis</b> here is three unit vectors,
+\(\hat{x}=(1,0,0)\), \(\hat{y}=(0,1,0)\), \(\hat{z}=(0,0,1)\) (which are
+just the \(x\), \(y\) and \(z\) axis), we can look at the above 3x3 matrix,
+or any other 3x3 transformation matrix, as three new vectors, one
+for each row of the matrix:
+</p>
+
+\begin{bmatrix}
+  \hat{x}' \\ \hat{y}' \\ \hat{z}'
+\end{bmatrix}
+
+<p>
+where \(\hat{x}'\) is the result of transforming \(\hat{x}\), \(\hat{y}'\)
+the result of transforming \(\hat{y}\), and \(\hat{z}'\) the result of
+transforming \(\hat{z}\).  In other words, that matrix contains our
+"new" \(x\) axis, \(y\) axis, and \(z\) axis.  This makes some intuitive
+sense if we look at the matrix above which rotates around the \(x\) axis
+by \(\theta\): the \(x\) axis stays untouched, but the \(y\) and \(z\) axis
+rotate.  Similar intuition applies to a scaling matrix: all it does is
+stretch or compress the axes.  Likewise, it means that if we leave the
+axes alone, we have the normal 3x3 identity matrix:
+</p>
+
+\begin{bmatrix}
+  1 & 0 & 0 \\
+  0 & 1 & 0 \\
+  0 & 0 & 1 \\
+\end{bmatrix}
+
+<p>
+However, a little effort will reveal that the third transformation we
+examined - a translation - cannot be expressed this way.  In short: We
+add the extra coordinate (that is, make it <a target='_blank' href="https://en.wikipedia.org/wiki/Homogeneous_coordinates#Use_in_computer_graphics">homogeneous</a>) as a way to
+let us express translations in matrix form (and <a target='_blank' href="https://en.wikipedia.org/wiki/Affine_transformation">affine transformations</a>
+in general - including the all-important projective transformation
+used anytime a 3D render includes perspective).
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgc3ec77f" class="outline-3">
+<h3 id="orgc3ec77f"><span class="section-number-3"> 3.6</span> Other linear transformations</h3>
+</div>
+
+<div id="outline-container-orgf21e4f9" class="outline-3">
+<h3 id="orgf21e4f9"><span class="section-number-3"> 3.7</span> Single sphere</h3>
+<div class="outline-text-3" id="text-1-7">
+<div class="org-src-container">
+<juicy-ace-editor id='webgl-juicy-ace-editor-7' mode="ace/mode/glsl" readonly="true">#define ENABLE_SPHERE_TRACING
 
 uniform vec2 resolution;
 uniform vec4 mouse;
@@ -512,7 +1043,7 @@ void main()
 
     gl_FragColor = vec4(col, 1.0);
 }
-</juicy-ace-editor><div id='webgl-full-code-4' style='display:none'>/* PARAMETERS
+</juicy-ace-editor><div id='webgl-full-code-7' style='display:none'>/* PARAMETERS
 [
    {
        "type": "float",
@@ -556,16 +1087,16 @@ void main()
 
     gl_FragColor = vec4(col, 1.0);
 }
-</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-4').text());">Use code &raquo;</button></div>
+</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-7').text());">Use code &raquo;</button></div>
 </div>
 </div>
 </div>
 
-<div id="outline-container-orgf402ca9" class="outline-3">
-<h3 id="orgf402ca9"><span class="section-number-3"> 3.5</span> Repeated cubes 1</h3>
-<div class="outline-text-3" id="text-1-5">
+<div id="outline-container-org8c17cba" class="outline-3">
+<h3 id="org8c17cba"><span class="section-number-3"> 3.8</span> Repeated cubes 1</h3>
+<div class="outline-text-3" id="text-1-8">
 <div class="org-src-container">
-<juicy-ace-editor id='webgl-juicy-ace-editor-5' mode="ace/mode/glsl" readonly="true">#define ENABLE_SPHERE_TRACING
+<juicy-ace-editor id='webgl-juicy-ace-editor-8' mode="ace/mode/glsl" readonly="true">#define ENABLE_SPHERE_TRACING
 
 uniform vec2 resolution;
 uniform vec4 mouse;
@@ -613,7 +1144,7 @@ void main()
     col = pow(col, vec3(0.4545));
     gl_FragColor = vec4(col, 1.0);
 }
-</juicy-ace-editor><div id='webgl-full-code-5' style='display:none'>/* PARAMETERS
+</juicy-ace-editor><div id='webgl-full-code-8' style='display:none'>/* PARAMETERS
 [
    {
        "type": "float",
@@ -681,17 +1212,17 @@ void main()
     col = pow(col, vec3(0.4545));
     gl_FragColor = vec4(col, 1.0);
 }
-</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-5').text());">Use code &raquo;</button></div>
+</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-8').text());">Use code &raquo;</button></div>
 </div>
 </div>
 </div>
 
 
-<div id="outline-container-org6240d13" class="outline-3">
-<h3 id="org6240d13"><span class="section-number-3"> 3.6</span> Repeated cubes 2</h3>
-<div class="outline-text-3" id="text-1-6">
+<div id="outline-container-org1d7c67c" class="outline-3">
+<h3 id="org1d7c67c"><span class="section-number-3"> 3.9</span> Repeated cubes 2</h3>
+<div class="outline-text-3" id="text-1-9">
 <div class="org-src-container">
-<juicy-ace-editor id='webgl-juicy-ace-editor-6' mode="ace/mode/glsl" readonly="true">
+<juicy-ace-editor id='webgl-juicy-ace-editor-9' mode="ace/mode/glsl" readonly="true">
 #define ENABLE_SPHERE_TRACING
 
 uniform vec2 resolution;
@@ -748,7 +1279,7 @@ void main()
     col = pow(col, vec3(0.4545));
     gl_FragColor = vec4(col, 1.0);
 }
-</juicy-ace-editor><div id='webgl-full-code-6' style='display:none'>/* PARAMETERS
+</juicy-ace-editor><div id='webgl-full-code-9' style='display:none'>/* PARAMETERS
 [
    {
        "type": "float",
@@ -825,16 +1356,16 @@ void main()
     col = pow(col, vec3(0.4545));
     gl_FragColor = vec4(col, 1.0);
 }
-</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-6').text());">Use code &raquo;</button></div>
+</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-9').text());">Use code &raquo;</button></div>
 </div>
 </div>
 </div>
 
-<div id="outline-container-org0c0bb4b" class="outline-3">
-<h3 id="org0c0bb4b"><span class="section-number-3"> 3.7</span> Repeated cubes 3</h3>
-<div class="outline-text-3" id="text-1-7">
+<div id="outline-container-org93454a9" class="outline-3">
+<h3 id="org93454a9"><span class="section-number-3"> 3.10</span> Repeated cubes 3</h3>
+<div class="outline-text-3" id="text-1-10">
 <div class="org-src-container">
-<juicy-ace-editor id='webgl-juicy-ace-editor-7' mode="ace/mode/glsl" readonly="true">
+<juicy-ace-editor id='webgl-juicy-ace-editor-10' mode="ace/mode/glsl" readonly="true">
 #define ENABLE_SPHERE_TRACING
 
 uniform vec2 resolution;
@@ -874,7 +1405,7 @@ void main()
     col = pow(col, vec3(0.4545));
     gl_FragColor = vec4(col, 1.0);
 }
-</juicy-ace-editor><div id='webgl-full-code-7' style='display:none'>/* PARAMETERS
+</juicy-ace-editor><div id='webgl-full-code-10' style='display:none'>/* PARAMETERS
 [
    {
        "type": "float",
@@ -926,62 +1457,62 @@ void main()
     col = pow(col, vec3(0.4545));
     gl_FragColor = vec4(col, 1.0);
 }
-</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-7').text());">Use code &raquo;</button></div>
+</div><div class='no-print' align="left"><button type="button" onclick="copy_code($('#webgl-full-code-10').text());">Use code &raquo;</button></div>
 </div>
 </div>
 </div>
 
-<div id="outline-container-orgcc92c99" class="outline-3">
-<h3 id="orgcc92c99"><span class="section-number-3"> 3.8</span> Distance Bounds &amp; Distance Fields</h3>
-<div class="outline-text-3" id="text-1-8">
-</div><div id="outline-container-org9470dbf" class="outline-4">
-<h4 id="org9470dbf"><span class="section-number-4"> 3.8.1</span> Why a sphere tracer?</h4>
+<div id="outline-container-orgd2b1a90" class="outline-3">
+<h3 id="orgd2b1a90"><span class="section-number-3"> 3.11</span> Distance Bounds &amp; Distance Fields</h3>
+<div class="outline-text-3" id="text-1-11">
+</div><div id="outline-container-org1c1ea51" class="outline-4">
+<h4 id="org1c1ea51"><span class="section-number-4"> 3.11.1</span> Why a sphere tracer?</h4>
 </div>
 </div>
 
-<div id="outline-container-orga684423" class="outline-3">
-<h3 id="orga684423"><span class="section-number-3"> 3.9</span> Transformations</h3>
-<div class="outline-text-3" id="text-1-9">
+<div id="outline-container-orge1796c3" class="outline-3">
+<h3 id="orge1796c3"><span class="section-number-3"> 3.12</span> Transformations</h3>
+<div class="outline-text-3" id="text-1-12">
 </div>
 
-<div id="outline-container-org8da2095" class="outline-4">
-<h4 id="org8da2095"><span class="section-number-4"> 3.9.1</span> Scaling</h4>
+<div id="outline-container-org090ebac" class="outline-4">
+<h4 id="org090ebac"><span class="section-number-4"> 3.12.1</span> Scaling</h4>
 </div>
 
-<div id="outline-container-org98a4b80" class="outline-4">
-<h4 id="org98a4b80"><span class="section-number-4"> 3.9.2</span> Translation</h4>
+<div id="outline-container-orgca6983b" class="outline-4">
+<h4 id="orgca6983b"><span class="section-number-4"> 3.12.2</span> Translation</h4>
 </div>
 
-<div id="outline-container-orgb24c7e0" class="outline-4">
-<h4 id="orgb24c7e0"><span class="section-number-4"> 3.9.3</span> Rotation</h4>
+<div id="outline-container-org5715242" class="outline-4">
+<h4 id="org5715242"><span class="section-number-4"> 3.12.3</span> Rotation</h4>
 </div>
 
-<div id="outline-container-org683389f" class="outline-4">
-<h4 id="org683389f"><span class="section-number-4"> 3.9.4</span> Shearing</h4>
+<div id="outline-container-org2f30351" class="outline-4">
+<h4 id="org2f30351"><span class="section-number-4"> 3.12.4</span> Shearing</h4>
 </div>
 
-<div id="outline-container-orgc34035a" class="outline-4">
-<h4 id="orgc34035a"><span class="section-number-4"> 3.9.5</span> Vectors &amp; Matrices</h4>
-<div class="outline-text-4" id="text-1-9-5">
+<div id="outline-container-org2abbdf9" class="outline-4">
+<h4 id="org2abbdf9"><span class="section-number-4"> 3.12.5</span> Vectors &amp; Matrices</h4>
+<div class="outline-text-4" id="text-1-12-5">
 </div>
 </div>
 </div>
 
-<div id="outline-container-org47f5fc0" class="outline-3">
-<h3 id="org47f5fc0"><span class="section-number-3"> 3.10</span> Constructive Solid Geometry</h3>
+<div id="outline-container-org4ecf274" class="outline-3">
+<h3 id="org4ecf274"><span class="section-number-3"> 3.13</span> Constructive Solid Geometry</h3>
 </div>
 
-<div id="outline-container-org967e7d0" class="outline-3">
-<h3 id="org967e7d0"><span class="section-number-3"> 3.11</span> Domain Warping</h3>
+<div id="outline-container-org1d31ead" class="outline-3">
+<h3 id="org1d31ead"><span class="section-number-3"> 3.14</span> Domain Warping</h3>
 </div>
 
-<div id="outline-container-org7a10e5a" class="outline-3">
-<h3 id="org7a10e5a"><span class="section-number-3"> 3.12</span> Domain Repetition</h3>
+<div id="outline-container-org5df2825" class="outline-3">
+<h3 id="org5df2825"><span class="section-number-3"> 3.15</span> Domain Repetition</h3>
 </div>
 
-<div id="outline-container-org2b7a50f" class="outline-3">
-<h3 id="org2b7a50f"><span class="section-number-3"> 3.13</span> Summary</h3>
-<div class="outline-text-3" id="text-1-13">
+<div id="outline-container-org51087a3" class="outline-3">
+<h3 id="org51087a3"><span class="section-number-3"> 3.16</span> Summary</h3>
+<div class="outline-text-3" id="text-1-16">
 <p>
 This concludes the tutorial - at least, until I write more.  The <a href="#" onclick="myModule.loadTutorial('./04_Final_Notes.html', null)">next
 section</a> contains some other references that you may wish to read.

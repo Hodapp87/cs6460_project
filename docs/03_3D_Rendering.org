@@ -156,7 +156,7 @@ cube of sidelength 2, centered at $(0,0,0)$.
 [[./02_2D_Coordinates.org][Section 2]] discussed how we could change something by transforming the
 2D coordinate space it's in.  We can do that identically with the 3D
 coordinate space here.  See the example below, and note that the only
-thing we've done is replace $d(p)$ with $\frac{d(sp){s}$, where $s$ is
+thing we've done is replace $d(p)$ with $\frac{d(sp)}{s}$, where $s$ is
 a new parameter just added.
 
 #+BEGIN_SRC glsl
@@ -267,7 +267,7 @@ uniform float tz;
 float distance(in vec3 pos)
 {
     vec3 pos2 = pos - vec3(tx, ty, tz);
-    return length(max(abs(pos2 * s) - 1.0, 0.0)) / s;
+    return length(max(abs(pos2 * s).xyz - 1.0, 0.0)) / s;
 }
 
 void main()
@@ -299,17 +299,377 @@ $(t_x, t_y, t_z)$ are the new origin of the space.  Note that the
 scaling is done *after* the translation; the order matters here.
 Scale and translate in the opposite order to see why.
 
+** Matrices
+
+While scaling and translating are simple enough operations to do
+manually with multiplications and subtractions, other transformations
+can become unruly when expressed this way.
+
+Fortunately, WebGL and GLSL provide support for matrices.  The
+following matrix will rotate around the $x$ axis, for instance:
+
+\begin{bmatrix}
+  1 & 0 & 0 & 0 \\
+  0 & \cos\theta & -\sin\theta & 0 \\
+  0 & \sin\theta & \cos\theta & 0 \\
+  0 & 0 & 0 & 1
+\end{bmatrix}
+
+WebGL treats the =vec4= like a 4x1 matrix (i.e. a column vector), and
+so the =pos_h * rot= in the below code is computed as:
+
+\begin{equation}
+\begin{bmatrix}
+  p_x \\ p_y \\ p_z \\ 1
+\end{bmatrix}
+\begin{bmatrix}
+  1 & 0 & 0 & 0 \\
+  0 & \cos\theta & -\sin\theta & 0 \\
+  0 & \sin\theta & \cos\theta & 0 \\
+  0 & 0 & 0 & 1
+\end{bmatrix} = 
+\begin{bmatrix}
+  p_x \\ p_y\cos\theta - p_z\sin\theta \\ p_y\sin\theta + p_z\cos\theta \\ 1
+\end{bmatrix}
+\end{equation}
+
+The below code uses this (note that we multiply the position by the
+matrix). 
+
+#+BEGIN_SRC glsl
+/* PARAMETERS
+[
+   {
+       "type": "float",
+       "value": 0,
+       "min": -3.14,
+       "max": 3.14,
+       "name": "rx",
+       "GUIName": "rx"
+   }
+]
+END */
+#define ENABLE_SPHERE_TRACING
+
+uniform vec2 resolution;
+uniform vec4 mouse;
+uniform float rx;
+
+float distance(in vec3 pos)
+{
+    vec4 pos_h = vec4(pos, 1.0);
+    mat4 rot = mat4(1, 0,        0,       0,
+                    0, cos(rx), -sin(rx), 0,
+                    0, sin(rx),  cos(rx), 0,
+                    0, 0,        0,       1);
+    return length(max(abs(pos_h * rot) - 1.0, 0.0));
+}
+
+void main()
+{
+    vec2 uv = 2.0 * gl_FragCoord.xy/resolution.xy - 1.0;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    // Normalize mouse position:
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
+    m.x = m.x * resolution.x / resolution.y;
+
+    // Camera location & target:
+    vec3 camera_loc = vec3(-0.5+3.5*cos(6.0*m.x), 1.0 + 2.0*m.y, 0.5 + 4.0*sin(6.0*m.x));
+    vec3 camera_target = vec3(0.0, 0.0, 0.0);
+    
+    // Camera-to-world transformation and rendering:
+    mat3 ca = setCamera(camera_loc, camera_target, 0.0);
+    vec3 rd = ca * normalize(vec3(uv, 2.0));
+    vec3 col = render(camera_loc, rd);
+
+    gl_FragColor = vec4(col, 1.0);
+}
+#+END_SRC
+
+We have to turn the =vec3= position into a =vec4= and then use =.xyz=
+to return it to a =vec3= for reasons that will be explained shortly.
+
+Of course, we can express the scale as a transformation matrix as
+well:
+
+\begin{bmatrix}
+  s & 0 & 0 & 0 \\
+  0 & s & 0 & 0 \\
+  0 & 0 & s & 0 \\
+  0 & 0 & 0 & 1
+\end{bmatrix}
+
+And the translation:
+
+\begin{bmatrix}
+  1 & 0 & 0 & -t_x \\
+  0 & 1 & 0 & -t_y \\
+  0 & 0 & 1 & -t_z \\
+  0 & 0 & 0 & 1
+\end{bmatrix}
+
+This is used below. They're purposely chained in a particular order:
+the position is first translated (translation is done in the
+"original" space), then everything is scaled (scaling is relative to
+the new, translated origin), then everything is rotated (again,
+relative to the new, translated origin).
+
+#+BEGIN_SRC glsl
+/* PARAMETERS
+[
+   {
+       "type": "float",
+       "value": 1,
+       "min": 0,
+       "max": 5,
+       "name": "s",
+       "GUIName": "s"
+   },
+   {
+       "type": "float",
+       "value": 0,
+       "min": -5,
+       "max": 5,
+       "name": "tx",
+       "GUIName": "tx"
+   },
+   {
+       "type": "float",
+       "value": 0,
+       "min": -5,
+       "max": 5,
+       "name": "ty",
+       "GUIName": "ty"
+   },
+   {
+       "type": "float",
+       "value": 0,
+       "min": -5,
+       "max": 5,
+       "name": "tz",
+       "GUIName": "tz"
+   },
+   {
+       "type": "float",
+       "value": 0,
+       "min": -3.14,
+       "max": 3.14,
+       "name": "rx",
+       "GUIName": "rx"
+   }
+]
+END */
+#define ENABLE_SPHERE_TRACING
+
+uniform vec2 resolution;
+uniform vec4 mouse;
+uniform float s;
+uniform float tx;
+uniform float ty;
+uniform float tz;
+uniform float rx;
+
+float distance(in vec3 pos)
+{
+    vec4 pos_h = vec4(pos, 1.0);
+    mat4 rot = mat4(1, 0,        0,       0,
+                    0, cos(rx), -sin(rx), 0,
+                    0, sin(rx),  cos(rx), 0,
+                    0, 0,        0,       1);
+    mat4 trans = mat4(1, 0, 0, -tx,
+                      0, 1, 0, -ty,
+                      0, 0, 1, -tz,
+                      0, 0, 0, 1);
+    mat4 scale = mat4(s, 0, 0, 0,
+                      0, s, 0, 0,
+                      0, 0, s, 0,
+                      0, 0, 0, 1);
+    return length(max(abs(pos_h * trans * scale * rot).xyz - 1.0, 0.0)) / s;
+}
+
+void main()
+{
+    vec2 uv = 2.0 * gl_FragCoord.xy/resolution.xy - 1.0;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    // Normalize mouse position:
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
+    m.x = m.x * resolution.x / resolution.y;
+
+    // Camera location & target:
+    vec3 camera_loc = vec3(-0.5+3.5*cos(6.0*m.x), 1.0 + 2.0*m.y, 0.5 + 4.0*sin(6.0*m.x));
+    vec3 camera_target = vec3(0.0, 0.0, 0.0);
+    
+    // Camera-to-world transformation and rendering:
+    mat3 ca = setCamera(camera_loc, camera_target, 0.0);
+    vec3 rd = ca * normalize(vec3(uv, 2.0));
+    vec3 col = render(camera_loc, rd);
+
+    gl_FragColor = vec4(col, 1.0);
+}
+#+END_SRC
+
+This looks like a lot of extra notation, but part of the point comes
+about because a series of matrix multiplications like $pTSR_x$ - like
+we are doing above for position $p$, translation matrix $T$, scaling
+matrix $S$, and rotation matrix $R_x$ - can be rewritten like
+$p(TSR_x)$, that is, the three transformation matrices can be
+multiplied into a single 4x4 matrix.  This is trivial to do in the
+code (and the below should render completely identically):
+
+#+BEGIN_SRC glsl
+/* PARAMETERS
+[
+   {
+       "type": "float",
+       "value": 1,
+       "min": 0,
+       "max": 5,
+       "name": "s",
+       "GUIName": "s"
+   },
+   {
+       "type": "float",
+       "value": 0,
+       "min": -5,
+       "max": 5,
+       "name": "tx",
+       "GUIName": "tx"
+   },
+   {
+       "type": "float",
+       "value": 0,
+       "min": -5,
+       "max": 5,
+       "name": "ty",
+       "GUIName": "ty"
+   },
+   {
+       "type": "float",
+       "value": 0,
+       "min": -5,
+       "max": 5,
+       "name": "tz",
+       "GUIName": "tz"
+   },
+   {
+       "type": "float",
+       "value": 0,
+       "min": -3.14,
+       "max": 3.14,
+       "name": "rx",
+       "GUIName": "rx"
+   }
+]
+END */
+#define ENABLE_SPHERE_TRACING
+
+uniform vec2 resolution;
+uniform vec4 mouse;
+uniform float s;
+uniform float tx;
+uniform float ty;
+uniform float tz;
+uniform float rx;
+
+float distance(in vec3 pos)
+{
+    vec4 pos_h = vec4(pos, 1.0);
+    mat4 rot = mat4(1, 0,        0,       0,
+                    0, cos(rx), -sin(rx), 0,
+                    0, sin(rx),  cos(rx), 0,
+                    0, 0,        0,       1);
+    mat4 trans = mat4(1, 0, 0, -tx,
+                      0, 1, 0, -ty,
+                      0, 0, 1, -tz,
+                      0, 0, 0, 1);
+    mat4 scale = mat4(s, 0, 0, 0,
+                      0, s, 0, 0,
+                      0, 0, s, 0,
+                      0, 0, 0, 1);
+    mat4 t = trans * scale * rot;
+    return length(max(abs(pos_h * t).xyz - 1.0, 0.0)) / s;
+}
+
+void main()
+{
+    vec2 uv = 2.0 * gl_FragCoord.xy/resolution.xy - 1.0;
+    // Correct aspect:
+    uv.x = uv.x * resolution.x / resolution.y;
+
+    // Normalize mouse position:
+    vec2 m = vec2(mouse.x/resolution.x, 1.0 - mouse.y/resolution.y);
+    m.x = m.x * resolution.x / resolution.y;
+
+    // Camera location & target:
+    vec3 camera_loc = vec3(-0.5+3.5*cos(6.0*m.x), 1.0 + 2.0*m.y, 0.5 + 4.0*sin(6.0*m.x));
+    vec3 camera_target = vec3(0.0, 0.0, 0.0);
+    
+    // Camera-to-world transformation and rendering:
+    mat3 ca = setCamera(camera_loc, camera_target, 0.0);
+    vec3 rd = ca * normalize(vec3(uv, 2.0));
+    vec3 col = render(camera_loc, rd);
+
+    gl_FragColor = vec4(col, 1.0);
+}
+#+END_SRC
+
+** Homogeneous coordinates
+
+It may seem a bit strange that we are working with a 3-element vector,
+adding in a 4th element (which is always 1), multiplying this by a 4x4
+matrix, and then discarding the 4th element.  With scaling and
+rotating (and a few other things), this isn't actually necessary.  We
+have used this 3x3 matrix for rotating, and multiplied a =vec3= by it:
+
+\begin{bmatrix}
+  1 & 0 & 0 \\
+  0 & \cos\theta & -\sin\theta \\
+  0 & \sin\theta & \cos\theta \\
+\end{bmatrix}
+
+One benefit of this form is that we can interpret it as a [[https://en.wikipedia.org/wiki/Change_of_basis][change of
+basis]] matrix.  If our *basis* here is three unit vectors,
+$\hat{x}=(1,0,0)$, $\hat{y}=(0,1,0)$, $\hat{z}=(0,0,1)$ (which are
+just the $x$, $y$ and $z$ axis), we can look at the above 3x3 matrix,
+or any other 3x3 transformation matrix, as three new vectors, one
+for each row of the matrix:
+
+\begin{bmatrix}
+  \hat{x}' \\ \hat{y}' \\ \hat{z}'
+\end{bmatrix}
+
+where $\hat{x}'$ is the result of transforming $\hat{x}$, $\hat{y}'$
+the result of transforming $\hat{y}$, and $\hat{z}'$ the result of
+transforming $\hat{z}$.  In other words, that matrix contains our
+"new" $x$ axis, $y$ axis, and $z$ axis.  This makes some intuitive
+sense if we look at the matrix above which rotates around the $x$ axis
+by $\theta$: the $x$ axis stays untouched, but the $y$ and $z$ axis
+rotate.  Similar intuition applies to a scaling matrix: all it does is
+stretch or compress the axes.  Likewise, it means that if we leave the
+axes alone, we have the normal 3x3 identity matrix:
+
+\begin{bmatrix}
+  1 & 0 & 0 \\
+  0 & 1 & 0 \\
+  0 & 0 & 1 \\
+\end{bmatrix}
+
+However, a little effort will reveal that the third transformation we
+examined - a translation - cannot be expressed this way.  In short: We
+add the extra coordinate (that is, make it [[https://en.wikipedia.org/wiki/Homogeneous_coordinates#Use_in_computer_graphics][homogeneous]]) as a way to
+let us express translations in matrix form (and [[https://en.wikipedia.org/wiki/Affine_transformation][affine transformations]]
+in general - including the all-important projective transformation
+used anytime a 3D render includes perspective).
+
+** Other linear transformations
+
 ** Single sphere
 
 # TODO: Get rid of the below perhaps
-
-If you look more closely at =distance= you might note that the
-distance function will return negative values *inside* the sphere.
-This is intentional; we now have a [[https://en.wikipedia.org/wiki/Signed_distance_function][signed distance function]].  It's a
-fairly small change: The 3D surface must have a clear inside and
-outside, and the signed distance function returns a positive number
-for any point *outside* that surface and a negative number for any
-point *inside* that surface.  It's otherwise the same.
 
 #+BEGIN_SRC glsl
 /* PARAMETERS
