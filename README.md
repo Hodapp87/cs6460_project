@@ -6,9 +6,8 @@ project for CS6460 (Educational Technology) in OMSCS.  The 'live'
 version of the website is at:
 https://hodapp87.github.io/cs6460_project/
 
-The paper referring to this is available at:
-
-(fill this in once I figure out the git way to reference things)
+The paper referring to this is available
+at [paper/chodapp3_final_paper.pdf](./paper/chodapp3_final_paper.pdf).
 
 Building
 ----
