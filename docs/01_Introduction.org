@@ -19,19 +19,16 @@ pseudocode, without having to build an entire framework to test
 something simple, and without having any real risk that you will
 destroy anything.
 
-# TODO: Give a simple WebGL example here
-
-Everything about this tutorial is open source.  Further, the code
-that's included here, and any code that you'll write, is all "real"
-code written in a standard language that runs in countless other
-places (with a little adaptation) - it's simply fragment shaders
-written in GLSL ([[https://en.wikipedia.org/wiki/OpenGL_Shading_Language][OpenGL Shading Language]]).  That is, I didn't invent a
-toy programming language or API for this tutorial.  On top of that,
-nearly anything you write could be translated easily to many other
-shading languages (e.g. [[https://en.wikipedia.org/wiki/Cg_(programming_language)][Cg]], [[https://en.wikipedia.org/wiki/High-level_shader_language][HLSL]], [[https://en.wikipedia.org/wiki/RenderMan_Shading_Language][RSL]], [[https://en.wikipedia.org/wiki/Open_Shading_Language][OSL]]) that work very similarly,
-or really to any other language with a little more effort.
-
-# TODO: Supply GitHub link above.
+Everything about this tutorial is open source (see its [[https://github.com/Hodapp87/cs6460_project][GitHub
+repository]]).  Further, the code that's included here, and any code
+that you'll write, is all "real" code written in a standard language
+that runs in countless other places (with a little adaptation) - it's
+simply fragment shaders written in GLSL ([[https://en.wikipedia.org/wiki/OpenGL_Shading_Language][OpenGL Shading Language]]).
+That is, I didn't invent a toy programming language or API for this
+tutorial.  On top of that, nearly anything you write could be
+translated easily to many other shading languages (e.g. [[https://en.wikipedia.org/wiki/Cg_(programming_language)][Cg]], [[https://en.wikipedia.org/wiki/High-level_shader_language][HLSL]], [[https://en.wikipedia.org/wiki/RenderMan_Shading_Language][RSL]],
+[[https://en.wikipedia.org/wiki/Open_Shading_Language][OSL]]) that work very similarly, or really to any other language with a
+little more effort.
 
 ** Requirements
 
@@ -84,7 +81,8 @@ Book of Shaders]], and Morgan McGuire's [[https://www.cs.williams.edu/~morgan/cs
 Tracing Implicitly Defined Surfaces]] were very helpful references in
 the course of building the content of this site.  Particularly, the
 sphere tracing example in chapter 3 is based heavily around Íñigo
-Quílez's [[https://www.shadertoy.com/view/Xds3zN][Raymarching Primitives demo]].
+Quílez's [[https://www.shadertoy.com/view/Xds3zN][Raymarching Primitives demo]]; the modified source for this is
+at [[./docs/sphere_tracer.glsl]].
 
 [[./04_Final_Notes.org][Chapter 4]] contains some other references as well.
 

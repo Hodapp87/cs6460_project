@@ -26,6 +26,15 @@ If you wish to build and/or host this yourself:
    host a local webserver.  Due to how it refers to resources, you
    can't simply access it locally via `file:///`.
 
+Known Bugs
+----
+
+1. MathJax does not render right upon switching sections (a refresh is required)
+2. Safari browser seems to have problems
+3. Layout mode doesn't really work right
+4. Some Chapter 3 items appear to have precision issues surrounding
+   rotations, but only when matrices are used.
+
 Acknowledgements
 ----
 

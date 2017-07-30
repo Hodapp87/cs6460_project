@@ -30,11 +30,13 @@
   <body>
     <div id="menu_bar">
       <div id="button_container">
-        <!-- a href="//leanprover.github.io"><img id="lean_logo" src="./images/lean_logo_small.svg"/></a -->
-        <div id="new-button" class="button"><img class="menu_icon" src="./images/new.svg" title="new"/></div>
+        <!-- New button disabled since it doesn't do anything: -->
+        <!-- div id="new-button" class="button"><img class="menu_icon" src="./images/new.svg" title="new"/></div-->
         <div id="run-button" class="button"><img class="menu_icon" src="./images/run.svg" title="run (shift + enter)"/></div>
-        <div id="layout-button" class="button"><img class="menu_icon" src="./images/square.svg" title="rotate layout"/></div>
-        <div id="book-button" class="button"><a href="example.pdf"><img class="menu_icon" src="./images/book.svg" title="Download example.pdf"/></a></div>
+        <!-- Layout button disabled since I need to think about what
+             it should do (in Lean it has both code and output) -->
+        <!-- div id="layout-button" class="button"><img class="menu_icon" src="./images/square.svg" title="rotate layout"/></div-->
+        <!-- div id="book-button" class="button"><a href="example.pdf"><img class="menu_icon" src="./images/book.svg" title="Download example.pdf"/></a></div -->
         <div id="setting-button" class="button"><img class="menu_icon" src="./images/gear.svg" title="setting"/></div>
         <select id='tutorialNav' style="display:none"></select>
       </div>
@@ -57,6 +59,7 @@
             <option>ace</option>
             <option>emacs</option>
             <option>vim</option>
+            <option>sublime</option>
         </select>
         </fieldset>
         <button id="close_setting_window">Close</button>
